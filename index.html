@@ -3,179 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Direct Ultra</title>
+    <title>WhatsApp Direct Ultra Pro</title>
     <link rel="manifest" href="manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap');
         body { font-family: 'Noto Sans Arabic', sans-serif; background-color: #0c1317; color: #e9edef; }
-        .glass-effect { background: rgba(34, 45, 52, 0.9); backdrop-filter: blur(20px); }
+        .glass-effect { background: rgba(34, 45, 52, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
         .modal-slide { transition: transform 0.3s ease-out; transform: translateY(100%); }
         .modal-slide.active { transform: translateY(0); }
-        .country-item { transition: 0.2s; border-bottom: 1px solid #222d34; }
-        .country-item:hover { background: #202c33; }
-        /* إخفاء السهم في حقول الأرقام */
+        .country-item { transition: 0.2s; border-bottom: 1px solid #222d34; cursor: pointer; }
+        .country-item:hover { background: #2a3942; }
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .flag-badge { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4 overflow-hidden">
 
-    <div id="langOverlay" class="fixed inset-0 z-[200] bg-[#0c1317] flex items-center justify-center transition-opacity duration-500">
-        <div class="text-center scale-110">
-            <div class="w-24 h-24 bg-[#25D366] rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-2xl animate-bounce">
-                <i class="fab fa-whatsapp text-white text-5xl"></i>
+    <div id="langOverlay" class="fixed inset-0 z-[200] bg-[#0c1317] flex items-center justify-center">
+        <div class="text-center">
+            <div class="w-20 h-20 bg-[#25D366] rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl">
+                <i class="fab fa-whatsapp text-white text-4xl"></i>
             </div>
-            <h2 class="text-2xl font-bold mb-8">اختر اللغة / Choose Language</h2>
+            <h2 class="text-xl font-bold mb-6">اختر اللغة / Language</h2>
             <div class="flex gap-4">
-                <button onclick="initApp('ar')" class="bg-[#25D366] text-[#0c1317] px-8 py-4 rounded-2xl font-bold text-lg hover:scale-105 transition">العربية</button>
-                <button onclick="initApp('en')" class="border-2 border-[#25D366] text-[#25D366] px-8 py-4 rounded-2xl font-bold text-lg hover:scale-105 transition">English</button>
+                <button onclick="initApp('ar')" class="bg-[#25D366] text-black px-8 py-3 rounded-2xl font-bold">العربية</button>
+                <button onclick="initApp('en')" class="border border-gray-600 px-8 py-3 rounded-2xl font-bold">English</button>
             </div>
         </div>
     </div>
 
-    <div class="w-full max-w-md glass-effect p-8 rounded-[2.5rem] shadow-2xl border border-white/5 relative">
+    <div class="w-full max-w-md glass-effect p-8 rounded-[2.5rem] shadow-2xl">
         <div class="flex justify-between items-center mb-10">
-            <button onclick="toggleLang()" class="bg-[#202c33] px-4 py-2 rounded-full text-xs font-bold border border-white/10 hover:bg-[#2a3942]">
+            <button onclick="toggleLang()" class="bg-[#202c33] px-4 py-2 rounded-full text-xs font-bold border border-white/5">
                 <span id="langBtnLabel">English</span>
             </button>
             <i class="fab fa-whatsapp text-[#25D366] text-3xl"></i>
         </div>
 
-        <div class="text-center mb-8">
-            <h1 id="txtTitle" class="text-3xl font-bold tracking-tight">مراسلة سريعة</h1>
-            <p id="txtDesc" class="text-gray-400 mt-2">بدون حفظ الرقم في جهات الاتصال</p>
-        </div>
-
         <div class="space-y-6">
-            <button onclick="openModal()" class="w-full flex items-center justify-between p-5 bg-[#202c33] rounded-2xl border border-white/5 hover:border-green-500/50 transition-all group">
+            <button onclick="openModal()" class="w-full flex items-center justify-between p-5 bg-[#202c33] rounded-2xl border border-white/5 hover:border-green-500/30 transition-all">
                 <div class="flex items-center gap-4">
-                    <span id="curFlag" class="text-3xl">🇸🇦</span>
-                    <div class="text-right flex flex-col">
+                    <span id="curFlagMain" class="text-2xl">🇸🇦</span>
+                    <div class="text-right">
                         <span id="curName" class="font-bold text-sm">السعودية</span>
-                        <span id="curCodeLabel" class="text-xs text-green-500 font-mono" dir="ltr">+966</span>
+                        <p id="curExample" class="text-[10px] text-gray-500 mt-1">مثال: 50xxxxxxx</p>
                     </div>
                 </div>
-                <i class="fas fa-chevron-left text-gray-500 group-hover:text-green-500 transition"></i>
+                <i class="fas fa-chevron-down text-xs text-gray-500"></i>
             </button>
 
-            <div class="flex gap-3" dir="ltr">
-                <input type="text" id="dialCode" value="+966" class="w-24 p-5 rounded-2xl bg-[#202c33] border border-white/5 text-center font-bold text-xl text-white outline-none focus:border-green-500 transition">
-                <input type="number" id="phoneNum" placeholder="50XXX..." class="flex-1 p-5 rounded-2xl bg-[#202c33] border border-white/5 font-bold text-xl text-white outline-none focus:border-green-500 transition">
+            <div class="flex gap-2" dir="ltr">
+                <div class="relative w-32">
+                    <span id="curFlagInput" class="flag-badge text-lg">🇸🇦</span>
+                    <input type="text" id="dialCode" value="+966" class="w-full p-5 pl-10 rounded-2xl bg-[#202c33] border border-white/5 text-center font-bold text-lg outline-none focus:border-green-500">
+                </div>
+                <div class="flex-1 relative">
+                    <input type="number" id="phoneNum" placeholder="50xxxxxxx" class="w-full p-5 rounded-2xl bg-[#202c33] border border-white/5 font-bold text-lg outline-none focus:border-green-500">
+                </div>
             </div>
 
-            <textarea id="msg" rows="2" class="w-full p-5 rounded-2xl bg-[#202c33] border border-white/5 text-sm outline-none focus:border-green-500 transition resize-none" placeholder="الرسالة الاختيارية..."></textarea>
+            <textarea id="msg" rows="2" class="w-full p-5 rounded-2xl bg-[#202c33] border border-white/5 text-sm outline-none focus:border-green-500 resize-none" placeholder="الرسالة..."></textarea>
 
-            <button onclick="launch()" class="w-full bg-[#25D366] hover:bg-[#1ebd5e] text-[#0c1317] py-5 rounded-2xl font-bold text-xl shadow-lg shadow-green-500/20 active:scale-95 transition-all">
-                <span id="txtBtn">إرسال الآن</span>
+            <button onclick="launch()" class="w-full bg-[#25D366] hover:bg-[#1ebd5e] text-[#0c1317] py-5 rounded-2xl font-bold text-xl active:scale-95 transition-all">
+                <span id="txtBtn">إرسال</span>
             </button>
         </div>
     </div>
 
-    <div id="modal" class="fixed inset-0 z-[300] bg-black/60 backdrop-blur-sm hidden flex-col justify-end">
-        <div id="modalContent" class="modal-slide w-full max-w-md mx-auto bg-[#111b21] rounded-t-[3rem] h-[85vh] flex flex-col">
-            <div class="p-6 text-center border-b border-white/5">
-                <div class="w-12 h-1.5 bg-gray-700 rounded-full mx-auto mb-6"></div>
-                <h3 id="txtModalHeader" class="text-xl font-bold mb-4">اختر الدولة</h3>
-                <div class="relative">
-                    <i class="fas fa-search absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                    <input type="text" id="searchBox" oninput="doSearch()" placeholder="بحث بالعربي، الإنجليزي أو الكود..." class="w-full p-4 pr-12 bg-[#202c33] rounded-2xl border-none outline-none focus:ring-2 focus:ring-green-500">
-                </div>
+    <div id="modal" class="fixed inset-0 z-[300] bg-black/70 backdrop-blur-sm hidden flex-col justify-end">
+        <div id="modalContent" class="modal-slide w-full max-w-md mx-auto bg-[#111b21] rounded-t-[3rem] h-[80vh] flex flex-col">
+            <div class="p-6">
+                <div class="w-12 h-1 bg-gray-700 rounded-full mx-auto mb-6"></div>
+                <input type="text" id="searchBox" oninput="doSearch()" placeholder="بحث..." class="w-full p-4 bg-[#202c33] rounded-2xl border-none outline-none focus:ring-2 focus:ring-green-500">
             </div>
-            <div id="countryList" class="flex-1 overflow-y-auto p-2">
-                </div>
-            <button onclick="closeModal()" class="p-6 text-red-400 font-bold">إغلاق</button>
+            <div id="countryList" class="flex-1 overflow-y-auto p-2"></div>
+            <button onclick="closeModal()" class="p-6 text-gray-400 font-bold">إغلاق</button>
         </div>
     </div>
 
     <script>
-        // قاعدة بيانات الدول المدمجة لضمان العمل بدون إنترنت ودعم البحث العربي
+        // قاعدة بيانات متكاملة تشمل الأعلام وطريقة كتابة الرقم (Example)
         const countries = [
-            { nAr: "السعودية", nEn: "Saudi Arabia", c: "966", f: "🇸🇦" },
-            { nAr: "مصر", nEn: "Egypt", c: "20", f: "🇪🇬" },
-            { nAr: "الإمارات", nEn: "United Arab Emirates", c: "971", f: "🇦🇪" },
-            { nAr: "الكويت", nEn: "Kuwait", c: "965", f: "🇰🇼" },
-            { nAr: "قطر", nEn: "Qatar", c: "974", f: "🇶🇦" },
-            { nAr: "عمان", nEn: "Oman", c: "968", f: "🇴🇲" },
-            { nAr: "البحرين", nEn: "Bahrain", c: "973", f: "🇧🇭" },
-            { nAr: "الأردن", nEn: "Jordan", c: "962", f: "🇯🇴" },
-            { nAr: "العراق", nEn: "Iraq", c: "964", f: "🇮🇶" },
-            { nAr: "اليمن", nEn: "Yemen", c: "967", f: "🇾🇪" },
-            { nAr: "سوريا", nEn: "Syria", c: "963", f: "🇸🇾" },
-            { nAr: "لبنان", nEn: "Lebanon", c: "961", f: "🇱🇧" },
-            { nAr: "فلسطين", nEn: "Palestine", c: "970", f: "🇵🇸" },
-            { nAr: "المغرب", nEn: "Morocco", c: "212", f: "🇲🇦" },
-            { nAr: "الجزائر", nEn: "Algeria", c: "213", f: "🇩🇿" },
-            { nAr: "تونس", nEn: "Tunisia", c: "216", f: "🇹🇳" },
-            { nAr: "ليبيا", nEn: "Libya", c: "218", f: "🇱🇾" },
-            { nAr: "السودان", nEn: "Sudan", c: "249", f: "🇸🇩" },
-            { nAr: "تركيا", nEn: "Turkey", c: "90", f: "🇹🇷" },
-            { nAr: "أمريكا", nEn: "USA", c: "1", f: "🇺🇸" },
-            { nAr: "بريطانيا", nEn: "UK", c: "44", f: "🇬🇧" }
-            // يمكن إضافة المزيد بنفس النمط...
+            { nAr: "السعودية", nEn: "Saudi Arabia", c: "966", f: "🇸🇦", ex: "50xxxxxxx" },
+            { nAr: "مصر", nEn: "Egypt", c: "20", f: "🇪🇬", ex: "1xxxxxxxxx" },
+            { nAr: "الإمارات", nEn: "UAE", c: "971", f: "🇦🇪", ex: "5xxxxxxxx" },
+            { nAr: "الكويت", nEn: "Kuwait", c: "965", f: "🇰🇼", ex: "xxxxxxx" },
+            { nAr: "عمان", nEn: "Oman", c: "968", f: "🇴🇲", ex: "xxxxxxx" },
+            { nAr: "البحرين", nEn: "Bahrain", c: "973", f: "🇧🇭", ex: "xxxxxxxx" },
+            { nAr: "قطر", nEn: "Qatar", c: "974", f: "🇶🇦", ex: "xxxxxxxx" },
+            { nAr: "الأردن", nEn: "Jordan", c: "962", f: "🇯🇴", ex: "7xxxxxxxx" },
+            { nAr: "العراق", nEn: "Iraq", c: "964", f: "🇮🇶", ex: "7xxxxxxxxx" },
+            { nAr: "المغرب", nEn: "Morocco", c: "212", f: "🇲🇦", ex: "6xxxxxxxx" },
+            { nAr: "تركيا", nEn: "Turkey", c: "90", f: "🇹🇷", ex: "5xxxxxxxxx" }
         ];
 
         let lang = 'ar';
         const ui = {
-            ar: { title: "مراسلة سريعة", desc: "بدون حفظ الرقم في جهات الاتصال", btn: "إرسال الآن", mHead: "اختر الدولة", search: "بحث باسم الدولة أو الكود...", msg: "اكتب رسالتك هنا (اختياري)", switch: "English" },
-            en: { title: "Quick Chat", desc: "No need to save contacts", btn: "Send Now", mHead: "Select Country", search: "Search name or code...", msg: "Your message (optional)", switch: "العربية" }
+            ar: { btn: "إرسال الآن", msg: "اكتب رسالتك هنا...", search: "ابحث عن دولة أو مفتاح...", example: "مثال: " },
+            en: { btn: "Send Now", msg: "Type your message...", search: "Search country or code...", example: "Example: " }
         };
 
         function initApp(l) {
             lang = l;
-            localStorage.setItem('wa_lang', l);
-            document.getElementById('langOverlay').style.opacity = '0';
-            setTimeout(() => document.getElementById('langOverlay').style.display = 'none', 500);
+            document.getElementById('langOverlay').style.display = 'none';
             updateUI();
             renderCountries(countries);
         }
 
-        function toggleLang() {
-            lang = lang === 'ar' ? 'en' : 'ar';
-            updateUI();
-        }
-
         function updateUI() {
-            const t = ui[lang];
             document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-            document.getElementById('txtTitle').innerText = t.title;
-            document.getElementById('txtDesc').innerText = t.desc;
-            document.getElementById('txtBtn').innerText = t.btn;
-            document.getElementById('txtModalHeader').innerText = t.mHead;
-            document.getElementById('searchBox').placeholder = t.search;
-            document.getElementById('msg').placeholder = t.msg;
-            document.getElementById('langBtnLabel').innerText = t.switch;
+            document.getElementById('txtBtn').innerText = ui[lang].btn;
+            document.getElementById('msg').placeholder = ui[lang].msg;
+            document.getElementById('searchBox').placeholder = ui[lang].search;
+            document.getElementById('langBtnLabel').innerText = lang === 'ar' ? 'English' : 'العربية';
         }
 
         function renderCountries(list) {
-            const html = list.map(c => `
-                <div onclick="select('${c.f}', '${lang === 'ar' ? c.nAr : c.nEn}', '${c.c}')" class="country-item flex items-center justify-between p-5 cursor-pointer">
-                    <div class="flex items-center gap-4">
+            document.getElementById('countryList').innerHTML = list.map(c => `
+                <div onclick="select('${c.f}', '${lang === 'ar' ? c.nAr : c.nEn}', '${c.c}', '${c.ex}')" class="country-item flex items-center justify-between p-5">
+                    <div class="flex items-center gap-4 text-start">
                         <span class="text-3xl">${c.f}</span>
-                        <div class="text-start">
+                        <div>
                             <div class="font-bold text-sm">${lang === 'ar' ? c.nAr : c.nEn}</div>
-                            <div class="text-xs text-gray-500">${lang === 'ar' ? c.nEn : c.nAr}</div>
+                            <div class="text-[10px] text-gray-500">${ui[lang].example} ${c.ex}</div>
                         </div>
                     </div>
-                    <span class="font-mono text-green-500" dir="ltr">+${c.c}</span>
+                    <span class="font-mono text-green-500">+${c.c}</span>
                 </div>
             `).join('');
-            document.getElementById('countryList').innerHTML = html;
+        }
+
+        function select(f, n, c, ex) {
+            document.getElementById('curFlagMain').innerText = f;
+            document.getElementById('curFlagInput').innerText = f;
+            document.getElementById('curName').innerText = n;
+            document.getElementById('dialCode').value = '+' + c;
+            document.getElementById('phoneNum').placeholder = ex;
+            document.getElementById('curExample').innerText = ui[lang].example + ex;
+            closeModal();
         }
 
         function doSearch() {
             const q = document.getElementById('searchBox').value.toLowerCase();
-            const filtered = countries.filter(c => 
-                c.nAr.includes(q) || c.nEn.toLowerCase().includes(q) || c.c.includes(q)
-            );
-            renderCountries(filtered);
-        }
-
-        function select(f, n, c) {
-            document.getElementById('curFlag').innerText = f;
-            document.getElementById('curName').innerText = n;
-            document.getElementById('dialCode').value = '+' + c;
-            closeModal();
+            renderCountries(countries.filter(c => c.nAr.includes(q) || c.nEn.toLowerCase().includes(q) || c.c.includes(q)));
         }
 
         function openModal() {
@@ -189,18 +161,19 @@
         }
 
         function launch() {
-            let dial = document.getElementById('dialCode').value.replace('+', '').trim();
+            const dial = document.getElementById('dialCode').value.replace('+', '').trim();
             let num = document.getElementById('phoneNum').value.trim();
-            let text = encodeURIComponent(document.getElementById('msg').value);
+            const text = encodeURIComponent(document.getElementById('msg').value);
             if(!num) return alert(lang === 'ar' ? 'أدخل الرقم!' : 'Enter number!');
             if(num.startsWith('0')) num = num.substring(1);
             window.open(`https://wa.me/${dial}${num}?text=${text}`, '_blank');
         }
 
-        window.onload = () => {
-            const saved = localStorage.getItem('wa_lang');
-            if(saved) initApp(saved);
-        };
+        function toggleLang() {
+            lang = lang === 'ar' ? 'en' : 'ar';
+            updateUI();
+            renderCountries(countries);
+        }
     </script>
 </body>
 </html>
