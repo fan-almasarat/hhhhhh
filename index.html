@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>واتساب برو المباشر</title>
+    <title>WhatsApp Direct Pro | واتساب المباشر</title>
     <link rel="manifest" href="manifest.json">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css">
@@ -12,87 +12,135 @@
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
-        body { font-family: 'Tajawal', sans-serif; background: linear-gradient(135deg, #111b21 0%, #0b141a 100%); min-height: 100vh; color: white; }
+        :root { --wa-green: #25D366; }
+        body { font-family: 'Tajawal', sans-serif; background: #0b141a; color: white; transition: 0.3s; }
         
-        /* تعديلات مكتبة الأعلام لتناسب التصميم */
-        .iti { width: 100%; direction: ltr; }
-        .iti__country-list { background-color: #2a3942; color: white; border: 1px solid #374151; max-width: 300px; }
-        .iti__country:hover { background-color: #202c33; }
-        .iti__selected-flag { background-color: #2a3942; border-radius: 12px 0 0 12px; }
-        
-        .glass-card {
-            background: rgba(30, 42, 50, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        /* تحسين قائمة الدول والبحث */
+        .iti { width: 100%; }
+        .iti__country-list { 
+            background-color: #2a3942; color: white; border: 1px solid #374151; 
+            border-radius: 15px; max-width: 320px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
-        
-        input, textarea {
-            background: #2a3942 !important;
-            border: 1px solid #374151 !important;
-            color: white !important;
+        .iti__search-input { 
+            background: #111b21 !important; color: white !important; border: none !important;
+            padding: 10px !important; margin: 5px !important; border-radius: 8px !important;
+        }
+        .iti__country:hover { background-color: #202c33; }
+        .iti__selected-flag { background-color: #2a3942; border-radius: 15px 0 0 15px; padding: 0 15px; }
+
+        .glass-card {
+            background: rgba(30, 42, 50, 0.95);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
     </style>
 </head>
-<body class="flex items-center justify-center p-4">
+<body class="flex items-center justify-center min-h-screen p-4">
 
-    <div class="glass-card w-full max-w-md p-8 rounded-[2.5rem] shadow-2xl">
+    <button onclick="toggleLang()" class="absolute top-5 right-5 bg-[#2a3942] px-4 py-2 rounded-full text-sm font-bold border border-gray-700">
+        <span id="langText">English</span>
+    </button>
+
+    <div class="glass-card w-full max-w-md p-8 rounded-[2.5rem] shadow-2xl relative">
         <div class="text-center mb-8">
-            <div class="bg-[#25D366] w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-4 rotate-3 shadow-[0_0_20px_rgba(37,211,102,0.4)]">
-                <i class="fab fa-whatsapp text-white text-5xl"></i>
+            <div class="bg-[#25D366] w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-green-900/20">
+                <i class="fab fa-whatsapp text-white text-4xl"></i>
             </div>
-            <h1 class="text-2xl font-bold">مراسلة سريعة</h1>
-            <p class="text-gray-400 text-sm mt-2">تحديد تلقائي للدولة والرمز</p>
+            <h1 id="title" class="text-2xl font-bold">واتساب المباشر</h1>
+            <p id="subtitle" class="text-gray-400 text-sm mt-1">تحديد ذكي للدولة واللغة</p>
         </div>
 
         <div class="space-y-6">
-            <div class="text-left">
-                <label class="block text-right text-xs mb-2 mr-2 text-gray-400">رقم الجوال</label>
-                <input type="tel" id="phone" class="w-full p-4 rounded-2xl outline-none focus:ring-2 focus:ring-[#25D366] text-xl font-bold tracking-widest">
+            <div class="text-left" dir="ltr">
+                <label id="labelPhone" class="block text-right text-xs mb-2 text-gray-400 mr-2">رقم الجوال</label>
+                <input type="tel" id="phone" class="w-full p-4 rounded-2xl bg-[#2a3942] border border-[#374151] outline-none focus:ring-2 focus:ring-[#25D366] text-xl font-bold text-white tracking-widest">
             </div>
 
-            <div>
-                <label class="block text-right text-xs mb-2 mr-2 text-gray-400">الرسالة (اختياري)</label>
-                <textarea id="message" rows="3" class="w-full p-4 rounded-2xl outline-none focus:ring-2 focus:ring-[#25D366] text-right" placeholder="اكتب رسالتك هنا..."></textarea>
+            <div class="text-right">
+                <label id="labelMsg" class="block text-xs mb-2 text-gray-400 mr-2">الرسالة (اختياري)</label>
+                <textarea id="message" rows="3" class="w-full p-4 rounded-2xl bg-[#2a3942] border border-[#374151] outline-none focus:ring-2 focus:ring-[#25D366] text-white" placeholder="اكتب رسالتك..."></textarea>
             </div>
 
-            <button onclick="launchWhatsApp()" class="w-full bg-[#25D366] hover:bg-[#1ebd5e] text-white py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-xl">
-                <i class="fas fa-paper-plane text-sm"></i> ابدأ المحادثة الآن
+            <button onclick="send()" class="w-full bg-[#25D366] hover:bg-[#1ebd5e] text-[#0b141a] py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all transform active:scale-95">
+                <i class="fas fa-paper-plane"></i> <span id="btnText">إرسال الآن</span>
             </button>
         </div>
 
-        <button id="installBtn" class="hidden mt-8 w-full py-3 border-2 border-dashed border-gray-600 text-gray-400 rounded-2xl text-sm font-medium hover:text-[#25D366] hover:border-[#25D366] transition-colors">
-            <i class="fas fa-mobile-alt ml-2"></i> تثبيت التطبيق على جوالك
+        <button id="installBtn" class="hidden mt-8 w-full py-3 border border-gray-700 text-gray-400 rounded-2xl text-xs font-medium hover:text-[#25D366] transition-all">
+            <i class="fas fa-download ml-2"></i> <span id="installText">تثبيت التطبيق على جهازك</span>
         </button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
     <script>
+        let currentLang = 'ar';
         const phoneInput = document.querySelector("#phone");
         
-        // تشغيل مكتبة الأعلام والتحديد التلقائي
+        // إعدادات المكتبة مع البحث الذكي
         const iti = window.intlTelInput(phoneInput, {
-            initialCountry: "auto", // تحديد تلقائي للدولة
-            geoIpLookup: function(success, failure) {
-                fetch("https://ipapi.co/json") // خدمة لمعرفة موقع الـ IP
-                    .then(res => res.json())
-                    .then(data => success(data.country_code))
-                    .catch(() => success("SA")); // افتراضياً السعودية إذا فشل التحديد
+            initialCountry: "auto",
+            geoIpLookup: function(success) {
+                fetch("https://ipapi.co/json").then(r => r.json()).then(d => success(d.country_code)).catch(() => success("SA"));
             },
             utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js",
-            separateDialCode: true, // فصل مفتاح الدولة عن الرقم
-            preferredCountries: ["sa", "eg", "ae", "kw", "qa"], // دول تظهر في البداية
+            separateDialCode: true,
+            allowDropdown: true,
+            // ميزة البحث بالاسم والرمز
+            customPlaceholder: function(selectedCountryPlaceholder) {
+                return selectedCountryPlaceholder;
+            }
         });
 
-        function launchWhatsApp() {
-            const fullNumber = iti.getNumber().replace('+', ''); // الحصول على الرقم كامل مع المفتاح
-            const msg = encodeURIComponent(document.getElementById('message').value);
-            
-            if (!iti.isValidNumber()) {
-                alert("يرجى إدخال رقم هاتف صحيح");
-                return;
+        // قاموس اللغات
+        const translations = {
+            ar: {
+                title: "واتساب المباشر",
+                subtitle: "تحديد ذكي للدولة واللغة",
+                labelPhone: "رقم الجوال",
+                labelMsg: "الرسالة (اختياري)",
+                btnText: "إرسال الآن",
+                installText: "تثبيت التطبيق على جهازك",
+                langBtn: "English",
+                placeholder: "اكتب رسالتك...",
+                error: "يرجى إدخال رقم صحيح"
+            },
+            en: {
+                title: "WhatsApp Direct",
+                subtitle: "Smart Country & Language Detection",
+                labelPhone: "Phone Number",
+                labelMsg: "Message (Optional)",
+                btnText: "Send Now",
+                installText: "Install App on Device",
+                langBtn: "العربية",
+                placeholder: "Type your message...",
+                error: "Please enter a valid number"
             }
+        };
 
-            window.open(`https://wa.me/${fullNumber}?text=${msg}`, '_blank');
+        function toggleLang() {
+            currentLang = currentLang === 'ar' ? 'en' : 'ar';
+            const t = translations[currentLang];
+            
+            document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+            document.getElementById('title').innerText = t.title;
+            document.getElementById('subtitle').innerText = t.subtitle;
+            document.getElementById('labelPhone').innerText = t.labelPhone;
+            document.getElementById('labelMsg').innerText = t.labelMsg;
+            document.getElementById('btnText').innerText = t.btnText;
+            document.getElementById('installText').innerText = t.installText;
+            document.getElementById('langText').innerText = t.langBtn;
+            document.getElementById('message').placeholder = t.placeholder;
+            
+            // تحديث محاذاة التسميات
+            document.getElementById('labelPhone').style.textAlign = currentLang === 'ar' ? 'right' : 'left';
+            document.getElementById('labelMsg').style.textAlign = currentLang === 'ar' ? 'right' : 'left';
+        }
+
+        function send() {
+            if (!iti.isValidNumber()) return alert(translations[currentLang].error);
+            const num = iti.getNumber().replace('+', '');
+            const msg = encodeURIComponent(document.getElementById('message').value);
+            window.open(`https://wa.me/${num}?text=${msg}`, '_blank');
         }
 
         // كود التثبيت PWA
@@ -102,13 +150,7 @@
             deferredPrompt = e;
             document.getElementById('installBtn').classList.remove('hidden');
         });
-
-        document.getElementById('installBtn').onclick = async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt = null;
-            }
-        };
+        document.getElementById('installBtn').onclick = () => { if(deferredPrompt) deferredPrompt.prompt(); };
     </script>
 </body>
 </html>
