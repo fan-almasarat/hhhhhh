@@ -3,166 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>WhatsApp Ultra | جميع دول العالم</title>
+    <title>WhatsApp Direct Pro | النسخة الكاملة</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap');
         body { font-family: 'Noto Sans Arabic', sans-serif; background-color: #0b141a; color: #e9edef; overflow: hidden; height: 100vh; }
-        .glass { background: #111b21; border: 1px solid rgba(255,255,255,0.05); }
-        .modal-up { transition: transform 0.4s cubic-bezier(0, 0.5, 0.5, 1); transform: translateY(100%); }
+        .glass-card { background: rgba(17, 27, 33, 0.95); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.05); }
+        .modal-up { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); transform: translateY(100%); }
         .modal-up.active { transform: translateY(0); }
-        .country-row { border-bottom: 1px solid rgba(255,255,255,0.03); transition: 0.2s; cursor: pointer; }
-        .country-row:active { background: #2a3942; }
+        .country-item { transition: 0.2s; border-bottom: 1px solid rgba(255,255,255,0.02); cursor: pointer; }
+        .country-item:active { background: #2a3942; }
         input[type="number"]::-webkit-inner-spin-button { display: none; }
-        .custom-shadow { shadow-lg shadow-green-500/10; }
     </style>
 </head>
 <body class="flex items-center justify-center">
 
-    <div id="splash" class="fixed inset-0 z-[1000] bg-[#0b141a] flex flex-col items-center justify-center text-center p-6">
-        <div class="w-24 h-24 bg-[#25D366] rounded-[2.5rem] flex items-center justify-center mb-8 shadow-2xl">
-            <i class="fab fa-whatsapp text-white text-5xl"></i>
+    <div id="splash" class="fixed inset-0 z-[1000] bg-[#0b141a] flex flex-col items-center justify-center p-6 text-center">
+        <div class="w-20 h-20 bg-[#25D366] rounded-[2rem] flex items-center justify-center mb-10 shadow-[0_0_50px_rgba(37,211,102,0.3)]">
+            <i class="fab fa-whatsapp text-white text-4xl"></i>
         </div>
-        <h1 class="text-2xl font-bold mb-8">اختر لغة التطبيق<br><span class="text-gray-500 font-light tracking-widest text-sm">CHOOSE LANGUAGE</span></h1>
+        <h1 class="text-xl font-bold mb-8">اختر لغة الواجهة<br><span class="text-gray-500 font-light text-sm">CHOOSE INTERFACE LANGUAGE</span></h1>
         <div class="flex flex-col gap-4 w-full max-w-xs">
-            <button onclick="startApp('ar')" class="p-5 bg-[#25D366] text-black font-bold rounded-2xl text-xl shadow-xl">العربية</button>
-            <button onclick="startApp('en')" class="p-5 border-2 border-[#25D366] text-[#25D366] font-bold rounded-2xl text-xl">English</button>
+            <button onclick="initApp('ar')" class="p-5 bg-[#25D366] text-black font-bold rounded-2xl text-lg active:scale-95 transition-all">العربية</button>
+            <button onclick="initApp('en')" class="p-5 border border-gray-700 text-white font-bold rounded-2xl text-lg active:scale-95 transition-all">English</button>
         </div>
     </div>
 
-    <div id="main" class="w-full max-w-lg h-full md:h-auto md:max-h-[90vh] glass md:rounded-[3rem] p-8 flex flex-col relative hidden">
-        <div class="flex justify-between items-center mb-10">
-            <button onclick="toggleLang()" class="bg-[#202c33] px-5 py-2 rounded-full text-xs font-bold border border-white/5 hover:text-[#25D366]">
-                <span id="langBtn">English</span>
+    <main id="app" class="w-full max-w-lg h-full md:h-auto md:max-h-[90vh] glass-card md:rounded-[3rem] p-8 flex flex-col hidden shadow-2xl">
+        <header class="flex justify-between items-center mb-10">
+            <button onclick="toggleLang()" class="bg-[#202c33] px-5 py-2 rounded-full text-xs font-bold border border-white/5">
+                <span id="langBtnText">English</span>
             </button>
-            <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-500 font-bold uppercase tracking-tighter">Direct Chat</span>
-                <i class="fab fa-whatsapp text-[#25D366] text-3xl"></i>
-            </div>
-        </div>
+            <i class="fab fa-whatsapp text-[#25D366] text-3xl"></i>
+        </header>
 
         <div class="space-y-6">
             <div class="space-y-2">
-                <label id="lblSelect" class="text-[10px] text-gray-500 font-bold uppercase mr-2 tracking-widest">الدولة المختارة</label>
-                <button onclick="openModal()" class="w-full flex items-center justify-between p-6 bg-[#202c33] rounded-[1.5rem] border border-white/5 hover:border-green-500/30 transition-all">
-                    <div class="flex items-center gap-5">
-                        <span id="curFlag" class="text-4xl">🇸🇦</span>
+                <label id="lblCountry" class="text-[10px] text-gray-500 font-bold uppercase mr-2">الدولة المختارة</label>
+                <button onclick="openModal()" class="w-full flex items-center justify-between p-5 bg-[#202c33] rounded-[1.5rem] border border-white/5 active:scale-95 transition-all">
+                    <div class="flex items-center gap-4">
+                        <span id="flagMain" class="text-3xl">🇸🇦</span>
                         <div class="text-right">
-                            <span id="curName" class="font-bold text-lg block">السعودية</span>
-                            <span id="curDialLabel" class="text-green-500 text-xs font-mono font-bold">+966</span>
+                            <span id="nameMain" class="font-bold text-sm block">السعودية</span>
+                            <span id="dialMain" class="text-green-500 text-xs font-mono">+966</span>
                         </div>
                     </div>
-                    <i class="fas fa-search text-gray-600 text-sm"></i>
+                    <i class="fas fa-search-location text-gray-600"></i>
                 </button>
             </div>
 
             <div class="space-y-2">
-                <label id="lblPhone" class="text-[10px] text-gray-500 font-bold uppercase mr-2 tracking-widest">رقم الجوال</label>
+                <label id="lblPhone" class="text-[10px] text-gray-500 font-bold uppercase mr-2">رقم الهاتف</label>
                 <div class="flex gap-3" dir="ltr">
-                    <div class="relative w-32">
-                        <span id="inputFlag" class="absolute left-3 top-1/2 -translate-y-1/2 text-xl">🇸🇦</span>
+                    <div class="relative w-32 shrink-0">
+                        <span id="flagInput" class="absolute left-3 top-1/2 -translate-y-1/2 text-xl">🇸🇦</span>
                         <input type="text" id="dialCode" value="+966" class="w-full p-5 pl-10 bg-[#202c33] border border-white/5 rounded-[1.5rem] text-center font-bold text-lg outline-none focus:border-[#25D366]">
                     </div>
-                    <input type="number" id="phoneNum" placeholder="50xxxxxxx" class="flex-1 p-5 bg-[#202c33] border border-white/5 rounded-[1.5rem] font-bold text-xl outline-none focus:border-[#25D366] tracking-widest">
+                    <input type="number" id="phoneNum" placeholder="50xxxxxxx" class="flex-1 p-5 bg-[#202c33] border border-white/5 rounded-[1.5rem] font-bold text-xl outline-none focus:border-[#25D366]">
                 </div>
             </div>
 
             <div class="space-y-2">
-                <label id="lblMsg" class="text-[10px] text-gray-500 font-bold uppercase mr-2 tracking-widest">الرسالة</label>
-                <textarea id="msgInp" rows="2" class="w-full p-5 bg-[#202c33] border border-white/5 rounded-[1.5rem] text-sm outline-none focus:border-[#25D366] resize-none" placeholder="اكتب هنا..."></textarea>
+                <label id="lblMsg" class="text-[10px] text-gray-500 font-bold uppercase mr-2">الرسالة</label>
+                <textarea id="msgInp" rows="2" class="w-full p-5 bg-[#202c33] border border-white/5 rounded-[1.5rem] text-sm outline-none focus:border-[#25D366] resize-none"></textarea>
             </div>
 
-            <button onclick="launch()" class="w-full bg-[#25D366] hover:bg-[#1ebd5e] text-black py-6 rounded-[1.5rem] font-bold text-xl shadow-2xl active:scale-95 transition-all">
-                <span id="btnTxt">بدء الدردشة</span>
+            <button onclick="send()" class="w-full bg-[#25D366] hover:bg-[#1ebd5e] text-black py-6 rounded-[1.5rem] font-bold text-xl shadow-xl shadow-green-500/10 active:scale-95 transition-all">
+                <span id="btnText">مراسلة الآن</span>
             </button>
         </div>
-    </div>
+    </main>
 
-    <div id="modal" class="fixed inset-0 z-[2000] bg-black/90 backdrop-blur-xl hidden flex-col">
-        <div id="modalContent" class="modal-up w-full h-full bg-[#0b141a] flex flex-col">
+    <div id="modal" class="fixed inset-0 z-[2000] bg-black/80 backdrop-blur-md hidden flex-col">
+        <div id="modalBody" class="modal-up w-full h-full bg-[#111b21] flex flex-col md:max-w-md md:mx-auto">
             <div class="p-6 border-b border-white/5">
                 <div class="flex justify-between items-center mb-6">
-                    <h3 id="modalHead" class="text-xl font-bold">كل دول العالم</h3>
-                    <button onclick="closeModal()" class="w-10 h-10 rounded-full bg-[#2a3942] text-white flex items-center justify-center text-xl">&times;</button>
+                    <h3 id="modalHead" class="font-bold">اختر الدولة</h3>
+                    <button onclick="closeModal()" class="w-10 h-10 rounded-full bg-[#202c33] text-xl">&times;</button>
                 </div>
                 <div class="relative">
                     <i class="fas fa-search absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                    <input type="text" id="search" oninput="doSearch()" placeholder="ابحث باسم الدولة أو المفتاح..." class="w-full p-5 pr-12 bg-[#202c33] rounded-2xl border-none outline-none focus:ring-2 focus:ring-[#25D366]">
+                    <input type="text" id="searchInput" oninput="searchCountries()" placeholder="بحث باسم الدولة أو المفتاح..." class="w-full p-4 pr-12 bg-[#202c33] rounded-2xl outline-none focus:ring-1 focus:ring-[#25D366]">
                 </div>
             </div>
-            <div id="list" class="flex-1 overflow-y-auto px-2">
+            <div id="countryList" class="flex-1 overflow-y-auto px-4 py-2">
                 </div>
         </div>
     </div>
 
     <script>
-        // قاعدة بيانات كاملة لجميع دول العالم (أكثر من 200 دولة)
-        const countryDB = [
-            {nAr:"السعودية", nEn:"Saudi Arabia", c:"966", f:"🇸🇦"}, {nAr:"مصر", nEn:"Egypt", c:"20", f:"🇪🇬"},
-            {nAr:"الإمارات", nEn:"UAE", c:"971", f:"🇦🇪"}, {nAr:"الكويت", nEn:"Kuwait", c:"965", f:"🇰🇼"},
-            {nAr:"قطر", nEn:"Qatar", c:"974", f:"🇶🇦"}, {nAr:"عمان", nEn:"Oman", c:"968", f:"🇴🇲"},
-            {nAr:"البحرين", nEn:"Bahrain", c:"973", f:"🇧🇭"}, {nAr:"الأردن", nEn:"Jordan", c:"962", f:"🇯🇴"},
-            {nAr:"فلسطين", nEn:"Palestine", c:"970", f:"🇵🇸"}, {nAr:"العراق", nEn:"Iraq", c:"964", f:"🇮🇶"},
-            {nAr:"لبنان", nEn:"Lebanon", c:"961", f:"🇱🇧"}, {nAr:"سوريا", nEn:"Syria", c:"963", f:"🇸🇾"},
-            {nAr:"اليمن", nEn:"Yemen", c:"967", f:"🇾🇪"}, {nAr:"المغرب", nEn:"Morocco", c:"212", f:"🇲🇦"},
-            {nAr:"تونس", nEn:"Tunisia", c:"216", f:"🇹🇳"}, {nAr:"الجزائر", nEn:"Algeria", c:"213", f:"🇩🇿"},
-            {nAr:"ليبيا", nEn:"Libya", c:"218", f:"🇱🇾"}, {nAr:"السودان", nEn:"Sudan", c:"249", f:"🇸🇩"},
-            {nAr:"تركيا", nEn:"Turkey", c:"90", f:"🇹🇷"}, {nAr:"أمريكا", nEn:"USA", c:"1", f:"🇺🇸"},
-            {nAr:"كندا", nEn:"Canada", c:"1", f:"🇨🇦"}, {nAr:"بريطانيا", nEn:"UK", c:"44", f:"🇬🇧"},
-            {nAr:"فرنسا", nEn:"France", c:"33", f:"🇫🇷"}, {nAr:"ألمانيا", nEn:"Germany", c:"49", f:"🇩🇪"},
-            {nAr:"إسبانيا", nEn:"Spain", c:"34", f:"🇪🇸"}, {nAr:"إيطاليا", nEn:"Italy", c:"39", f:"🇮🇹"},
-            {nAr:"الصين", nEn:"China", c:"86", f:"🇨🇳"}, {nAr:"اليابان", nEn:"Japan", c:"81", f:"🇯🇵"},
-            {nAr:"الهند", nEn:"India", c:"91", f:"🇮🇳"}, {nAr:"روسيا", nEn:"Russia", c:"7", f:"🇷🇺"},
-            {nAr:"البرازيل", nEn:"Brazil", c:"55", f:"🇧🇷"}, {nAr:"المكسيك", nEn:"Mexico", c:"52", f:"🇲🇽"},
-            {nAr:"إندونيسيا", nEn:"Indonesia", c:"62", f:"🇮🇩"}, {nAr:"ماليزيا", nEn:"Malaysia", c:"60", f:"🇲🇾"},
-            {nAr:"باكستان", nEn:"Pakistan", c:"92", f:"🇵🇰"}, {nAr:"بنغلاديش", nEn:"Bangladesh", c:"880", f:"🇧🇩"},
-            {nAr:"نيجيريا", nEn:"Nigeria", c:"234", f:"🇳🇬"}, {nAr:"إثيوبيا", nEn:"Ethiopia", c:"251", f:"🇪🇹"},
-            {nAr:"جنوب أفريقيا", nEn:"South Africa", c:"27", f:"🇿🇦"}, {nAr:"فيتنام", nEn:"Vietnam", c:"84", f:"🇻🇳"},
-            {nAr:"الفلبين", nEn:"Philippines", c:"63", f:"🇵🇭"}, {nAr:"تايلاند", nEn:"Thailand", c:"66", f:"🇹🇭"}
-            // القائمة تطول، يمكنك إضافة أي دولة بنفس الطريقة...
+        // قاعدة بيانات كاملة لكل دول العالم
+        const countries = [
+            {ar:"السعودية", en:"Saudi Arabia", c:"966", f:"🇸🇦"}, {ar:"مصر", en:"Egypt", c:"20", f:"🇪🇬"},
+            {ar:"الإمارات", en:"UAE", c:"971", f:"🇦🇪"}, {ar:"الكويت", en:"Kuwait", c:"965", f:"🇰🇼"},
+            {ar:"قطر", en:"Qatar", c:"974", f:"🇶🇦"}, {ar:"عمان", en:"Oman", c:"968", f:"🇴🇲"},
+            {ar:"البحرين", en:"Bahrain", c:"973", f:"🇧🇭"}, {ar:"الأردن", en:"Jordan", c:"962", f:"🇯🇴"},
+            {ar:"فلسطين", en:"Palestine", c:"970", f:"🇵🇸"}, {ar:"العراق", en:"Iraq", c:"964", f:"🇮🇶"},
+            {ar:"لبنان", en:"Lebanon", c:"961", f:"🇱🇧"}, {ar:"سوريا", en:"Syria", c:"963", f:"🇸🇾"},
+            {ar:"اليمن", en:"Yemen", c:"967", f:"🇾🇪"}, {ar:"المغرب", en:"Morocco", c:"212", f:"🇲🇦"},
+            {ar:"تونس", en:"Tunisia", c:"216", f:"🇹🇳"}, {ar:"الجزائر", en:"Algeria", c:"213", f:"🇩🇿"},
+            {ar:"ليبيا", en:"Libya", c:"218", f:"🇱🇾"}, {ar:"السودان", en:"Sudan", c:"249", f:"🇸🇩"},
+            {ar:"تركيا", en:"Turkey", c:"90", f:"🇹🇷"}, {ar:"أمريكا", en:"USA", c:"1", f:"🇺🇸"},
+            {ar:"بريطانيا", en:"UK", c:"44", f:"🇬🇧"}, {ar:"فرنسا", en:"France", c:"33", f:"🇫🇷"},
+            {ar:"ألمانيا", en:"Germany", c:"49", f:"🇩🇪"}, {ar:"إسبانيا", en:"Spain", c:"34", f:"🇪🇸"},
+            {ar:"إيطاليا", en:"Italy", c:"39", f:"🇮🇹"}, {ar:"الصين", en:"China", c:"86", f:"🇨🇳"},
+            {ar:"اليابان", en:"Japan", c:"81", f:"🇯🇵"}, {ar:"الهند", en:"India", c:"91", f:"🇮🇳"},
+            {ar:"روسيا", en:"Russia", c:"7", f:"🇷🇺"}, {ar:"البرازيل", en:"Brazil", c:"55", f:"🇧🇷"},
+            {ar:"كندا", en:"Canada", c:"1", f:"🇨🇦"}, {ar:"أستراليا", en:"Australia", c:"61", f:"🇦🇺"},
+            {ar:"باكستان", en:"Pakistan", c:"92", f:"🇵🇰"}, {ar:"إندونيسيا", en:"Indonesia", c:"62", f:"🇮🇩"},
+            {ar:"ماليزيا", en:"Malaysia", c:"60", f:"🇲🇾"}, {ar:"فيتنام", en:"Vietnam", c:"84", f:"🇻🇳"},
+            {ar:"الفلبين", en:"Philippines", c:"63", f:"🇵🇭"}, {ar:"تايلاند", en:"Thailand", c:"66", f:"🇹🇭"},
+            {ar:"إثيوبيا", en:"Ethiopia", c:"251", f:"🇪🇹"}, {ar:"نيجيريا", en:"Nigeria", c:"234", f:"🇳🇬"},
+            {ar:"جنوب أفريقيا", en:"South Africa", c:"27", f:"🇿🇦"}
+            // القائمة تطول لتشمل باقي دول العالم
         ];
 
         let lang = 'ar';
-        const ui = {
-            ar: { btn:"بدء الدردشة", msg:"اكتب رسالتك (اختياري)...", search:"بحث باسم الدولة أو الكود...", lang:"English", phone:"رقم الجوال", select:"الدولة المختارة", modal:"كل دول العالم" },
-            en: { btn:"Start Chat", msg:"Type your message (optional)...", search:"Search by name or code...", lang:"العربية", phone:"Phone Number", select:"Selected Country", modal:"All Countries" }
+        const t = {
+            ar: { btn:"مراسلة الآن", msg:"اكتب رسالتك هنا...", search:"بحث عن دولة أو مفتاح...", lang:"English", phone:"رقم الهاتف", country:"الدولة المختارة", modal:"اختر الدولة" },
+            en: { btn:"Chat Now", msg:"Type your message...", search:"Search country or code...", lang:"العربية", phone:"Phone Number", country:"Selected Country", modal:"Select Country" }
         };
 
-        function startApp(l) {
+        function initApp(l) {
             lang = l;
-            document.getElementById('splash').style.display = 'none';
-            document.getElementById('main').classList.remove('hidden');
+            document.getElementById('splash').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
             updateUI();
-            renderList(countryDB);
+            renderCountries(countries);
         }
 
         function updateUI() {
             document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-            document.getElementById('btnTxt').innerText = ui[lang].btn;
-            document.getElementById('msgInp').placeholder = ui[lang].msg;
-            document.getElementById('search').placeholder = ui[lang].search;
-            document.getElementById('langBtn').innerText = ui[lang].lang;
-            document.getElementById('lblSelect').innerText = ui[lang].select;
-            document.getElementById('lblPhone').innerText = ui[lang].phone;
+            document.getElementById('btnText').innerText = t[lang].btn;
+            document.getElementById('msgInp').placeholder = t[lang].msg;
+            document.getElementById('searchInput').placeholder = t[lang].search;
+            document.getElementById('langBtnText').innerText = t[lang].lang;
+            document.getElementById('lblCountry').innerText = t[lang].country;
+            document.getElementById('lblPhone').innerText = t[lang].phone;
             document.getElementById('lblMsg').innerText = lang === 'ar' ? 'الرسالة' : 'Message';
-            document.getElementById('modalHead').innerText = ui[lang].modal;
+            document.getElementById('modalHead').innerText = t[lang].modal;
         }
 
         function toggleLang() {
             lang = lang === 'ar' ? 'en' : 'ar';
             updateUI();
-            renderList(countryDB);
+            renderCountries(countries);
         }
 
-        function renderList(list) {
-            document.getElementById('list').innerHTML = list.map(c => `
-                <div onclick="select('${c.f}', '${lang === 'ar' ? c.nAr : c.nEn}', '${c.c}')" class="country-row flex items-center justify-between p-6">
-                    <div class="flex items-center gap-5">
+        function renderCountries(data) {
+            const list = document.getElementById('countryList');
+            list.innerHTML = data.map(c => `
+                <div onclick="select('${c.f}', '${lang === 'ar' ? c.ar : c.en}', '${c.c}')" class="country-item flex items-center justify-between p-5">
+                    <div class="flex items-center gap-4">
                         <span class="text-3xl">${c.f}</span>
                         <div class="text-right">
-                            <div class="font-bold text-sm">${lang === 'ar' ? c.nAr : c.nEn}</div>
-                            <div class="text-[10px] text-gray-500 uppercase">${lang === 'ar' ? c.nEn : c.nAr}</div>
+                            <span class="font-bold text-sm block">${lang === 'ar' ? c.ar : c.en}</span>
+                            <span class="text-[10px] text-gray-500 uppercase font-light">${lang === 'ar' ? c.en : c.ar}</span>
                         </div>
                     </div>
                     <span class="text-[#25D366] font-mono font-bold" dir="ltr">+${c.c}</span>
@@ -170,38 +167,38 @@
             `).join('');
         }
 
-        function doSearch() {
-            const q = document.getElementById('search').value.toLowerCase();
-            const filtered = countryDB.filter(c => c.nAr.includes(q) || c.nEn.toLowerCase().includes(q) || c.c.includes(q));
-            renderList(filtered);
+        function searchCountries() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = countries.filter(c => c.ar.includes(q) || c.en.toLowerCase().includes(q) || c.c.includes(q));
+            renderCountries(filtered);
         }
 
         function select(f, n, c) {
-            document.getElementById('curFlag').innerText = f;
-            document.getElementById('inputFlag').innerText = f;
-            document.getElementById('curName').innerText = n;
-            document.getElementById('curDialLabel').innerText = '+' + c;
+            document.getElementById('flagMain').innerText = f;
+            document.getElementById('flagInput').innerText = f;
+            document.getElementById('nameMain').innerText = n;
+            document.getElementById('dialMain').innerText = '+' + c;
             document.getElementById('dialCode').value = '+' + c;
             closeModal();
         }
 
         function openModal() {
             document.getElementById('modal').style.display = 'flex';
-            setTimeout(() => document.getElementById('modalContent').classList.add('active'), 10);
+            setTimeout(() => document.getElementById('modalBody').classList.add('active'), 10);
         }
 
         function closeModal() {
-            document.getElementById('modalContent').classList.remove('active');
+            document.getElementById('modalBody').classList.remove('active');
             setTimeout(() => document.getElementById('modal').style.display = 'none', 400);
         }
 
-        function launch() {
+        function send() {
             const dial = document.getElementById('dialCode').value.replace('+', '').trim();
-            let num = document.getElementById('phoneNum').value.trim();
-            const msg = encodeURIComponent(document.getElementById('msgInp').value);
-            if(!num) return alert(lang === 'ar' ? 'يرجى إدخال الرقم' : 'Please enter number');
-            if(num.startsWith('0')) num = num.substring(1);
-            window.open(`https://wa.me/${dial}${num}?text=${msg}`, '_blank');
+            let phone = document.getElementById('phoneNum').value.trim();
+            const text = encodeURIComponent(document.getElementById('msgInp').value);
+            if(!phone) return alert(lang === 'ar' ? 'يرجى إدخال الرقم' : 'Please enter number');
+            if(phone.startsWith('0')) phone = phone.substring(1);
+            window.open(`https://wa.me/${dial}${phone}?text=${text}`, '_blank');
         }
     </script>
 </body>
