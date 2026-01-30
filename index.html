@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مراسل واتساب السريع</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0b141a; color: #e9edef; font-family: sans-serif; }
+        .wa-green { background-color: #00a884; }
+        .wa-green:hover { background-color: #008f6f; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-md bg-[#111b21] p-8 rounded-2xl shadow-2xl border border-gray-700">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold mb-2">واتساب المباشر</h1>
+            <p class="text-gray-400 text-sm">أرسل رسالة دون الحاجة لحفظ الرقم في جوالك</p>
+        </div>
+
+        <div class="space-y-6">
+            <div>
+                <label class="block text-sm mb-2 text-gray-300">رمز الدولة</label>
+                <input type="number" id="countryCode" value="966" 
+                    class="w-full p-3 rounded-lg bg-[#2a3942] border-none focus:ring-2 focus:ring-[#00a884] outline-none text-white text-center"
+                    placeholder="مثال: 966">
+            </div>
+
+            <div>
+                <label class="block text-sm mb-2 text-gray-300">رقم الجوال</label>
+                <input type="tel" id="phoneNumber" 
+                    class="w-full p-3 rounded-lg bg-[#2a3942] border-none focus:ring-2 focus:ring-[#00a884] outline-none text-white text-center"
+                    placeholder="50XXXXXXX">
+            </div>
+
+            <div>
+                <label class="block text-sm mb-2 text-gray-300">الرسالة (اختياري)</label>
+                <textarea id="message" rows="3" 
+                    class="w-full p-3 rounded-lg bg-[#2a3942] border-none focus:ring-2 focus:ring-[#00a884] outline-none text-white"
+                    placeholder="اكتب رسالتك هنا..."></textarea>
+            </div>
+
+            <button onclick="sendToWhatsApp()" 
+                class="w-full wa-green py-3 rounded-full font-bold text-white transition-all transform active:scale-95 shadow-lg">
+                بدء المحادثة الآن
+            </button>
+        </div>
+
+        <p class="mt-8 text-center text-xs text-gray-500">
+            ملاحظة: هذا التطبيق يفتح رابط واتساب الرسمي مباشرة.
+        </p>
+    </div>
+
+    <script>
+        function sendToWhatsApp() {
+            const code = document.getElementById('countryCode').value.replace('+', '');
+            const phone = document.getElementById('phoneNumber').value.trim();
+            const msg = encodeURIComponent(document.getElementById('message').value);
+
+            if (!phone) {
+                alert("يرجى إدخال رقم الهاتف أولاً");
+                return;
+            }
+
+            // إزالة الصفر الأول من رقم الجوال إذا وجد
+            let cleanPhone = phone;
+            if (phone.startsWith('0')) {
+                cleanPhone = phone.substring(1);
+            }
+
+            const url = `https://wa.me/${code}${cleanPhone}?text=${msg}`;
+            window.open(url, '_blank');
+        }
+    </script>
+</body>
+</html>
