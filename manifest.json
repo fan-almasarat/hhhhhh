@@ -1,7 +1,7 @@
 {
-  "name": "Quick WhatsApp Direct",
+  "name": "WhatsApp Direct Pro",
   "short_name": "واتساب",
-  "start_url": ".",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0b141a",
   "theme_color": "#25D366",
@@ -9,8 +9,7 @@
     {
       "src": "https://cdn-icons-png.flaticon.com/512/3670/3670051.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
+      "type": "image/png"
     }
   ]
 }
