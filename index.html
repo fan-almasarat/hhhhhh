@@ -5,103 +5,149 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WhatsApp Direct Pro</title>
     <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#25D366">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
-        body { font-family: 'Tajawal', sans-serif; background-color: #0b141a; color: white; }
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); }
-        .modal-content { background: #111b21; margin: 10% auto; width: 90%; max-width: 500px; border-radius: 20px; border: 1px solid #2a3942; height: 70vh; display: flex; flex-direction: column; }
-        .country-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #2a3942; cursor: pointer; }
-        .country-item:hover { background: #2a3942; }
-        input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        body { font-family: 'Tajawal', sans-serif; background-color: #0b141a; color: white; overflow-x: hidden; }
+        .glass { background: rgba(17, 27, 33, 0.95); backdrop-filter: blur(10px); }
+        .modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.8); }
+        .language-overlay { position: fixed; inset: 0; z-index: 200; background: #0b141a; display: flex; align-items: center; justify-content: center; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
 
-    <div class="w-full max-w-md bg-[#111b21] p-6 rounded-[2rem] shadow-2xl border border-[#2a3942]">
-        <div class="text-center mb-6">
-            <h1 class="text-xl font-bold mb-1">واتساب المباشر</h1>
-            <p class="text-gray-400 text-xs">أدخل الرقم وابدأ المحادثة فوراً</p>
+    <div id="langOverlay" class="language-overlay">
+        <div class="text-center space-y-6 p-8 bg-[#111b21] rounded-[2.5rem] border border-gray-800 shadow-2xl">
+            <i class="fab fa-whatsapp text-6xl text-[#25D366] mb-4"></i>
+            <h2 class="text-xl font-bold">اختر اللغة / Choose Language</h2>
+            <div class="flex flex-col gap-4">
+                <button onclick="setInitialLang('ar')" class="bg-[#25D366] text-[#0b141a] px-12 py-3 rounded-2xl font-bold text-lg">العربية</button>
+                <button onclick="setInitialLang('en')" class="border border-[#25D366] text-[#25D366] px-12 py-3 rounded-2xl font-bold text-lg text-ltr">English</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="w-full max-w-md glass p-8 rounded-[2.5rem] shadow-2xl border border-gray-800">
+        <div class="flex justify-between items-center mb-8">
+            <button onclick="toggleLanguage()" class="text-xs bg-gray-800 px-3 py-1 rounded-full border border-gray-700">
+                <i class="fas fa-language ml-1"></i> <span id="switchLangBtn">English</span>
+            </button>
+            <div class="bg-[#25D366] p-2 rounded-xl">
+                <i class="fab fa-whatsapp text-2xl text-white"></i>
+            </div>
         </div>
 
-        <div class="space-y-4">
-            <button onclick="openModal()" class="w-full flex items-center justify-between p-4 bg-[#2a3942] rounded-2xl border border-[#374151]">
+        <div class="text-center mb-8">
+            <h1 id="mainTitle" class="text-2xl font-bold">مراسلة فورية</h1>
+            <p id="mainSubtitle" class="text-gray-400 text-sm">بدون حفظ الرقم في الأسماء</p>
+        </div>
+
+        <div class="space-y-6">
+            <button onclick="openModal()" class="w-full flex items-center justify-between p-4 bg-[#2a3942] rounded-2xl border border-gray-700 transition active:scale-95">
                 <div class="flex items-center gap-3">
-                    <span id="selectedFlag" class="text-2xl">🇸🇦</span>
-                    <span id="selectedCountryName" class="font-bold text-sm">السعودية (Saudi Arabia)</span>
+                    <span id="curFlag" class="text-2xl">🇸🇦</span>
+                    <span id="curName" class="font-bold text-sm">السعودية</span>
                 </div>
-                <i class="fas fa-chevron-down text-gray-500"></i>
+                <i class="fas fa-search text-gray-500 text-xs"></i>
             </button>
 
             <div class="flex gap-2" dir="ltr">
-                <div class="w-1/4">
-                    <input type="text" id="dialCode" value="+966" class="w-full p-4 rounded-2xl bg-[#2a3942] border border-[#374151] text-center font-bold text-white focus:ring-2 focus:ring-green-500 outline-none">
-                </div>
-                <div class="w-3/4">
-                    <input type="tel" id="phoneNumber" placeholder="50XXX..." class="w-full p-4 rounded-2xl bg-[#2a3942] border border-[#374151] font-bold text-white focus:ring-2 focus:ring-green-500 outline-none">
-                </div>
+                <input type="text" id="dialCode" value="+966" class="w-24 p-4 rounded-2xl bg-[#2a3942] border border-gray-700 text-center font-bold text-white focus:ring-2 focus:ring-green-500 outline-none">
+                <input type="tel" id="phoneNumber" placeholder="50XXXXXXXX" class="flex-1 p-4 rounded-2xl bg-[#2a3942] border border-gray-700 font-bold text-white focus:ring-2 focus:ring-green-500 outline-none">
             </div>
 
-            <textarea id="message" rows="3" class="w-full p-4 rounded-2xl bg-[#2a3942] border border-[#374151] text-right text-sm outline-none focus:ring-2 focus:ring-green-500" placeholder="اكتب رسالتك هنا (اختياري)..."></textarea>
+            <textarea id="message" rows="3" class="w-full p-4 rounded-2xl bg-[#2a3942] border border-gray-700 text-sm outline-none focus:ring-2 focus:ring-green-500" placeholder="الرسالة..."></textarea>
 
-            <button onclick="sendMessage()" class="w-full bg-[#25D366] hover:bg-[#1ebd5e] text-[#0b141a] py-4 rounded-2xl font-bold text-lg transition-transform active:scale-95 shadow-lg">
-                فتح في واتساب
+            <button onclick="send()" class="w-full bg-[#25D366] hover:bg-[#1ebd5e] text-[#0b141a] py-5 rounded-2xl font-bold text-lg shadow-xl shadow-green-900/20 active:scale-95 transition-all">
+                <span id="btnSend">ابدأ المحادثة</span>
             </button>
         </div>
     </div>
 
     <div id="countryModal" class="modal">
-        <div class="modal-content">
-            <div class="p-4 border-bottom border-[#2a3942]">
+        <div class="flex flex-col h-full max-w-md mx-auto bg-[#111b21] rounded-t-[2rem] mt-20 border-t border-gray-800">
+            <div class="p-6">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-bold">اختر الدولة</h2>
-                    <button onclick="closeModal()" class="text-gray-400 text-2xl">&times;</button>
+                    <h3 id="modalTitle" class="font-bold text-lg">اختر الدولة</h3>
+                    <button onclick="closeModal()" class="text-2xl">&times;</button>
                 </div>
-                <input type="text" id="searchCountry" onkeyup="filterCountries()" placeholder="بحث باسم الدولة (بالعربي أو الإنجليزي)..." class="w-full p-3 rounded-xl bg-[#2a3942] border border-[#374151] outline-none">
+                <input type="text" id="searchInp" onkeyup="searchCountry()" placeholder="بحث باسم الدولة أو المفتاح..." class="w-full p-4 bg-[#2a3942] rounded-xl border-none outline-none focus:ring-2 focus:ring-green-500">
             </div>
-            <div id="countryList" class="flex-1 overflow-y-auto">
-                </div>
+            <div id="list" class="flex-1 overflow-y-auto p-4 no-scrollbar"></div>
         </div>
     </div>
 
     <script>
-        // قائمة الدول (مثال مختصر - يمكنك زيادتها)
-        const countries = [
-            { nameAr: "السعودية", nameEn: "Saudi Arabia", code: "+966", flag: "🇸🇦", search: "السعودية saudi arabia 966" },
-            { nameAr: "مصر", nameEn: "Egypt", code: "+20", flag: "🇪🇬", search: "مصر egypt 20" },
-            { nameAr: "الإمارات", nameEn: "UAE", code: "+971", flag: "🇦🇪", search: "الامارات uae 971" },
-            { nameAr: "الكويت", nameEn: "Kuwait", code: "+965", flag: "🇰🇼", search: "الكويت kuwait 965" },
-            { nameAr: "الأردن", nameEn: "Jordan", code: "+962", flag: "🇯🇴", search: "الاردن jordan 962" }
-        ];
+        const translations = {
+            ar: { title: "مراسلة فورية", sub: "بدون حفظ الرقم في الأسماء", btn: "ابدأ المحادثة", switch: "English", modal: "اختر الدولة", search: "بحث باسم الدولة...", msg: "اكتب رسالتك هنا...", err: "الرقم غير صحيح" },
+            en: { title: "Direct Chat", sub: "No need to save numbers", btn: "Start Chat", switch: "العربية", modal: "Select Country", search: "Search country or code...", msg: "Type your message...", err: "Invalid number" }
+        };
 
-        function renderCountries() {
-            const list = document.getElementById('countryList');
-            list.innerHTML = countries.map(c => `
-                <div class="country-item" onclick="selectCountry('${c.nameAr}', '${c.nameEn}', '${c.code}', '${c.flag}')">
-                    <div class="flex items-center gap-3">
+        let currentLang = 'ar';
+        let countries = [];
+
+        // جلب قائمة الدول (كاملة)
+        fetch('https://restcountries.com/v3.1/all?fields=name,cca2,idd,flags')
+            .then(r => r.json())
+            .then(data => {
+                countries = data.map(c => ({
+                    name: c.name.common,
+                    code: (c.idd.root || '') + (c.idd.suffixes ? c.idd.suffixes[0] : ''),
+                    flag: c.flags.emoji || '🏳️',
+                    cca2: c.cca2
+                })).filter(c => c.code).sort((a,b) => a.name.localeCompare(b.name));
+                renderList(countries);
+            });
+
+        function setInitialLang(l) {
+            currentLang = l;
+            updateUI();
+            document.getElementById('langOverlay').style.display = 'none';
+            localStorage.setItem('prefLang', l);
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'ar' ? 'en' : 'ar';
+            updateUI();
+        }
+
+        function updateUI() {
+            const t = translations[currentLang];
+            document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+            document.getElementById('mainTitle').innerText = t.title;
+            document.getElementById('mainSubtitle').innerText = t.sub;
+            document.getElementById('btnSend').innerText = t.btn;
+            document.getElementById('switchLangBtn').innerText = t.switch;
+            document.getElementById('modalTitle').innerText = t.modal;
+            document.getElementById('searchInp').placeholder = t.search;
+            document.getElementById('message').placeholder = t.msg;
+        }
+
+        function renderList(arr) {
+            const container = document.getElementById('list');
+            container.innerHTML = arr.map(c => `
+                <div onclick="selectCountry('${c.flag}', '${c.name}', '${c.code}')" class="flex items-center justify-between p-4 border-b border-gray-800 hover:bg-[#2a3942] cursor-pointer">
+                    <div class="flex items-center gap-4">
                         <span class="text-2xl">${c.flag}</span>
-                        <div class="text-right">
-                            <p class="font-bold text-sm">${c.nameAr}</p>
-                            <p class="text-xs text-gray-400">${c.nameEn}</p>
-                        </div>
+                        <span class="text-sm font-medium">${c.name}</span>
                     </div>
                     <span class="text-green-500 font-bold" dir="ltr">${c.code}</span>
                 </div>
             `).join('');
         }
 
-        function filterCountries() {
-            const term = document.getElementById('searchCountry').value.toLowerCase();
-            const items = document.getElementsByClassName('country-item');
-            countries.forEach((c, index) => {
-                items[index].style.display = c.search.toLowerCase().includes(term) ? 'flex' : 'none';
-            });
+        function searchCountry() {
+            const term = document.getElementById('searchInp').value.toLowerCase();
+            const filtered = countries.filter(c => c.name.toLowerCase().includes(term) || c.code.includes(term));
+            renderList(filtered);
         }
 
-        function selectCountry(ar, en, code, flag) {
-            document.getElementById('selectedCountryName').innerText = `${ar} (${en})`;
-            document.getElementById('selectedFlag').innerText = flag;
+        function selectCountry(flag, name, code) {
+            document.getElementById('curFlag').innerText = flag;
+            document.getElementById('curName').innerText = name;
             document.getElementById('dialCode').value = code;
             closeModal();
         }
@@ -109,24 +155,19 @@
         function openModal() { document.getElementById('countryModal').style.display = 'block'; }
         function closeModal() { document.getElementById('countryModal').style.display = 'none'; }
 
-        function sendMessage() {
-            let code = document.getElementById('dialCode').value.replace('+', '').trim();
+        function send() {
+            let dial = document.getElementById('dialCode').value.replace('+', '').trim();
             let phone = document.getElementById('phoneNumber').value.trim();
             let msg = encodeURIComponent(document.getElementById('message').value);
-            
-            if(!phone) return alert("أدخل الرقم");
+            if(!phone) return alert(translations[currentLang].err);
             if(phone.startsWith('0')) phone = phone.substring(1);
-            
-            window.open(`https://wa.me/${code}${phone}?text=${msg}`, '_blank');
+            window.open(`https://wa.me/${dial}${phone}?text=${msg}`, '_blank');
         }
 
-        // تحديد الدولة تلقائياً حسب IP (تبسيط)
+        // الكشف التلقائي عند التشغيل
         window.onload = () => {
-            renderCountries();
-            fetch('https://ipapi.co/json/').then(res => res.json()).then(data => {
-                const found = countries.find(c => c.code.includes(data.country_calling_code));
-                if(found) selectCountry(found.nameAr, found.nameEn, found.code, found.flag);
-            });
+            const saved = localStorage.getItem('prefLang');
+            if(saved) setInitialLang(saved);
         };
     </script>
 </body>
