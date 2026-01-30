@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Ultra Pro</title>
+    <title>WhatsApp Direct - Manual Key</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@19.2.16/build/css/intlTelInput.css">
     <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@19.2.16/build/js/intlTelInput.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -11,40 +11,22 @@
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
         body { background-color: #0b141a; color: white; font-family: 'Tajawal', sans-serif; }
         
-        /* جعل العلم والمفتاح يظهران معاً بشكل أنيق */
-        .iti { width: 100%; }
-        .iti__selected-dial-code { 
-            color: #25D366; 
-            margin-right: 8px; 
-            font-weight: bold; 
-            font-family: monospace;
-        }
+        .iti { width: auto; }
         .iti__country-list { 
             background-color: #111b21 !important; 
             border: 1px solid #2a3942 !important; 
             border-radius: 20px;
-            max-width: 350px;
+            max-width: 300px;
+            z-index: 100;
         }
-        .iti__search-input {
-            background-color: #202c33 !important;
-            color: white !important;
-            border: 1px solid #3b4a54 !important;
-            padding: 12px !important;
-            text-align: inherit;
-        }
-        .iti__country { padding: 12px !important; display: flex; align-items: center; }
-        .iti__country-name { color: #e9edef !important; flex-grow: 1; }
-        .iti__dial-code { color: #25D366 !important; font-weight: bold; margin-right: 10px; }
-        
-        /* ستايل المدخلات */
-        input, textarea { 
-            background: #2a3942 !important; 
-            border: 1px solid #3b4a54 !important; 
-            color: white !important; 
-            border-radius: 18px !important; 
-        }
-        .btn-green { background: #25D366; color: black; transition: all 0.3s; }
-        .btn-green:active { transform: scale(0.95); }
+        .iti__search-input { background-color: #202c33 !important; color: white !important; border: 1px solid #3b4a54 !important; padding: 10px !important; }
+        .iti__selected-flag { background-color: transparent !important; border-radius: 15px !important; }
+
+        /* تنسيق الحقول */
+        .input-box { background: #2a3942; border: 1px solid #3b4a54; color: white; border-radius: 18px; outline: none; }
+        .input-box:focus { border-color: #25D366; }
+        .btn-green { background: #25D366; color: black; transition: 0.3s; font-weight: bold; }
+        .btn-green:active { transform: scale(0.98); }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
@@ -55,23 +37,31 @@
             <span id="lang-text">English</span>
         </button>
 
-        <div class="text-center mb-8 pt-6">
+        <div class="text-center mb-10 pt-4">
             <h2 id="title" class="text-2xl font-bold">واتساب المباشر</h2>
-            <p id="subtitle" class="text-gray-400 text-sm mt-2">ابحث عن دولتك بالعربي أو الإنجليزي</p>
+            <p id="subtitle" class="text-gray-400 text-sm mt-2">اكتب المفتاح يدوياً أو اختر الدولة</p>
         </div>
 
         <div class="space-y-6">
-            <div dir="ltr">
-                <label id="label-phone" class="block text-[11px] font-bold mb-2 text-gray-500 uppercase text-right">رقم الهاتف</label>
-                <input type="tel" id="phone" class="w-full p-5 outline-none font-bold text-lg">
+            <div class="space-y-2">
+                <label id="label-phone" class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mr-2">رقم الهاتف</label>
+                <div class="flex gap-2" dir="ltr">
+                    <div class="relative flex items-center bg-[#2a3942] border border-[#3b4a54] rounded-[18px] px-3 w-32">
+                        <input type="text" id="flag-trigger" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                        <div id="selected-flag-icon" class="mr-1"></div>
+                        <span class="text-[#25D366] font-bold mr-1">+</span>
+                        <input type="number" id="manual-code" value="966" class="bg-transparent w-full text-white font-bold outline-none no-spinner text-center">
+                    </div>
+                    <input type="number" id="phone-main" placeholder="50xxxxxxx" class="input-box flex-1 p-5 font-bold text-lg">
+                </div>
             </div>
 
             <div class="text-right">
-                <label id="label-msg" class="block text-[11px] font-bold mb-2 text-gray-500 uppercase">الرسالة (اختياري)</label>
-                <textarea id="message" rows="3" class="w-full p-5 outline-none text-sm resize-none" placeholder="اكتب رسالتك هنا..."></textarea>
+                <label id="label-msg" class="block text-[11px] font-bold mb-2 text-gray-500 uppercase mr-2">الرسالة (اختياري)</label>
+                <textarea id="message" rows="3" class="input-box w-full p-5 text-sm resize-none" placeholder="اكتب رسالتك هنا..."></textarea>
             </div>
 
-            <button onclick="sendWhatsApp()" class="w-full btn-green py-5 rounded-2xl font-bold text-xl">
+            <button onclick="sendWhatsApp()" class="w-full btn-green py-5 rounded-2xl text-xl shadow-lg">
                 <span id="btn-text">إرسال الآن</span>
             </button>
         </div>
@@ -79,35 +69,56 @@
 
     <script>
         let currentLang = 'ar';
-        const phoneInputTag = document.querySelector("#phone");
+        const flagTrigger = document.querySelector("#flag-trigger");
+        const manualCodeInput = document.querySelector("#manual-code");
+        const phoneInput = document.querySelector("#phone-main");
 
-        // خارطة الدول العربية للبحث
-        const arabicCountries = {
-            "sa": "السعودية", "eg": "مصر", "ae": "الإمارات", "sd": "السودان", 
-            "kw": "الكويت", "qa": "قطر", "om": "عمان", "bh": "البحرين", 
-            "jo": "الأردن", "ps": "فلسطين", "iq": "العراق", "lb": "لبنان", 
-            "sy": "سوريا", "ma": "المغرب", "dz": "الجزائر", "tn": "تونس", 
-            "ly": "ليبيا", "ye": "اليمن", "tr": "تركيا", "us": "أمريكا", "uk": "بريطانيا"
-        };
+        const arabicCountries = { "sa": "السعودية", "eg": "مصر", "ae": "الإمارات", "sd": "السودان", "kw": "الكويت", "qa": "قطر", "jo": "الأردن", "ps": "فلسطين", "iq": "العراق", "ye": "اليمن" };
 
-        const iti = window.intlTelInput(phoneInputTag, {
+        // تهيئة المكتبة على الحقل المخفي فقط لتوفير القائمة
+        const iti = window.intlTelInput(flagTrigger, {
             initialCountry: "sa",
-            separateDialCode: true, // يظهر المفتاح بجوار العلم في الحقل الرئيسي
             countrySearch: true,
             i18n: { searchPlaceholder: "بحث عن دولة...", ...arabicCountries },
             utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@19.2.16/build/js/utils.js"
         });
 
+        // تحديث المفتاح عند اختيار دولة من القائمة
+        flagTrigger.addEventListener("countrychange", function() {
+            const countryData = iti.getSelectedCountryData();
+            manualCodeInput.value = countryData.dialCode;
+            updateFlagIcon();
+        });
+
+        // تحديث العلم تلقائياً عند كتابة المفتاح يدوياً
+        manualCodeInput.addEventListener("input", function() {
+            const val = this.value;
+            // محاولة البحث عن الدولة التي تملك هذا المفتاح
+            const allCountries = iti.getCountryData();
+            const country = allCountries.find(c => c.dialCode === val);
+            if (country) {
+                iti.setCountry(country.iso2);
+                updateFlagIcon();
+            }
+        });
+
+        function updateFlagIcon() {
+            const activeFlag = document.querySelector(".iti__flag-container .iti__selected-flag .iti__flag");
+            const iconContainer = document.querySelector("#selected-flag-icon");
+            if (activeFlag) {
+                iconContainer.innerHTML = activeFlag.outerHTML;
+            }
+        }
+
         const translations = {
-            ar: { title: "واتساب المباشر", subtitle: "ابحث عن دولتك بالعربي أو الإنجليزي", labelPhone: "رقم الهاتف", labelMsg: "الرسالة (اختياري)", placeholderMsg: "اكتب رسالتك هنا...", btn: "إرسال الآن", langBtn: "English" },
-            en: { title: "Direct WhatsApp", subtitle: "Search by country name or code", labelPhone: "Phone Number", labelMsg: "Message (Optional)", placeholderMsg: "Type message...", btn: "Send Now", langBtn: "العربية" }
+            ar: { title: "واتساب المباشر", subtitle: "اكتب المفتاح يدوياً أو اختر الدولة", labelPhone: "رقم الهاتف", labelMsg: "الرسالة (اختياري)", placeholderMsg: "اكتب رسالتك هنا...", btn: "إرسال الآن", langBtn: "English" },
+            en: { title: "Direct WhatsApp", subtitle: "Enter key manually or select country", labelPhone: "Phone Number", labelMsg: "Message (Optional)", placeholderMsg: "Type message...", btn: "Send Now", langBtn: "العربية" }
         };
 
         function toggleLanguage() {
             currentLang = currentLang === 'ar' ? 'en' : 'ar';
             document.getElementById('html-tag').dir = currentLang === 'ar' ? 'rtl' : 'ltr';
             const t = translations[currentLang];
-
             document.getElementById('title').innerText = t.title;
             document.getElementById('subtitle').innerText = t.subtitle;
             document.getElementById('label-phone').innerText = t.labelPhone;
@@ -115,19 +126,23 @@
             document.getElementById('message').placeholder = t.placeholderMsg;
             document.getElementById('btn-text').innerText = t.btn;
             document.getElementById('lang-text').innerText = t.langBtn;
-
-            // تحديث لغة البحث والأسماء
-            iti.setOptions({
-                i18n: currentLang === 'ar' ? { searchPlaceholder: "بحث...", ...arabicCountries } : { searchPlaceholder: "Search..." }
-            });
+            
+            iti.setOptions({ i18n: currentLang === 'ar' ? { searchPlaceholder: "بحث...", ...arabicCountries } : { searchPlaceholder: "Search..." } });
         }
 
         function sendWhatsApp() {
-            const number = iti.getNumber();
+            const code = manualCodeInput.value;
+            let phone = phoneInput.value;
             const msg = encodeURIComponent(document.getElementById('message').value);
-            if (!iti.isValidNumber()) return alert(currentLang === 'ar' ? 'الرقم غير صحيح' : 'Invalid number');
-            window.open(`https://wa.me/${number.replace('+', '')}?text=${msg}`, '_blank');
+            
+            if (!code || !phone) return alert(currentLang === 'ar' ? 'أدخل الكود والرقم' : 'Enter code and number');
+            
+            if (phone.startsWith('0')) phone = phone.substring(1);
+            window.open(`https://wa.me/${code}${phone}?text=${msg}`, '_blank');
         }
+
+        window.onload = updateFlagIcon;
     </script>
+    <style> .no-spinner::-webkit-inner-spin-button, .no-spinner::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; } </style>
 </body>
 </html>
