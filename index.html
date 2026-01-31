@@ -8,89 +8,88 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root { --brand: #00a884; --bg: #ffffff; --surface: #f0f2f5; --text: #111b21; --gray: #667781; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+        :root { --brand: #00a884; --bg: #f0f2f5; --surface: #ffffff; --text: #111b21; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
         
-        body, html { height: 100%; width: 100%; overflow: hidden; background: var(--bg); color: var(--text); }
-        .app-shell { height: 100%; display: flex; flex-direction: column; max-width: 500px; margin: 0 auto; position: relative; background: #fff; }
+        body, html { height: 100%; width: 100%; background: var(--bg); color: var(--text); overflow-x: hidden; }
+        .app-shell { display: flex; flex-direction: column; height: 100vh; max-width: 500px; margin: 0 auto; background: var(--surface); position: relative; }
 
-        header { padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; }
-        .logo-box { display: flex; align-items: center; gap: 12px; }
-        /* ربط الأيقونة المرفوعة */
-        .logo-box img { width: 40px; height: 40px; border-radius: 10px; object-fit: cover; border: 1px solid #eee; }
-        .logo-box h1 { font-size: 19px; font-weight: 800; }
+        header { padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
+        .logo-box { display: flex; align-items: center; gap: 10px; }
+        .logo-box img { width: 38px; height: 38px; border-radius: 10px; object-fit: cover; }
+        .logo-box h1 { font-size: 18px; font-weight: 800; }
 
-        main { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
-
-        /* منطقة إدخال الرقم المحسنة */
-        .phone-container { display: flex; gap: 10px; align-items: stretch; }
+        main { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
         
-        .country-selector { 
-            display: flex; align-items: center; background: var(--surface); 
-            border-radius: 15px; padding: 0 12px; border: 2px solid transparent;
-            min-width: 135px; /* توسيع الخانة لتجنب القص */
+        /* إصلاح حقل الرقم والمفتاح */
+        label { font-size: 13px; font-weight: bold; color: #667781; margin-bottom: 5px; display: block; }
+        .phone-row { display: flex; gap: 8px; width: 100%; align-items: center; }
+        
+        .code-input-wrap { 
+            display: flex; align-items: center; background: #f0f2f5; 
+            border-radius: 12px; padding: 0 8px; width: 110px; height: 55px; flex-shrink: 0;
         }
-        .country-selector:focus-within { border-color: var(--brand); background: #fff; }
-
-        /* تكبير العلم */
-        .flag-icon { 
-            width: 32px !important; height: 24px !important; 
-            border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            line-height: 24px !important;
-        }
-
-        .dial-input { 
+        .code-input-wrap input { 
             width: 100%; border: none; background: transparent; 
-            font-size: 18px; font-weight: 900; text-align: center; 
-            outline: none; color: var(--text); padding-left: 5px;
+            font-size: 16px; font-weight: bold; text-align: center; outline: none; 
+        }
+        .flag-box { width: 28px; height: 20px; display: flex; align-items: center; justify-content: center; }
+
+        .number-input-wrap { flex: 1; height: 55px; }
+        .number-input-wrap input { 
+            width: 100%; height: 100%; border: none; background: #f0f2f5; 
+            border-radius: 12px; padding: 0 15px; font-size: 18px; font-weight: bold; outline: none;
         }
 
-        .main-input { 
-            flex: 1; padding: 18px; background: var(--surface); 
-            border-radius: 15px; border: 2px solid transparent;
-            font-size: 22px; font-weight: 900; outline: none;
+        .search-wrap input, .msg-wrap textarea { 
+            width: 100%; padding: 15px; border-radius: 12px; border: none; 
+            background: #f0f2f5; font-size: 15px; outline: none;
         }
-        .main-input:focus { border-color: var(--brand); background: #fff; }
-
-        /* تنسيق البحث */
-        .search-wrap { position: relative; }
-        .search-input { width: 100%; padding: 16px; border-radius: 15px; border: none; background: var(--surface); font-size: 16px; outline: none; }
-        .results-box { 
-            position: absolute; top: 60px; left: 0; right: 0; 
-            background: #fff; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            max-height: 250px; overflow-y: auto; z-index: 1000; display: none;
-        }
-        .result-item { padding: 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #f9f9f9; }
 
         /* الأزرار */
-        .btn-action { width: 100%; padding: 20px; border-radius: 18px; border: none; font-size: 18px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn-go { background: var(--brand); color: white; margin-top: 10px; }
-        .btn-qr { background: #111b21; color: white; }
-
-        .btn-install-pulse { 
-            background: linear-gradient(45deg, #0072ff, #00c6ff); 
-            color: white; border: none; padding: 18px; border-radius: 18px;
-            font-weight: 900; margin-top: 5px; cursor: pointer; display: none;
-            animation: pulse-move 2s infinite;
+        .btn { 
+            width: 100%; padding: 16px; border-radius: 14px; border: none; 
+            font-size: 16px; font-weight: bold; cursor: pointer; 
+            display: flex; align-items: center; justify-content: center; gap: 10px;
         }
-        @keyframes pulse-move { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+        .btn-main { background: var(--brand); color: white; }
+        .btn-qr { background: #111b21; color: white; margin-top: 5px; }
+        .btn-install { 
+            background: #0072ff; color: white; margin-top: 5px; display: none;
+            animation: pulse 2s infinite; 
+        }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
 
-        footer { padding: 15px; border-top: 1px solid #eee; display: flex; justify-content: space-around; background: #fff; }
-        .nav-btn { background: none; border: none; color: var(--gray); display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1; }
-        .nav-btn.active { color: var(--brand); }
-        .nav-btn i { font-size: 22px; }
-        .nav-btn span { font-size: 11px; font-weight: bold; }
+        /* البحث والسجل */
+        .res-list { 
+            background: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
+            max-height: 200px; overflow-y: auto; display: none; margin-top: 5px;
+        }
+        .res-item { padding: 12px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px; cursor: pointer; }
 
-        .suggestions { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; scrollbar-width: none; }
-        .sug-chip { background: #e7f8ef; color: var(--brand); border: none; padding: 12px 20px; border-radius: 50px; font-size: 14px; font-weight: bold; white-space: nowrap; }
+        .sugs { display: flex; gap: 8px; overflow-x: auto; padding: 5px 0; }
+        .chip { background: #e7f8ef; color: var(--brand); padding: 8px 15px; border-radius: 20px; font-size: 12px; white-space: nowrap; border: none; font-weight: bold; }
 
-        /* مودال السجل */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: none; align-items: flex-end; }
-        .modal-body { background: #fff; width: 100%; border-radius: 30px 30px 0 0; padding: 25px; transform: translateY(100%); transition: 0.3s; }
-        .modal-body.show { transform: translateY(0); }
+        footer { padding: 10px; display: flex; border-top: 1px solid #eee; background: white; }
+        .nav-item { flex: 1; background: none; border: none; color: #667781; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; }
+        .nav-item.active { color: var(--brand); }
+        .nav-item i { font-size: 20px; }
+        .nav-item span { font-size: 10px; font-weight: bold; }
+
+        /* الكاميرا */
+        #qr-view { position: fixed; inset: 0; background: black; z-index: 9999; display: none; }
+        #video { width: 100%; height: 100%; object-fit: cover; }
+
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: flex-end; z-index: 5000; }
+        .modal-content { background: white; width: 100%; border-radius: 20px 20px 0 0; padding: 20px; }
     </style>
 </head>
-<body id="bdy">
+<body id="body-el">
+
+<div id="qr-view">
+    <button onclick="stopScan()" style="position:absolute; top:30px; left:20px; z-index:10; padding:10px 20px; background:red; color:white; border:none; border-radius:10px;">إغلاق</button>
+    <video id="video"></video>
+</div>
 
 <div class="app-shell">
     <header>
@@ -98,186 +97,193 @@
             <img src="whatsapp-icon.jpg" onerror="this.src='https://cdn-icons-png.flaticon.com/512/5968/5968841.png'">
             <h1 id="t-title">دردشة مباشرة</h1>
         </div>
-        <button class="btn-lang" onclick="toggleLang()" id="l-btn">English</button>
+        <button onclick="toggleLang()" id="lang-btn" style="background:#eee; border:none; padding:5px 12px; border-radius:15px; font-size:12px; font-weight:bold;">English</button>
     </header>
 
     <main>
         <div class="search-wrap">
             <label id="t-search">ابحث عن الدولة</label>
-            <input type="text" id="cSearch" class="search-input" placeholder="اسم الدولة أو المفتاح...">
-            <div id="cResults" class="results-box"></div>
+            <input type="text" id="countrySearch" placeholder="السعودية، مصر، 966...">
+            <div id="results" class="res-list"></div>
         </div>
 
         <div>
             <label id="t-phone">رقم الجوال</label>
-            <div class="phone-container">
-                <div class="country-selector">
-                    <span id="fIcon" class="flag-icon flag-icon-sd"></span>
-                    <span style="font-weight:900; margin:0 5px; color:var(--brand);">+</span>
-                    <input type="tel" id="dCode" class="dial-input" value="249">
+            <div class="phone-row">
+                <div class="code-input-wrap">
+                    <div class="flag-box" id="flagDiv"><span class="flag-icon flag-icon-sd"></span></div>
+                    <span style="margin: 0 2px;">+</span>
+                    <input type="tel" id="dialCode" value="249">
                 </div>
-                <input type="tel" id="pNum" class="main-input" placeholder="000 000 000">
+                <div class="number-input-wrap">
+                    <input type="tel" id="phoneNum" placeholder="500000000">
+                </div>
             </div>
         </div>
 
-        <div>
+        <div class="msg-wrap">
             <label id="t-msg">الرسالة</label>
-            <textarea id="pMsg" class="search-input" style="height:80px; resize:none;" placeholder="اكتب رسالتك..."></textarea>
-            <div class="suggestions" id="sBox"></div>
+            <textarea id="msgBody"></textarea>
+            <div class="sugs" id="sugBox"></div>
         </div>
 
-        <button class="btn-action btn-go" onclick="startChat()">
-            <span id="t-btn1">بدء المراسلة الآن</span> <i class="fas fa-paper-plane"></i>
+        <button class="btn btn-main" onclick="sendWA()">
+            <span id="t-btn1">بدء المراسلة</span> <i class="fas fa-paper-plane"></i>
         </button>
 
-        <button class="btn-action btn-qr" onclick="startScan()">
-            <i class="fas fa-qrcode"></i> <span id="t-btn2">مسح باركود واتساب</span>
+        <button class="btn btn-qr" onclick="startScan()">
+            <i class="fas fa-qrcode"></i> <span id="t-btn2">مسح باركود</span>
         </button>
 
-        <button id="installBtn" class="btn-install-pulse">
-            <i class="fas fa-download"></i> <span id="t-install">تثبيت التطبيق على الهاتف</span>
+        <button id="pwaBtn" class="btn btn-install" onclick="installApp()">
+            <i class="fas fa-download"></i> <span id="t-btn3">تثبيت التطبيق</span>
         </button>
     </main>
 
-    <footer>
-        <button class="nav-btn active" onclick="location.reload()"><i class="fas fa-home"></i><span id="n1">الرئيسية</span></button>
-        <button class="nav-btn" onclick="showH()"><i class="fas fa-history"></i><span id="n2">السجل</span></button>
-        <a href="https://linktr.ee/abdul3ziz95" class="nav-btn" style="text-decoration:none;"><i class="fas fa-headset"></i><span id="n3">الدعم</span></a>
-        <button class="nav-btn" onclick="shareApp()"><i class="fas fa-share-nodes"></i><span id="n4">مشاركة</span></button>
-    </footer>
-</div>
-
-<div id="hModal" class="modal" onclick="hideH()">
-    <div class="modal-body" id="mBody" onclick="event.stopPropagation()">
-        <div style="width:50px; height:6px; background:#eee; margin:0 auto 20px; border-radius:10px;"></div>
-        <h2 id="t-htitle" style="text-align:center; margin-bottom:20px;">آخر المراسلات</h2>
-        <div id="hContent" style="max-height:300px; overflow-y:auto;"></div>
-        <button onclick="hideH()" style="width:100%; padding:15px; margin-top:20px; border:none; border-radius:15px; font-weight:bold;">إغلاق</button>
+    <div id="hModal" class="modal" onclick="closeH()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 id="t-h" style="margin-bottom:15px;">السجل</h3>
+            <div id="hItems"></div>
+            <button onclick="closeH()" style="width:100%; padding:12px; margin-top:15px; border:none; border-radius:10px;">إغلاق</button>
+        </div>
     </div>
+
+    <footer>
+        <button class="nav-item active" onclick="location.reload()"><i class="fas fa-home"></i><span id="n1">الرئيسية</span></button>
+        <button class="nav-item" onclick="openH()"><i class="fas fa-history"></i><span id="n2">السجل</span></button>
+        <a href="https://linktr.ee/abdul3ziz95" class="nav-item" style="text-decoration:none;"><i class="fas fa-headset"></i><span id="n3">الدعم</span></a>
+        <button class="nav-item" onclick="shareApp()"><i class="fas fa-share-nodes"></i><span id="n4">مشاركة</span></button>
+    </footer>
 </div>
 
 <script src="https://unpkg.com/@zxing/library@latest"></script>
 <script>
     let countries = [];
-    let lang = 'ar';
+    let curLang = 'ar';
+    const codeReader = new ZXing.BrowserMultiFormatReader();
 
-    async function init() {
-        const res = await fetch('https://restcountries.com/v3.1/all?fields=name,idd,cca2,translations');
-        const data = await res.json();
-        countries = data.map(c => ({
+    async function start() {
+        const r = await fetch('https://restcountries.com/v3.1/all?fields=name,idd,cca2,translations');
+        const d = await r.json();
+        countries = d.map(c => ({
             ar: c.translations.ara ? c.translations.ara.common : c.name.common,
             en: c.name.common,
             code: c.idd.root + (c.idd.suffixes ? c.idd.suffixes[0] : ""),
             flag: c.cca2.toLowerCase()
         })).sort((a,b) => a.ar.localeCompare(b.ar));
-
-        try {
-            const geo = await fetch('https://ipapi.co/json/').then(r => r.json());
-            const found = countries.find(c => c.flag === geo.country.toLowerCase());
-            if(found) setC(found);
-        } catch(e) {}
         
-        updateUI(); // لتشغيل الرسائل المقترحة فوراً
+        // ربط العلم بالكتابة اليدوية
+        document.getElementById('dialCode').oninput = (e) => {
+            const val = e.target.value.replace('+', '');
+            const found = countries.find(c => c.code.replace('+', '') === val);
+            if(found) document.getElementById('flagDiv').innerHTML = `<span class="flag-icon flag-icon-${found.flag}"></span>`;
+        };
+
+        updateUI();
     }
 
-    document.getElementById('cSearch').oninput = (e) => {
+    document.getElementById('countrySearch').oninput = (e) => {
         const v = e.target.value.toLowerCase();
-        const box = document.getElementById('cResults');
-        box.innerHTML = '';
-        if(!v) { box.style.display='none'; return; }
-        const fil = countries.filter(c => c.ar.includes(v) || c.en.toLowerCase().includes(v) || c.code.includes(v));
-        if(fil.length > 0) {
-            box.style.display='block';
-            fil.forEach(c => {
-                const d = document.createElement('div');
-                d.className = 'result-item';
-                d.innerHTML = `<span class="flag-icon flag-icon-${c.flag}"></span> ${lang=='ar'?c.ar:c.en} (+${c.code.replace('+','')})`;
-                d.onclick = () => { setC(c); box.style.display='none'; document.getElementById('cSearch').value=''; };
-                box.appendChild(d);
+        const res = document.getElementById('results');
+        res.innerHTML = '';
+        if(!v) { res.style.display='none'; return; }
+        const filtered = countries.filter(c => c.ar.includes(v) || c.en.toLowerCase().includes(v) || c.code.includes(v));
+        if(filtered.length > 0) {
+            res.style.display='block';
+            filtered.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'res-item';
+                div.innerHTML = `<span class="flag-icon flag-icon-${c.flag}"></span> ${curLang=='ar'?c.ar:c.en} (${c.code})`;
+                div.onclick = () => { 
+                    document.getElementById('dialCode').value = c.code.replace('+','');
+                    document.getElementById('flagDiv').innerHTML = `<span class="flag-icon flag-icon-${c.flag}"></span>`;
+                    res.style.display='none';
+                };
+                res.appendChild(div);
             });
         }
     };
 
-    function setC(c) {
-        document.getElementById('dCode').value = c.code.replace('+','');
-        document.getElementById('fIcon').className = `flag-icon flag-icon-${c.flag}`;
-    }
-
     function toggleLang() {
-        lang = lang === 'ar' ? 'en' : 'ar';
-        document.getElementById('bdy').dir = lang === 'ar' ? 'rtl' : 'ltr';
+        curLang = curLang === 'ar' ? 'en' : 'ar';
+        document.getElementById('body-el').dir = curLang === 'ar' ? 'rtl' : 'ltr';
         updateUI();
     }
 
     function updateUI() {
-        const dictionary = {
-            ar: ["دردشة مباشرة", "ابحث عن الدولة", "رقم الجوال", "الرسالة", "بدء المراسلة الآن", "مسح باركود واتساب", "آخر المراسلات", "الرئيسية", "السجل", "الدعم", "مشاركة", "English", "تثبيت التطبيق على الهاتف", "السلام عليكم"],
-            en: ["Direct Chat", "Search Country", "Phone Number", "Message", "Start Messaging Now", "Scan QR Code", "Recent History", "Home", "History", "Support", "Share", "العربية", "Install App", "Hello!"]
+        const ui = {
+            ar: ["دردشة مباشرة", "ابحث عن الدولة", "رقم الجوال", "الرسالة", "بدء المراسلة", "مسح باركود", "تثبيت التطبيق", "الرئيسية", "السجل", "الدعم", "مشاركة", "English", "السلام عليكم", "السجل الأخير"],
+            en: ["Direct Chat", "Search Country", "Phone Number", "Message", "Start Chat", "Scan QR", "Install App", "Home", "History", "Support", "Share", "العربية", "Hello", "Recent History"]
         };
-        const L = dictionary[lang];
+        const L = ui[curLang];
         document.getElementById('t-title').innerText = L[0];
         document.getElementById('t-search').innerText = L[1];
         document.getElementById('t-phone').innerText = L[2];
         document.getElementById('t-msg').innerText = L[3];
         document.getElementById('t-btn1').innerText = L[4];
         document.getElementById('t-btn2').innerText = L[5];
-        document.getElementById('t-htitle').innerText = L[6];
+        document.getElementById('t-btn3').innerText = L[6];
         document.getElementById('n1').innerText = L[7];
         document.getElementById('n2').innerText = L[8];
         document.getElementById('n3').innerText = L[9];
         document.getElementById('n4').innerText = L[10];
-        document.getElementById('l-btn').innerText = L[11];
-        document.getElementById('t-install').innerText = L[12];
-        document.getElementById('pMsg').value = L[13];
-        
-        const sugs = lang === 'ar' ? ["السلام عليكم", "بكم السعر؟", "أرسل الموقع"] : ["Hi!", "Price?", "Location"];
-        const sBox = document.getElementById('sBox');
+        document.getElementById('lang-btn').innerText = L[11];
+        document.getElementById('msgBody').value = L[12];
+        document.getElementById('t-h').innerText = L[13];
+
+        const sBox = document.getElementById('sugBox');
         sBox.innerHTML = '';
-        sugs.forEach(s => {
-            const ch = document.createElement('button'); ch.className='sug-chip'; ch.innerText=s;
-            ch.onclick = () => document.getElementById('pMsg').value = s;
-            sBox.appendChild(ch);
+        const s = curLang === 'ar' ? ["السلام عليكم", "بكم السعر؟", "الموقع لو سمحت"] : ["Hi", "Price?", "Location please"];
+        s.forEach(txt => {
+            const b = document.createElement('button'); b.className='chip'; b.innerText=txt;
+            b.onclick = () => document.getElementById('msgBody').value = txt;
+            sBox.appendChild(b);
         });
     }
 
-    function startChat() {
-        const c = document.getElementById('dCode').value.replace(/\D/g,'');
-        const n = document.getElementById('pNum').value.replace(/\D/g,'');
-        const m = encodeURIComponent(document.getElementById('pMsg').value);
+    function sendWA() {
+        const c = document.getElementById('dialCode').value.replace(/\D/g,'');
+        const n = document.getElementById('phoneNum').value.replace(/\D/g,'');
         if(n.length > 5) {
             const full = c + n;
-            let h = JSON.parse(localStorage.getItem('zh_v7') || '[]');
-            if(!h.includes(full)) { h.unshift(full); localStorage.setItem('zh_v7', JSON.stringify(h.slice(0,10))); }
-            window.location.href = `https://wa.me/${full}?text=${m}`;
+            let h = JSON.parse(localStorage.getItem('h_v8') || '[]');
+            if(!h.includes(full)) { h.unshift(full); localStorage.setItem('h_v8', JSON.stringify(h.slice(0,10))); }
+            window.location.href = `https://wa.me/${full}?text=${encodeURIComponent(document.getElementById('msgBody').value)}`;
         }
     }
 
-    function showH() {
-        const cont = document.getElementById('hContent'); cont.innerHTML = '';
-        const h = JSON.parse(localStorage.getItem('zh_v7') || '[]');
+    function startScan() {
+        document.getElementById('qr-view').style.display='block';
+        codeReader.decodeFromVideoDevice(null, 'video', (res) => {
+            if(res) {
+                stopScan();
+                const text = res.text;
+                if(text.includes('wa.me/')) { window.location.href = text; }
+                else { document.getElementById('phoneNum').value = text.replace(/\D/g,''); }
+            }
+        });
+    }
+    function stopScan() { codeReader.reset(); document.getElementById('qr-view').style.display='none'; }
+
+    function openH() {
+        const list = document.getElementById('hItems'); list.innerHTML = '';
+        const h = JSON.parse(localStorage.getItem('h_v8') || '[]');
         h.forEach(num => {
-            const r = document.createElement('div'); r.className='result-item';
-            r.innerHTML = `<b>+${num}</b> <i class="fab fa-whatsapp" style="color:#25d366; margin-right:auto;"></i>`;
-            r.onclick = () => { document.getElementById('pNum').value = num; hideH(); };
-            cont.appendChild(r);
+            const d = document.createElement('div'); d.className='res-item';
+            d.innerHTML = `<b>+${num}</b>`;
+            d.onclick = () => { document.getElementById('phoneNum').value = num; closeH(); };
+            list.appendChild(d);
         });
         document.getElementById('hModal').style.display='flex';
-        setTimeout(()=>document.getElementById('mBody').classList.add('show'), 10);
     }
-    function hideH() { 
-        document.getElementById('mBody').classList.remove('show');
-        setTimeout(()=>document.getElementById('hModal').style.display='none', 300);
-    }
+    function closeH() { document.getElementById('hModal').style.display='none'; }
 
-    let defP;
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault(); defP = e;
-        document.getElementById('installBtn').style.display = 'block';
-    });
-    document.getElementById('installBtn').onclick = () => { if(defP) defP.prompt(); };
+    let promptEvt;
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); promptEvt = e; document.getElementById('pwaBtn').style.display='flex'; });
+    function installApp() { if(promptEvt) promptEvt.prompt(); }
 
-    function shareApp() { navigator.share({title: 'دردشة مباشرة', url: location.href}); }
-    window.onload = init;
+    function shareApp() { navigator.share({title:'دردشة مباشرة', url:location.href}); }
+    window.onload = start;
 </script>
 </body>
 </html>
