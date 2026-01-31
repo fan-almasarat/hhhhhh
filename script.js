@@ -1,102 +1,80 @@
-const DATA = [
-    { n: 'السودان', c: '249', i: 'sd' },
-    { n: 'السعودية', c: '966', i: 'sa' },
-    { n: 'الإمارات', c: '971', i: 'ae' },
-    { n: 'مصر', c: '20', i: 'eg' },
-    { n: 'الكويت', c: '965', i: 'kw' },
-    { n: 'قطر', c: '974', i: 'qa' },
-    { n: 'عُمان', c: '968', i: 'om' },
-    { n: 'الأردن', c: '962', i: 'jo' },
-    { n: 'المغرب', c: '212', i: 'ma' },
-    { n: 'الجزائر', c: '213', i: 'dz' },
-    { n: 'تونس', c: '216', i: 'tn' },
-    { n: 'البحرين', c: '973', i: 'bh' },
-    { n: 'العراق', c: '964', i: 'iq' },
-    { n: 'تركيا', c: '90', i: 'tr' },
-    { n: 'بريطانيا', c: '44', i: 'gb' },
-    { n: 'أمريكا', c: '1', i: 'us' }
+// قائمة الدول كاملة مأخوذة من بياناتك الأصلية
+const COUNTRY_DATA = [
+    { name: 'السودان', code: '249', iso: 'sd' },
+    { name: 'السعودية', code: '966', iso: 'sa' },
+    { name: 'الإمارات', code: '971', iso: 'ae' },
+    { name: 'مصر', code: '20', iso: 'eg' },
+    { name: 'الكويت', code: '965', iso: 'kw' },
+    { name: 'قطر', code: '974', iso: 'qa' },
+    { name: 'عُمان', code: '968', iso: 'om' },
+    { name: 'الأردن', code: '962', iso: 'jo' },
+    { name: 'فلسطين', code: '970', iso: 'ps' },
+    { name: 'المغرب', code: '212', iso: 'ma' },
+    { name: 'الجزائر', code: '213', iso: 'dz' },
+    { name: 'تونس', code: '216', iso: 'tn' },
+    { name: 'ليبيا', code: '218', iso: 'ly' },
+    { name: 'العراق', code: '964', iso: 'iq' },
+    { name: 'لبنان', code: '961', iso: 'lb' },
+    { name: 'اليمن', code: '967', iso: 'ye' },
+    { name: 'تركيا', code: '90', iso: 'tr' },
+    { name: 'أمريكا', code: '1', iso: 'us' },
+    { name: 'بريطانيا', code: '44', iso: 'gb' }
 ];
 
-const countrySearch = document.getElementById('countrySearch');
-const countryCodeInput = document.getElementById('countryCode');
-const flagIcon = document.getElementById('flagIcon');
-const phoneNumber = document.getElementById('phoneNumber');
-const historyList = document.getElementById('recentHistory');
-
-// تهيئة القائمة المنسدلة
-function init() {
-    const list = document.getElementById('countries-list');
-    DATA.forEach(item => {
-        let opt = document.createElement('option');
-        opt.value = `${item.n} (+${item.c})`;
-        list.appendChild(opt);
-    });
-    renderHistory();
-}
-
-// عند كتابة كود الدولة يدوياً
+// وظيفة عند كتابة المفتاح يدوياً: تغير العلم والبحث فوراً
 function onCodeInput(val) {
     const cleanCode = val.replace('+', '').trim();
-    const found = DATA.find(item => item.c === cleanCode);
+    const found = COUNTRY_DATA.find(c => c.code === cleanCode);
+    const flagIcon = document.getElementById('flagIcon');
+    const countrySearch = document.getElementById('countrySearch');
+
     if (found) {
-        flagIcon.className = `flag-icon flag-icon-${found.i}`;
-        countrySearch.value = `${found.n} (+${found.c})`;
+        flagIcon.className = `flag-icon flag-icon-${found.iso}`;
+        countrySearch.value = `${found.name} (+${found.code})`;
     } else {
-        flagIcon.className = `fas fa-question-circle`; // علم غير معروف
+        flagIcon.className = 'fas fa-globe'; // أيقونة افتراضية في حال لم يجد الدولة
     }
 }
 
-// عند اختيار دولة من القائمة
+// وظيفة عند اختيار دولة من القائمة: تغير المفتاح والعلم
 function onCountrySelect(val) {
-    const found = DATA.find(item => `${item.n} (+${item.c})` === val);
+    const found = COUNTRY_DATA.find(c => `${c.name} (+${c.code})` === val);
     if (found) {
-        countryCodeInput.value = found.c;
-        flagIcon.className = `flag-icon flag-icon-${found.i}`;
+        document.getElementById('countryCode').value = found.code;
+        document.getElementById('flagIcon').className = `flag-icon flag-icon-${found.iso}`;
     }
 }
 
+// فتح واتساب مع تنظيف الرقم
 function openWhatsApp() {
-    const code = countryCodeInput.value.replace('+', '');
-    const num = phoneNumber.value.trim().replace(/^0+/, ''); // حذف الأصفار في بداية الرقم
+    const code = document.getElementById('countryCode').value.replace('+', '').trim();
+    let num = document.getElementById('phoneInput').value.trim();
 
     if (!code || num.length < 5) {
-        alert("يرجى التأكد من الكود والرقم");
+        alert("يرجى التأكد من كود الدولة ورقم الهاتف");
         return;
     }
 
-    const fullNum = code + num;
-    addToHistory(fullNum);
-    window.open(`https://wa.me/${fullNum}`, '_blank');
+    // إزالة الصفر الأول من الرقم المحلي إذا وجد (مثلاً 055 يصبح 55)
+    num = num.replace(/^0+/, '');
+    const fullLink = `https://wa.me/${code}${num}`;
+    window.open(fullLink, '_blank');
 }
 
-function addToHistory(num) {
-    let history = JSON.parse(localStorage.getItem('zol_history') || '[]');
-    if (!history.includes(num)) {
-        history.unshift(num);
-        localStorage.setItem('zol_history', JSON.stringify(history.slice(0, 5)));
-        renderHistory();
-    }
+// مشاركة التطبيق
+function shareApp(platform) {
+    const url = window.location.href;
+    const msg = "أداة رائعة لفتح واتساب دون حفظ الرقم:";
+    if(platform === 'whatsapp') window.open(`https://wa.me/?text=${msg} ${url}`);
+    if(platform === 'facebook') window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`);
 }
 
-function renderHistory() {
-    let history = JSON.parse(localStorage.getItem('zol_history') || '[]');
-    historyList.innerHTML = history.map(num => `
-        <div class="history-chip" onclick="quickChat('${num}')">
-            <span>+${num}</span>
-            <i class="fab fa-whatsapp" style="color:#25D366"></i>
-        </div>
-    `).join('');
-}
-
-function quickChat(num) {
-    window.open(`https://wa.me/${num}`, '_blank');
-}
-
-function shareApp(p) {
-    const url = encodeURIComponent(window.location.href);
-    const text = encodeURIComponent("جرب هذا التطبيق الرائع للمراسلة الفورية!");
-    if(p === 'whatsapp') window.open(`https://wa.me/?text=${text}%20${url}`);
-    if(p === 'facebook') window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`);
-}
-
-window.onload = init;
+// تعبئة القائمة المنسدلة عند التحميل
+window.onload = () => {
+    const list = document.getElementById('country-options');
+    COUNTRY_DATA.forEach(c => {
+        let opt = document.createElement('option');
+        opt.value = `${c.name} (+${c.code})`;
+        list.appendChild(opt);
+    });
+};
