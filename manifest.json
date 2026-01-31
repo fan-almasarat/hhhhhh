@@ -1,15 +1,21 @@
 {
   "name": "دردشة مباشرة",
   "short_name": "دردشة مباشرة",
+  "description": "ارسال رسائل واتساب بدون حفظ الرقم",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#00a884",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/5968/5968841.png",
+      "src": "whatsapp-icon.jpg",
+      "sizes": "1024x1024",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "whatsapp-icon.jpg",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/jpeg"
     }
   ]
 }
