@@ -1,95 +1,165 @@
-/* تصميم حديث ومتناسق */
 :root {
-    --whatsapp-color: #25D366;
-    --dark-green: #075E54;
-    --bg-color: #f0f2f5;
+    --primary: #25D366;
+    --dark: #075E54;
+    --bg: #f4f7f6;
     --white: #ffffff;
-    --text-main: #333;
-    --shadow: 0 10px 30px rgba(0,0,0,0.08);
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
 body {
+    margin: 0;
     font-family: 'Cairo', sans-serif;
-    background-color: var(--bg-color);
+    background: var(--bg);
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    direction: rtl;
-    color: var(--text-main);
 }
 
 .page-wrapper {
-    width: 95%;
+    width: 100%;
     max-width: 420px;
     background: var(--white);
-    padding: 30px;
-    border-radius: 25px;
-    box-shadow: var(--shadow);
-    text-align: center;
+    min-height: 100vh;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
 }
 
-.app-header { margin-bottom: 25px; }
-.main-logo { width: 65px; margin-bottom: 10px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); }
-.app-heading { color: var(--dark-green); font-size: 1.6rem; font-weight: 800; }
-.description { color: #666; font-size: 0.9rem; margin-top: 5px; }
+/* الأزرار العلوية */
+.top-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
 
-.main-content { display: flex; flex-direction: column; gap: 20px; margin-top: 20px; }
+.nav-btn {
+    background: #eee;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
 
-.input-container { text-align: right; }
-.input-label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--dark-green); margin-bottom: 8px; }
+.install-btn {
+    background: var(--primary);
+    color: white;
+}
 
-.search-box { position: relative; }
-.search-icon { position: absolute; right: 12px; top: 15px; color: #aaa; }
-.search-box input { width: 100%; padding: 12px 35px 12px 12px; border: 2px solid #e1e8ed; border-radius: 12px; outline: none; transition: 0.3s; font-family: inherit; }
-.search-box input:focus { border-color: var(--whatsapp-color); }
+/* الهيدر */
+.app-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
 
-.phone-input-wrapper { display: flex; gap: 10px; align-items: center; }
+.main-logo {
+    width: 80px;
+    filter: drop-shadow(0 5px 15px rgba(37, 211, 102, 0.4));
+}
 
-.code-field {
-    flex: 0 0 120px;
+.app-heading {
+    color: var(--dark);
+    font-size: 1.8rem;
+    margin: 10px 0;
+}
+
+/* الحقول */
+.phone-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.country-box {
     display: flex;
     align-items: center;
     background: #f8f9fa;
-    border: 2px solid #e1e8ed;
+    border: 2px solid #e9ecef;
     border-radius: 12px;
-    padding: 0 8px;
+    padding: 0 10px;
+    width: 120px;
 }
-.code-field input { border: none; background: none; width: 100%; padding: 10px 5px; font-weight: bold; font-size: 1rem; outline: none; }
-.flag-icon { font-size: 1.2rem; border-radius: 3px; }
-.plus-sign { font-weight: bold; color: #999; margin-left: 2px; }
 
-.number-field { flex: 1; }
-.number-field input { width: 100%; padding: 12px; border: 2px solid #e1e8ed; border-radius: 12px; font-size: 1.1rem; outline: none; transition: 0.3s; }
-.number-field input:focus { border-color: var(--whatsapp-color); }
-
-.main-btn {
-    background: var(--whatsapp-color);
-    color: white;
+#codeInput {
     border: none;
-    padding: 16px;
-    border-radius: 15px;
-    font-size: 1.1rem;
-    font-weight: 800;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.3);
+    background: transparent;
+    width: 100%;
+    font-weight: bold;
+    text-align: center;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    font-family: inherit;
     transition: 0.3s;
 }
-.main-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4); }
 
-.share-section { margin-top: 30px; border-top: 1px solid #f0f0f0; padding-top: 20px; }
-.share-title { font-size: 0.85rem; color: #888; margin-bottom: 15px; }
-.share-grid { display: flex; justify-content: space-between; gap: 10px; }
-.share-btn { flex: 1; padding: 12px; border: none; border-radius: 10px; color: white; cursor: pointer; font-size: 1.2rem; transition: 0.3s; }
-.fb { background: #1877F2; } .share-native { background: #607D8B; } .wa { background: #25D366; }
+input:focus {
+    border-color: var(--primary);
+    outline: none;
+}
 
-.app-footer { margin-top: 30px; font-size: 0.8rem; }
-.contact-link { color: var(--dark-green); text-decoration: none; font-weight: bold; }
-.copyright { color: #aaa; margin-top: 5px; }
+/* الأزرار */
+.btn-primary, .btn-secondary {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: 0.3s;
+}
 
-.install-prompt-button { width: 100%; background: #007bff; color: white; border: none; padding: 10px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; }
+.btn-primary { background: var(--primary); color: white; box-shadow: 0 5px 15px rgba(37,211,102,0.3); }
+.btn-secondary { background: #f8f9fa; color: var(--dark); border: 2px solid #eee; }
+
+.btn-primary:active { transform: scale(0.98); }
+
+/* المشاركة */
+.share-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.share-card {
+    padding: 15px;
+    border-radius: 12px;
+    border: none;
+    background: #f8f9fa;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.share-card.wa { color: #25D366; }
+.share-card.fb { color: #1877F2; }
+
+/* المودال */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+}
+
+.modal-content {
+    background: white;
+    margin: 10% auto;
+    padding: 20px;
+    width: 90%;
+    max-width: 400px;
+    border-radius: 20px;
+}
