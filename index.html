@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Direct Chat Pro</title>
+    <title>Direct Chat</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -13,55 +13,57 @@
 <body>
 
     <div class="app-container">
-        <nav class="top-bar">
-            <button id="langBtn" onclick="toggleLang()">العربية</button>
+        <nav class="top-nav">
+            <button id="langBtn" class="nav-btn" onclick="toggleAppLanguage()">العربية</button>
             <button id="installBtn" class="install-btn" style="display: none;">📲 Install</button>
         </nav>
 
         <header class="header">
-            <h1 id="appTitle">Direct Chat</h1>
-            <p id="appDesc">Chat on WhatsApp without saving numbers.</p>
+            <h1 id="mainTitle">Direct Chat</h1>
+            <p id="subTitle">Chat on WhatsApp without saving numbers.</p>
         </header>
 
-        <main class="main-form">
+        <main class="content-area">
             
-            <div class="input-group search-group">
-                <label id="lblSearch">Search Country</label>
-                <input type="text" id="searchInput" placeholder="Type country name..." autocomplete="off">
-                <div id="resultsList" class="suggestions-box"></div>
-            </div>
-
-            <div class="phone-wrapper">
-                <div class="code-display">
-                    <span id="flagIcon" class="flag-icon flag-icon-us"></span>
-                    <input type="text" id="codeField" value="+1" readonly>
+            <div class="input-wrapper search-section">
+                <label id="lblCountry">Select Country</label>
+                <div class="search-container">
+                    <input type="text" id="countrySearch" placeholder="Search country..." autocomplete="off">
+                    <i class="fas fa-search search-icon"></i>
+                    <div id="countriesDropdown" class="custom-dropdown"></div>
                 </div>
-                <input type="tel" id="phoneField" placeholder="Phone Number" inputmode="numeric">
             </div>
 
-            <button id="actionBtn" onclick="openWhatsApp()">
-                <i class="fab fa-whatsapp"></i> <span id="btnText">Start Chat</span>
+            <div class="phone-container">
+                <div class="code-badge">
+                    <span id="flagIcon" class="flag-icon flag-icon-us"></span>
+                    <span id="codeText">+1</span>
+                </div>
+                <input type="tel" id="phoneNumber" placeholder="Phone Number" inputmode="numeric">
+            </div>
+
+            <button id="startChatBtn" class="main-action-btn" onclick="startWhatsAppChat()">
+                <i class="fab fa-whatsapp"></i> <span id="btnChatText">Start Chat</span>
             </button>
 
         </main>
 
-        <div class="footer-share">
-            <p id="lblShare">Share App:</p>
-            <div class="share-buttons">
-                <button class="s-btn fb" onclick="shareSocial('fb')"><i class="fab fa-facebook-f"></i></button>
-                <button class="s-btn wa" onclick="shareSocial('wa')"><i class="fab fa-whatsapp"></i></button>
-                <button class="s-btn nat" onclick="shareNative()"><i class="fas fa-share-nodes"></i></button>
+        <footer class="footer-area">
+            <p id="shareLabel">Share App</p>
+            <button class="share-system-btn" onclick="shareAppNative()">
+                <i class="fas fa-share-nodes"></i> <span id="btnShareText">Share with friends</span>
+            </button>
+            <div class="copyright">
+                <p>© 2026 Direct Chat App</p>
             </div>
-        </div>
+        </footer>
     </div>
 
     <script src="script.js"></script>
     <script>
-        // تسجيل Service Worker ليعمل التطبيق بدون انترنت
+        // تسجيل Service Worker
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js')
-            .then(() => console.log('SW Registered'))
-            .catch(() => console.log('SW Failed'));
+            navigator.serviceWorker.register('sw.js').catch(console.error);
         }
     </script>
 </body>
