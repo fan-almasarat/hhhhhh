@@ -1,126 +1,129 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" id="main-html">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دردشة مباشرة | الذكاء التفاعلي</title>
+    <title>دردشة مباشرة - الإصدار المطور</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@19.2.16/build/css/intlTelInput.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
-        body { background-color: #f0f7f2; font-family: 'Tajawal', sans-serif; color: #1c1e21; }
-        .card { background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); }
-        .input-box { border: 1.5px solid #e1e4e8; border-radius: 12px; padding: 14px; transition: 0.3s; outline: none; width: 100%; text-align: center; font-weight: bold; }
-        .input-box:focus { border-color: #25D366; box-shadow: 0 0 0 4px rgba(37, 211, 102, 0.1); }
-        .iti { width: 100%; }
-        .iti__selected-flag { background: #f8f9fa !important; border-radius: 12px !important; border: 1.5px solid #e1e4e8 !important; pointer-events: none; }
-        .iti__country-list { background: white !important; border-radius: 15px; border: none; box-shadow: 0 15px 50px rgba(0,0,0,0.15); z-index: 1000; }
-        .install-float { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1a73e8; color: white; padding: 12px 25px; border-radius: 50px; font-weight: bold; box-shadow: 0 10px 20px rgba(26, 115, 232, 0.3); display: flex; align-items: center; gap: 10px; transition: 0.3s; z-index: 100; }
+        body { background-color: #e4f5e9; font-family: 'Tajawal', sans-serif; }
+        .main-card { background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 100%; max-width: 480px; padding: 30px; }
+        .input-label { color: #444; font-size: 13px; font-weight: bold; margin-bottom: 6px; display: block; text-align: center; }
+        
+        .custom-input { width: 100%; padding: 12px; border: 1.5px solid #ddd; border-radius: 8px; text-align: center; font-weight: bold; outline: none; transition: 0.3s; }
+        .custom-input:focus { border-color: #25D366; }
+
+        /* حاوية المفتاح والعلم */
+        .dial-container { display: flex; align-items: center; justify-content: center; background: #f1f3f4; border: 1.5px solid #ddd; border-radius: 8px; padding: 0 10px; width: 110px; transition: 0.3s; }
+        .dial-container:focus-within { border-color: #25D366; background: white; }
+        .dial-container input { background: transparent; border: none; width: 50px; text-align: center; font-weight: bold; outline: none; font-size: 16px; }
+
+        .btn-install-top { background: #5a8dee; color: white; width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; margin-bottom: 25px; transition: 0.2s; }
+        .btn-send { background: #4cd964; color: white; width: 100%; padding: 16px; border-radius: 8px; font-weight: bold; font-size: 19px; box-shadow: 0 4px 10px rgba(76, 217, 100, 0.3); }
+        
+        /* زر التثبيت العائم الحديث */
+        .floating-install { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background: #1a73e8; color: white; padding: 14px 35px; border-radius: 50px; font-weight: bold; box-shadow: 0 8px 25px rgba(26, 115, 232, 0.4); display: flex; align-items: center; gap: 10px; z-index: 1000; }
+
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4 pb-24">
+<body class="flex flex-col items-center justify-center min-h-screen p-4 pb-20">
 
-    <button class="install-float" id="btn-install-app">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-        <span id="txt-install">تثبيت التطبيق الحديث</span>
-    </button>
-
-    <div class="w-full max-w-lg card p-8 space-y-8 relative">
-        <button onclick="toggleLang()" class="absolute top-4 left-4 text-sm font-bold text-blue-600 px-3 py-1 rounded-lg transition" id="lang-btn">English</button>
-
-        <div class="text-center">
-            <h1 id="txt-header" class="text-3xl font-bold text-[#128c7e]">دردشة مباشرة</h1>
-            <p id="txt-sub" class="text-gray-500 text-sm mt-3">اكتب المفتاح وسنتعرف على الدولة تلقائياً.</p>
+    <div class="main-card">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-[#2d6a4f]">دردشة مباشرة</h1>
+            <p class="text-gray-400 text-xs mt-1">تواصل بذكاء وسرعة عبر واتساب</p>
         </div>
 
-        <div class="space-y-5">
-            <div>
-                <label id="txt-label-select" class="text-xs font-bold text-gray-400 mb-2 block mr-1 uppercase">الدولة المختارة:</label>
-                <div dir="ltr">
-                    <input type="tel" id="country-search" class="input-box text-blue-600 cursor-default" readonly>
+        <button class="btn-install-top flex items-center justify-center gap-2 hover:opacity-90">
+            <span>📲 تثبيت التطبيق</span>
+        </button>
+
+        <div class="mb-5">
+            <label class="input-label">الدولة المختارة:</label>
+            <input type="text" id="country-name" class="custom-input bg-gray-50 text-gray-700" value="المملكة العربية السعودية" readonly>
+        </div>
+
+        <div class="flex gap-3 items-end mb-8" dir="ltr">
+            <div class="flex flex-col items-center gap-1">
+                <label class="text-[10px] font-bold text-gray-400 uppercase" dir="rtl">الرمز</label>
+                <div class="dial-container h-[50px]">
+                    <img id="flag-icon" src="https://flagcdn.com/w40/sa.png" class="w-6 rounded-sm shadow-sm">
+                    <span class="text-green-600 font-bold ml-1">+</span>
+                    <input type="number" id="manual-code" value="966">
                 </div>
             </div>
 
-            <div class="flex gap-3" dir="ltr">
-                <div class="w-1/3">
-                    <label id="txt-label-code" class="text-right text-[10px] font-bold text-gray-400 mb-2 block mr-1" dir="rtl">المفتاح:</label>
-                    <div class="relative flex items-center">
-                        <span class="absolute left-3 text-green-600 font-bold">+</span>
-                        <input type="number" id="manual-code" value="966" class="input-box pl-7 pr-2 border-green-200 bg-green-50/50 text-green-700">
-                    </div>
-                </div>
-                <div class="w-2/3">
-                    <label id="txt-label-num" class="text-right text-[10px] font-bold text-gray-400 mb-2 block mr-1" dir="rtl">الرقم المحلي:</label>
-                    <input type="number" id="phone-main" placeholder="50xxxxxxx" class="input-box">
-                </div>
+            <div class="flex-1">
+                <label class="text-[10px] font-bold text-gray-400 uppercase mb-1 block text-right" dir="rtl">أدخل الرقم المحلي</label>
+                <input type="number" id="phone-input" placeholder="50xxxxxxx" class="custom-input h-[50px]">
             </div>
-
-            <button onclick="startChat()" class="w-full bg-[#25D366] text-white py-5 rounded-2xl font-bold text-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-3">
-                <span id="txt-start">بدء المحادثة الآن</span>
-            </button>
         </div>
 
-        <div class="pt-6 border-t border-gray-100 flex gap-2 justify-center">
-            <div class="w-8 h-8 rounded-full bg-[#25D366]/10 flex items-center justify-center">🟢</div>
-            <p class="text-[10px] text-gray-400 self-center">نظام ذكي متصل بقاعدة بيانات الدول 2026</p>
+        <button onclick="openWhatsapp()" class="btn-send active:scale-95 transition-transform">
+            بدء المحادثة الآن
+        </button>
+
+        <div class="mt-10 pt-6 border-t border-gray-100 text-center">
+            <p class="text-[11px] font-bold text-gray-400 mb-4 tracking-widest uppercase">شارك مع أصدقائك</p>
+            <div class="flex justify-center gap-3">
+                <div class="bg-[#25D366] w-10 h-10 rounded-full flex items-center justify-center text-white cursor-pointer shadow-md">W</div>
+                <div class="bg-blue-600 w-10 h-10 rounded-full flex items-center justify-center text-white cursor-pointer shadow-md">f</div>
+                <div class="bg-gray-400 w-10 h-10 rounded-full flex items-center justify-center text-white cursor-pointer shadow-md">🔗</div>
+            </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@19.2.16/build/js/intlTelInput.min.js"></script>
+    <button class="floating-install">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+        تثبيت النسخة المتطورة
+    </button>
+
     <script>
-        const countryInput = document.querySelector("#country-search");
-        const manualCode = document.querySelector("#manual-code");
-        const phoneMain = document.getElementById("phone-main");
-        const htmlTag = document.getElementById("main-html");
+        // قاعدة بيانات ذكية للدول
+        const countriesData = [
+            { n: "المملكة العربية السعودية", c: "966", i: "sa" },
+            { n: "مصر", c: "20", i: "eg" },
+            { n: "السودان", c: "249", i: "sd" },
+            { n: "الإمارات العربية المتحدة", c: "971", i: "ae" },
+            { n: "الكويت", c: "965", i: "kw" },
+            { n: "قطر", c: "974", i: "qa" },
+            { n: "الأردن", c: "962", i: "jo" },
+            { n: "سلطنة عمان", c: "968", i: "om" },
+            { n: "البحرين", c: "973", i: "bh" },
+            { n: "العراق", c: "964", i: "iq" },
+            { n: "المغرب", c: "212", i: "ma" }
+        ];
 
-        let currentLang = 'ar';
-        const arCountries = { "sa": "المملكة العربية السعودية", "eg": "مصر", "sd": "السودان", "ae": "الإمارات", "kw": "الكويت", "qa": "قطر", "jo": "الأردن" };
+        const manualCode = document.getElementById('manual-code');
+        const countryNameInput = document.getElementById('country-name');
+        const flagIcon = document.getElementById('flag-icon');
 
-        const iti = window.intlTelInput(countryInput, {
-            initialCountry: "sa",
-            separateDialCode: true,
-            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@19.2.16/build/js/utils.js"
-        });
-
-        // ميزة "الربط العكسي": كتابة المفتاح تغير الدولة المختارة والاسم والعلم
-        manualCode.addEventListener("input", function() {
+        // المحرك الذكي: يربط المفتاح اليدوي بالعلم واسم الدولة
+        manualCode.addEventListener('input', function() {
             const val = this.value;
-            const allCountries = iti.getCountryData();
-            
-            // البحث عن الدولة التي تملك هذا الرمز
-            const found = allCountries.find(c => c.dialCode === val);
+            const found = countriesData.find(item => item.c === val);
             
             if (found) {
-                iti.setCountry(found.iso2); // تغيير العلم الصغير
-                const countryName = currentLang === 'ar' ? (arCountries[found.iso2] || found.name) : found.name;
-                countryInput.value = `${countryName} (+${found.dialCode})`; // تحديث حقل الاسم
+                // تحديث اسم الدولة في الأعلى
+                countryNameInput.value = found.n;
+                // تحديث العلم بجوار المفتاح فوراً
+                flagIcon.src = `https://flagcdn.com/w40/${found.i}.png`;
+                flagIcon.style.display = "block";
+            } else {
+                countryNameInput.value = "دولة غير مسجلة";
+                flagIcon.style.display = "none";
             }
         });
 
-        // تحديث أولي عند التشغيل
-        function updateDisplay() {
-            const data = iti.getSelectedCountryData();
-            const countryName = currentLang === 'ar' ? (arCountries[data.iso2] || data.name) : data.name;
-            countryInput.value = `${countryName} (+${data.dialCode})`;
-        }
-
-        function toggleLang() {
-            currentLang = currentLang === 'ar' ? 'en' : 'ar';
-            htmlTag.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
-            document.getElementById('lang-btn').innerText = currentLang === 'ar' ? 'English' : 'العربية';
-            updateDisplay();
-        }
-
-        function startChat() {
+        function openWhatsapp() {
             const code = manualCode.value;
-            let num = phoneMain.value;
-            if (!code || !num) return alert(currentLang === 'ar' ? "أكمل البيانات يا زول!" : "Please complete data!");
+            let num = document.getElementById('phone-input').value;
+            if (!code || !num) return alert("يرجى إكمال الحقول");
             if (num.startsWith('0')) num = num.substring(1);
             window.open(`https://wa.me/${code}${num}`, '_blank');
         }
-
-        window.onload = updateDisplay;
     </script>
 </body>
 </html>
