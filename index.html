@@ -2,190 +2,71 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدخال الهاتف المتطور</title>
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@19.2.16/build/css/intlTelInput.css">
-
-    <style>
-        :root {
-            --primary-color: #2563eb;
-            --error-color: #dc2626;
-            --success-color: #16a34a;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f3f4f6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-
-        .phone-card {
-            background: #ffffff;
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 450px;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .header h2 {
-            margin: 0;
-            font-size: 1.25rem;
-            color: #1f2937;
-        }
-
-        .header p {
-            color: #6b7280;
-            font-size: 0.875rem;
-            margin-top: 0.5rem;
-        }
-
-        /* تعديلات حقل الإدخال ليكون "متطوراً" */
-        .iti {
-            width: 100%;
-            direction: ltr; /* المكتبة تتطلب LTR للأرقام لتعمل بشكل سليم */
-        }
-
-        .iti__country-list {
-            max-width: 300px;
-            text-align: left;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        #phone {
-            width: 100%;
-            height: 50px;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            font-size: 16px;
-            padding-left: 10px;
-            transition: all 0.2s ease-in-out;
-            outline: none;
-        }
-
-        #phone:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-        }
-
-        .helper-text {
-            margin-top: 8px;
-            font-size: 12px;
-            height: 15px;
-            text-align: right;
-            direction: rtl;
-        }
-
-        .submit-btn {
-            width: 100%;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: background 0.3s;
-        }
-
-        .submit-btn:hover {
-            background-color: #1d4ed8;
-        }
-
-        /* العلم سيبقى ثابتاً بفضل الإعدادات في JS */
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>واتساب برو | Smart Chat</title>
+    <link rel="stylesheet" href="style.css?v=2026">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
+    <div class="app-shell">
+        <header class="main-header">
+            <div class="status-bar">
+                <span id="clock"></span>
+                <div class="status-icons"><i class="fas fa-wifi"></i> <i class="fas fa-battery-full"></i></div>
+            </div>
+            <div class="brand-box">
+                <div class="logo-wrapper">
+                    <img src="whatsapp-icon.png" alt="logo">
+                </div>
+                <h1>دردشة ذكية</h1>
+            </div>
+        </header>
 
-<div class="phone-card">
-    <div class="header">
-        <h2>رقم الهاتف / Phone Number</h2>
-        <p>اختر الدولة وأدخل الرقم بدون المفتاح</p>
+        <main class="content-area">
+            <div class="input-card">
+                <div class="group-title">إرسال رسالة سريعة</div>
+                
+                <div class="input-wrapper">
+                    <i class="fas fa-globe-americas"></i>
+                    <input list="countries" id="countryInput" placeholder="اختر الدولة..." onchange="handleCountryChange(this.value)">
+                    <datalist id="countries"></datalist>
+                </div>
+
+                <div class="phone-grid">
+                    <div class="prefix-input">
+                        <span id="flagIcon" class="flag-icon flag-icon-sd"></span>
+                        <input type="text" id="countryCode" value="+249">
+                    </div>
+                    <div class="main-number">
+                        <input type="tel" id="phoneNumber" placeholder="رقم الهاتف" inputmode="numeric">
+                    </div>
+                </div>
+
+                <button class="prime-btn" onclick="processChat()">
+                    <span>ابدأ المحادثة</span>
+                    <i class="fab fa-whatsapp"></i>
+                </button>
+            </div>
+
+            <section class="history-section">
+                <div class="section-header">
+                    <h3>المراسلات الأخيرة</h3>
+                    <button onclick="clearHistory()" class="clear-btn">مسح الكل</button>
+                </div>
+                <div id="historyList" class="history-list">
+                    </div>
+            </section>
+        </main>
+
+        <footer class="dock-menu">
+            <button onclick="shareApp('whatsapp')"><i class="fas fa-share-alt"></i></button>
+            <button class="active"><i class="fas fa-home"></i></button>
+            <button onclick="window.open('https://linktr.ee/abdul3ziz95')"><i class="fas fa-user-ninja"></i></button>
+        </footer>
     </div>
-
-    <form id="contact-form">
-        <input id="phone" type="tel" placeholder="50 123 4567">
-        <div id="message" class="helper-text"></div>
-        
-        <button type="submit" class="submit-btn">تأكيد الرقم / Confirm</button>
-    </form>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@19.2.16/build/js/intlTelInput.min.js"></script>
-
-<script>
-    const input = document.querySelector("#phone");
-    const message = document.querySelector("#message");
-
-    // تهيئة المكتبة مع تلبية كافة طلباتك
-    const iti = window.intlTelInput(input, {
-        // 1. تثبيت العلم تماماً ومنعه من التغير عند الكتابة
-        separateDialCode: true, 
-        
-        // 2. قائمة دول العالم كاملة مع تفضيل الدول العربية في البداية
-        preferredCountries: ["sa", "ae", "eg", "kw", "qa"],
-        
-        // 3. دعم البحث عن الدول داخل القائمة
-        allowDropdown: true,
-
-        // 4. التعرف التلقائي على دولة المستخدم
-        initialCountry: "auto",
-        geoIpLookup: function(callback) {
-            fetch("https://ipapi.co/json")
-                .then(res => res.json())
-                .then(data => callback(data.country_code))
-                .catch(() => callback("sa"));
-        },
-
-        // 5. تحميل ملفات التنسيق والتحقق الذكية
-        utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@19.2.16/build/js/utils.js"
-    });
-
-    // دالة للتحقق اللحظي أثناء الكتابة
-    const handleChange = () => {
-        if (input.value.trim()) {
-            if (iti.isValidNumber()) {
-                message.innerHTML = "✅ الرقم صحيح / Valid";
-                message.style.color = "var(--success-color)";
-                input.style.borderColor = "var(--success-color)";
-            } else {
-                message.innerHTML = "❌ رقم غير صحيح / Invalid";
-                message.style.color = "var(--error-color)";
-                input.style.borderColor = "var(--error-color)";
-            }
-        } else {
-            message.innerHTML = "";
-            input.style.borderColor = "#e5e7eb";
-        }
-    };
-
-    input.addEventListener('keyup', handleChange);
-    input.addEventListener('change', handleChange);
-
-    // عند الضغط على إرسال
-    document.querySelector("#contact-form").addEventListener("submit", function(e) {
-        e.preventDefault();
-        const fullNumber = iti.getNumber(); // الحصول على الرقم الدولي الكامل
-        if (iti.isValidNumber()) {
-            alert("تم قبول الرقم: " + fullNumber);
-        } else {
-            alert("يرجى التأكد من الرقم أولاً");
-        }
-    });
-</script>
-
+    <script src="script.js?v=2026"></script>
 </body>
 </html>
