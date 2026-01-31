@@ -2,78 +2,144 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>دردشة فورية | تواصل بذكاء</title>
-    
-    <link rel="stylesheet" href="style.css?v=2026">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <link rel="manifest" href="manifest.json?v=2026">
-    <link rel="shortcut icon" href="whatsapp-icon.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدخال رقم الهاتف المتطور</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css">
+
+    <style>
+        /* تنسيقات التصميم الحديث */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .form-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+        }
+
+        /* ضبط حاوية الإدخال لتكون مرنة */
+        .iti {
+            width: 100%;
+            display: block;
+        }
+
+        input[type="tel"] {
+            width: 100%;
+            height: 45px;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            font-size: 16px;
+            padding-right: 10px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        input[type="tel"]:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 8px rgba(0,123,255,0.2);
+        }
+
+        .btn-submit {
+            width: 100%;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px;
+            margin-top: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .btn-submit:hover {
+            background-color: #0056b3;
+        }
+
+        /* تنسيق خاص لجعل قائمة الدول تظهر بشكل صحيح مع الكتابة العربية */
+        .iti__country-list {
+            text-align: left; /* لضمان ظهور أسماء الدول بوضوح */
+            direction: ltr;
+        }
+    </style>
 </head>
 <body>
-    
-    <div class="app-container" id="pageWrapper"> 
-        <header class="app-header">
-            <div class="logo-area">
-                <img src="whatsapp-icon.png" alt="Logo" class="main-logo">
-            </div>
-            <h1 class="app-title">دردشة مباشرة</h1>
-            <p class="app-subtitle">راسل أي رقم على واتساب دون عناء حفظه</p>
-        </header>
 
-        <button id="installButton" class="btn-install" style="display: none;">
-            <i class="fas fa-download"></i> تثبيت التطبيق على جهازك
-        </button>
+<div class="form-card">
+    <h2 id="title">رقم الهاتف / Phone Number</h2>
+    <form id="phone-form">
+        <input id="phone" type="tel" name="phone">
+        <button type="submit" class="btn-submit">إرسال / Submit</button>
+    </form>
+    <p id="result" style="margin-top:10px; font-size: 14px; text-align: center;"></p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"></script>
+
+<script>
+    // اختيار الحقل
+    const input = document.querySelector("#phone");
+    const resultDisplay = document.querySelector("#result");
+
+    // تهيئة المكتبة
+    const iti = window.intlTelInput(input, {
+        // دعم اللغتين وتفضيل الدول العربية في أعلى القائمة
+        preferredCountries: ["sa", "ae", "eg", "kw"],
         
-        <main class="card">
-            <div class="input-field">
-                <label for="countryInput"><i class="fas fa-globe-africa"></i> اختر الدولة</label>
-                <input 
-                    list="country-options" 
-                    id="countryInput" 
-                    placeholder="ابحث عن دولتك..." 
-                    value="السودان (+249)"
-                    onchange="updateCodeFromCountry(this.value)"
-                    onclick="this.value = '';"
-                    onblur="restoreCountryValue()"
-                >
-                <datalist id="country-options"></datalist>
-            </div>
-
-            <div class="phone-row">
-                <div class="code-box">
-                    <span id="currentFlag" class="flag-icon flag-icon-sd"></span>
-                    <input type="tel" id="codeInput" value="+249" oninput="updateCountryFromCode(this.value)">
-                </div>
-                <div class="number-box">
-                    <input type="tel" id="phoneInput" placeholder="أدخل رقم الهاتف" inputmode="numeric">
-                </div>
-            </div>
-
-            <button id="whatsappButton" class="btn-primary" onclick="openWhatsApp()">
-                <span>بدء المحادثة</span>
-                <i class="fab fa-whatsapp"></i>
-            </button>
-        </main>
-
-        <section class="social-share">
-            <p>انشر الفائدة مع أصدقائك</p>
-            <div class="share-grid">
-                <button class="s-btn fb" onclick="shareApp('facebook')"><i class="fab fa-facebook-f"></i></button>
-                <button class="s-btn ms" onclick="shareContentInSamePage()"><i class="fas fa-share-nodes"></i></button>
-                <button class="s-btn wa" onclick="shareApp('whatsapp')"><i class="fab fa-whatsapp"></i></button>
-            </div>
-        </section>
+        // إظهار المفتاح بجانب العلم (وهذا ما يمنع العلم من التغير عند الكتابة)
+        separateDialCode: true,
         
-        <footer class="app-footer">
-            <a href="https://linktr.ee/abdul3ziz95" target="_blank" class="dev-link">المطور: Abdulaziz Khalifa</a>
-            <p class="copy">© 2026 جميع الحقوق محفوظة</p>
-        </footer>
-    </div>
-    
-    <script src="script.js?v=2026"></script>
+        // البحث عن الدول وتنسيق تلقائي
+        autoPlaceholder: "aggressive",
+        
+        // جعل القائمة تضم كل دول العالم
+        allowDropdown: true,
+
+        // اختيار الدولة بناءً على عنوان الـ IP الخاص بالمستخدم (اختياري)
+        initialCountry: "auto",
+        geoIpLookup: function(callback) {
+            fetch("https://ipapi.co/json")
+                .then(res => res.json())
+                .then(data => callback(data.country_code))
+                .catch(() => callback("sa"));
+        },
+    });
+
+    // التعامل مع إرسال النموذج
+    document.getElementById("phone-form").addEventListener("submit", function(e) {
+        e.preventDefault();
+        
+        // الحصول على الرقم كاملًا مع مفتاح الدولة
+        const fullNumber = iti.getNumber(); 
+        
+        if (iti.isValidNumber()) {
+            resultDisplay.style.color = "green";
+            resultDisplay.innerHTML = "تم بنجاح: " + fullNumber;
+        } else {
+            resultDisplay.style.color = "red";
+            resultDisplay.innerHTML = "الرقم غير صحيح، يرجى المحاولة مرة أخرى.";
+        }
+    });
+</script>
+
 </body>
 </html>
