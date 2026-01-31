@@ -1,3 +1,4 @@
+/* إعدادات أساسية */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -7,125 +8,181 @@
 }
 
 body {
-    background-color: #f0f2f5;
+    background-color: #eef1f4;
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden; /* يمنع اهتزاز الشاشة */
+    overflow: hidden; /* يمنع تحرك الخلفية */
 }
 
+/* حاوية التطبيق */
 .app-container {
     width: 100%;
-    max-width: 480px;
+    max-width: 450px;
     height: 100%;
+    max-height: 100vh;
     background: white;
     display: flex;
     flex-direction: column;
-    padding: 20px;
     position: relative;
+    box-shadow: 0 0 25px rgba(0,0,0,0.05);
 }
 
-.top-bar {
+/* الشريط العلوي */
+.top-nav {
+    padding: 15px 20px;
     display: flex;
     justify-content: space-between;
-    margin-bottom: 20px;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
 }
 
-.top-bar button {
+.nav-btn {
+    background: #f0f2f5;
     border: none;
-    padding: 8px 16px;
+    padding: 8px 15px;
     border-radius: 20px;
-    cursor: pointer;
     font-weight: bold;
+    color: #333;
+    cursor: pointer;
     font-size: 14px;
-    background: #e4e6eb;
 }
 
 .install-btn {
-    background: #25d366 !important;
+    background: #25D366;
     color: white;
-    animation: pulse 2s infinite;
 }
 
-@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-
+/* الهيدر */
 .header {
     text-align: center;
-    margin-bottom: 30px;
+    padding: 25px 20px;
 }
 
-.header h1 { color: #075e54; margin-bottom: 5px; font-size: 28px; }
-.header p { color: #666; font-size: 14px; }
+.header h1 {
+    color: #075E54;
+    font-size: 26px;
+    margin-bottom: 8px;
+}
 
-.main-form { flex: 1; position: relative; }
+.header p {
+    color: #666;
+    font-size: 14px;
+}
 
-.input-group { margin-bottom: 20px; position: relative; }
-label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 14px; color: #333; }
+/* منطقة المحتوى */
+.content-area {
+    flex: 1;
+    padding: 0 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
 
-input {
+.input-wrapper label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    font-size: 14px;
+    color: #444;
+}
+
+/* حقل البحث والقائمة */
+.search-container {
+    position: relative;
+}
+
+.search-container input {
     width: 100%;
+    padding: 14px 40px 14px 14px; /* مسافة للأيقونة */
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    font-size: 16px;
+    outline: none;
+    background: #f9f9f9;
+}
+
+/* تعديل الحشو حسب اللغة */
+html[dir="rtl"] .search-container input { padding: 14px 14px 14px 40px; }
+
+.search-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aaa;
+}
+html[dir="rtl"] .search-icon { right: auto; left: 15px; }
+
+/* القائمة المنسدلة المخصصة */
+.custom-dropdown {
+    position: absolute;
+    top: 105%;
+    left: 0;
+    width: 100%;
+    max-height: 220px;
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    overflow-y: auto;
+    z-index: 1000;
+    display: none; /* مخفية افتراضياً */
+}
+
+.dropdown-item {
+    padding: 12px 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #f5f5f5;
+    transition: background 0.2s;
+}
+
+.dropdown-item:hover { background: #f0f7f4; }
+.dropdown-item:last-child { border-bottom: none; }
+
+/* حقل الهاتف */
+.phone-container {
+    display: flex;
+    gap: 10px;
+}
+
+.code-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: #f0f2f5;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 0 15px;
+    min-width: 100px;
+    font-weight: bold;
+    color: #333;
+}
+
+#phoneNumber {
+    flex: 1;
     padding: 14px;
     border: 1px solid #ddd;
     border-radius: 12px;
     font-size: 16px;
     outline: none;
-    transition: 0.3s;
 }
 
-input:focus { border-color: #25d366; }
-
-/* تصميم القائمة المنسدلة للبحث */
-.suggestions-box {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    max-height: 250px;
-    overflow-y: auto;
+#phoneNumber:focus, .search-container input:focus {
+    border-color: #25D366;
     background: white;
-    border: 1px solid #ddd;
-    border-top: none;
-    border-radius: 0 0 12px 12px;
-    z-index: 100;
-    display: none; /* مخفي افتراضياً */
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-.suggestion-item {
-    padding: 12px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.suggestion-item:hover { background-color: #f9f9f9; }
-
-.phone-wrapper {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 25px;
-}
-
-.code-display {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: #f7f7f7;
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    padding: 0 10px;
-    width: 110px;
-}
-
-#codeField { border: none; background: transparent; text-align: center; font-weight: bold; }
-
-#actionBtn {
+/* زر المحادثة */
+.main-action-btn {
     width: 100%;
     padding: 16px;
-    background: #25d366;
+    background: #25D366;
     color: white;
     border: none;
     border-radius: 12px;
@@ -136,21 +193,41 @@ input:focus { border-color: #25d366; }
     align-items: center;
     justify-content: center;
     gap: 10px;
+    margin-top: 10px;
+    transition: transform 0.1s;
 }
 
-.footer-share {
+.main-action-btn:active { transform: scale(0.98); }
+
+/* الفوتر والمشاركة */
+.footer-area {
+    padding: 20px;
     text-align: center;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
+    border-top: 1px solid #f0f0f0;
+    margin-top: auto;
 }
 
-#lblShare { color: #888; font-size: 14px; margin-bottom: 15px; }
-
-.share-buttons { display: flex; justify-content: center; gap: 15px; }
-.s-btn {
-    width: 45px; height: 45px; border-radius: 50%;
-    border: none; color: white; font-size: 20px; cursor: pointer;
+#shareLabel {
+    color: #888;
+    font-size: 13px;
+    margin-bottom: 10px;
 }
-.fb { background: #1877f2; }
-.wa { background: #25d366; }
-.nat { background: #333; }
+
+.share-system-btn {
+    background: #333;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 30px;
+    font-size: 15px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.copyright {
+    margin-top: 15px;
+    font-size: 12px;
+    color: #ccc;
+}
