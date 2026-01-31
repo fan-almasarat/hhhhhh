@@ -3,63 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Zol Chat Pro | المساعد الذكي</title>
-    
-    <link rel="stylesheet" href="style.css?v=2026">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <title>دردشة مباشرة | أداة ذكية</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
 
-    <div class="app-card">
-        <header class="app-header">
-            <div class="logo-circle">
-                <img src="whatsapp-icon.png" alt="logo">
-            </div>
-            <h1>دردشة فورية</h1>
-            <p>أدخل الرقم وابدأ المراسلة فوراً</p>
+    <div class="main-container">
+        <header class="header">
+            <img src="whatsapp-icon.png" alt="logo" class="logo">
+            <h1>دردشة سريعة</h1>
+            <p>راسل أي رقم دون الحاجة لحفظه</p>
         </header>
 
-        <div class="main-form">
-            <div class="input-group">
-                <label><i class="fas fa-search-location"></i> ابحث عن الدولة</label>
-                <div class="search-box">
-                    <input list="countries-list" id="countrySearch" placeholder="اكتب اسم الدولة هنا..." oninput="onCountrySelect(this.value)">
+        <div class="card">
+            <div class="input-box">
+                <label>اختر أو ابحث عن الدولة</label>
+                <div class="search-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input list="countries-list" id="countrySearch" placeholder="ابحث باسم الدولة..." oninput="selectCountryByName(this.value)">
                     <datalist id="countries-list"></datalist>
                 </div>
             </div>
 
-            <div class="phone-container">
-                <div class="prefix-field">
+            <div class="phone-row">
+                <div class="code-field">
                     <span id="flagIcon" class="flag-icon flag-icon-sd"></span>
-                    <div class="plus-sign">+</div>
-                    <input type="tel" id="countryCode" value="249" oninput="onCodeInput(this.value)" maxlength="4">
+                    <span class="plus">+</span>
+                    <input type="tel" id="countryCode" value="249" oninput="identifyCountryByCode(this.value)" maxlength="4">
                 </div>
                 <div class="number-field">
                     <input type="tel" id="phoneNumber" placeholder="رقم الهاتف" inputmode="numeric">
                 </div>
             </div>
 
-            <button class="action-btn" onclick="openWhatsApp()">
-                <span>فتح المحادثة</span>
+            <button class="send-btn" onclick="startChat()">
+                <span>ابدأ المحادثة</span>
                 <i class="fab fa-whatsapp"></i>
             </button>
         </div>
 
-        <div class="recent-header">المراسلات الأخيرة</div>
-        <div id="recentHistory" class="history-grid">
-            </div>
+        <div class="history-label">المراسلات الأخيرة</div>
+        <div id="recentHistory" class="history-container"></div>
 
-        <footer class="app-footer">
-            <div class="social-links">
-                <button onclick="shareApp('whatsapp')"><i class="fab fa-whatsapp"></i></button>
-                <button onclick="shareApp('facebook')"><i class="fab fa-facebook-f"></i></button>
+        <footer class="footer">
+            <div class="shares">
+                <button onclick="shareApp('whatsapp')" class="sh-wa"><i class="fab fa-whatsapp"></i></button>
+                <button onclick="shareApp('facebook')" class="sh-fb"><i class="fab fa-facebook-f"></i></button>
             </div>
-            <p>© 2026 تم التطوير بواسطة <b>Abdulaziz</b></p>
+            <p>تم التطوير بواسطة <b>Abdulaziz</b></p>
         </footer>
     </div>
 
-    <script src="script.js?v=2026"></script>
+    <script src="script.js"></script>
 </body>
 </html>
