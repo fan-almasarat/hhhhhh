@@ -3,123 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Smart Direct</title>
+    <title>WhatsApp Direct - Zol Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@19.2.16/build/css/intlTelInput.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
-        body { background-color: #0b141a; color: white; font-family: 'Tajawal', sans-serif; overflow: hidden; }
-        .app-card { background: #111b21; border: 1px solid rgba(255,255,255,0.05); }
-        .input-group { background: #2a3942; border: 1px solid #3b4a54; border-radius: 15px; }
-        .search-dropdown { display: none; position: absolute; top: 100%; right: 0; width: 100%; max-height: 250px; background: #202c33; border: 1px solid #3b4a54; z-index: 100; overflow-y: auto; border-radius: 12px; margin-top: 5px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        .search-dropdown.active { display: block; }
-        .country-row { padding: 12px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
-        .country-row:hover { background: #2a3942; }
+        body { background-color: #0b141a; font-family: 'Tajawal', sans-serif; color: white; }
+        
+        /* مطابقة تنسيق الموقع المطلوب */
+        .iti { width: 100%; display: block; }
+        .iti__flag-container { border-radius: 12px 0 0 12px; }
+        .iti__selected-flag { background-color: #202c33 !important; padding: 0 15px !important; border-radius: 12px 0 0 12px; }
+        
+        /* قائمة الدول والبحث */
+        .iti__country-list { 
+            background-color: #111b21 !important; 
+            border: 1px solid #2a3942 !important; 
+            color: white !important;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 320px;
+        }
+        .iti__search-input {
+            background-color: #202c33 !important;
+            color: white !important;
+            border: 1px solid #3b4a54 !important;
+            padding: 10px !important;
+            margin: 8px !important;
+            border-radius: 8px !important;
+            width: calc(100% - 16px) !important;
+            text-align: right;
+        }
+        .iti__country:hover { background-color: #2a3942 !important; }
+        .iti__dial-code { color: #25D366 !important; font-weight: bold; }
+
+        /* تنسيق الحقل */
+        .phone-field {
+            background-color: #2a3942 !important;
+            border: 1px solid #3b4a54 !important;
+            color: white !important;
+            font-size: 1.25rem !important;
+            padding: 15px 15px 15px 100px !important; /* مساحة للعلم والمفتاح */
+            border-radius: 15px !important;
+            width: 100%;
+            outline: none;
+        }
+        .phone-field:focus { border-color: #25D366 !important; }
+
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
 
-    <div class="w-full max-w-md app-card p-6 rounded-[2rem] shadow-2xl border border-white/5">
-        <div class="text-center mb-6">
-            <h1 class="text-xl font-bold text-[#25D366]">واتساب المباشر الذكي</h1>
-            <p class="text-gray-400 text-[10px] mt-1 uppercase tracking-widest">تغيير تلقائي للعلم والبحث بالعربي</p>
+    <div class="w-full max-w-md bg-[#111b21] p-8 rounded-[2rem] shadow-2xl border border-white/5">
+        <div class="text-center mb-10">
+            <h1 class="text-2xl font-bold text-[#25D366]">مراسلة واتساب مباشرة</h1>
+            <p class="text-gray-400 text-sm mt-2">مثل الموقع المطلوب - بحث وربط تلقائي</p>
         </div>
 
-        <div class="space-y-5">
-            <div class="relative">
-                <label class="text-[10px] font-bold text-gray-500 uppercase mr-1">رقم الهاتف</label>
-                <div class="input-group flex items-center mt-1 p-1 overflow-visible" dir="ltr">
-                    <div class="px-3 border-r border-[#3b4a54] cursor-pointer" onclick="toggleSearch()">
-                        <span id="flag-display" class="text-2xl">🇸🇦</span>
-                    </div>
-                    <div class="flex items-center text-[#25D366] font-bold px-2">
-                        <span>+</span>
-                        <input type="number" id="dial-code" value="966" class="w-14 bg-transparent outline-none text-center text-lg" oninput="codeToFlag()">
-                    </div>
-                    <input type="number" id="phone-input" placeholder="50xxxxxxx" class="flex-1 bg-transparent p-3 outline-none text-lg text-white">
-                </div>
-
-                <div id="dropdown" class="search-dropdown" dir="rtl">
-                    <input type="text" id="search-box" placeholder="بحث باسم الدولة (مثلاً: السودان)..." class="w-full p-3 bg-[#111b21] border-none text-sm outline-none sticky top-0" oninput="filterData()">
-                    <div id="list-items"></div>
-                </div>
+        <div class="space-y-6">
+            <div class="relative" dir="ltr">
+                <label class="block text-right text-[11px] font-bold text-gray-500 uppercase mb-2 mr-2">رقم الجوال</label>
+                <input type="tel" id="phone" class="phone-field" placeholder="50xxxxxxx">
             </div>
 
             <div class="text-right">
-                <label class="text-[10px] font-bold text-gray-500 uppercase mr-1">الرسالة</label>
-                <textarea id="msg-text" rows="2" class="w-full input-group p-4 mt-1 text-sm outline-none resize-none" placeholder="اكتب رسالتك هنا..."></textarea>
+                <label class="block text-[11px] font-bold text-gray-500 uppercase mb-2 mr-2">الرسالة (اختياري)</label>
+                <textarea id="message" rows="3" class="w-full bg-[#2a3942] border border-[#3b4a54] rounded-2xl p-4 text-white outline-none focus:border-[#25D366] resize-none" placeholder="اكتب رسالتك هنا..."></textarea>
             </div>
 
-            <button onclick="launch()" class="w-full bg-[#25D366] hover:bg-[#1ebd5e] text-black py-4 rounded-xl font-bold text-lg transition-transform active:scale-95">
-                مراسلة الآن
+            <button onclick="send()" class="w-full bg-[#25D366] hover:bg-[#1ebd5e] text-black py-4 rounded-2xl font-bold text-xl transition-all active:scale-95 shadow-lg flex items-center justify-center gap-2">
+                <span>إرسال عبر واتساب</span>
             </button>
         </div>
+        
+        <p class="text-center text-[10px] text-gray-600 mt-8 tracking-widest uppercase">Smart Dialing System 2026</p>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@19.2.16/build/js/intlTelInput.min.js"></script>
     <script>
-        // قاعدة بيانات كاملة لأهم الدول (يمكنك إضافة المزيد بنفس النمط)
-        const data = [
-            {n:"السعودية", c:"966", f:"🇸🇦"}, {n:"مصر", c:"20", f:"🇪🇬"},
-            {n:"السودان", c:"249", f:"🇸🇩"}, {n:"الإمارات", c:"971", f:"🇦🇪"},
-            {n:"الكويت", c:"965", f:"🇰🇼"}, {n:"قطر", c:"974", f:"🇶🇦"},
-            {n:"عمان", c:"968", f:"🇴🇲"}, {n:"البحرين", c:"973", f:"🇧🇭"},
-            {n:"الأردن", c:"962", f:"🇯🇴"}, {n:"العراق", c:"964", f:"🇮🇶"},
-            {n:"اليمن", c:"967", f:"🇾🇪"}, {n:"سوريا", c:"963", f:"🇸🇾"},
-            {n:"لبنان", c:"961", f:"🇱🇧"}, {n:"فلسطين", c:"970", f:"🇵🇸"},
-            {n:"المغرب", c:"212", f:"🇲🇦"}, {n:"تونس", c:"216", f:"🇹🇳"},
-            {n:"الجزائر", c:"213", f:"🇩🇿"}, {n:"ليبيا", c:"218", f:"🇱🇾"},
-            {n:"تركيا", c:"90", f:"🇹🇷"}, {n:"بريطانيا", c:"44", f:"🇬🇧"},
-            {n:"أمريكا", c:"1", f:"🇺🇸"}
-        ];
+        const phoneInput = document.querySelector("#phone");
 
-        const flagDisp = document.getElementById('flag-display');
-        const dialInput = document.getElementById('dial-code');
-        const listItems = document.getElementById('list-items');
-        const dropdown = document.getElementById('dropdown');
+        // خارطة أسماء الدول بالعربي لدعم البحث
+        const arabicMap = {
+            "sa": "السعودية", "eg": "مصر", "sd": "السودان", "ae": "الإمارات",
+            "kw": "الكويت", "qa": "قطر", "jo": "الأردن", "ps": "فلسطين",
+            "iq": "العراق", "ye": "اليمن", "ma": "المغرب", "dz": "الجزائر",
+            "sy": "سوريا", "lb": "لبنان", "ly": "ليبيا", "om": "عمان", "bh": "البحرين"
+        };
 
-        function renderList(list) {
-            listItems.innerHTML = list.map(i => `
-                <div class="country-row" onclick="selectCountry('${i.f}', '${i.c}')">
-                    <span>${i.f} ${i.n}</span>
-                    <span class="text-[#25D366] font-mono">+${i.c}</span>
-                </div>
-            `).join('');
+        // تهيئة المكتبة بنفس منطق الموقع المذكور
+        const iti = window.intlTelInput(phoneInput, {
+            initialCountry: "sa",
+            separateDialCode: true, // إظهار المفتاح بجانب العلم
+            countrySearch: true,    // تفعيل محرك البحث
+            i18n: { 
+                searchPlaceholder: "بحث عن دولة...",
+                ...arabicMap 
+            },
+            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@19.2.16/build/js/utils.js"
+        });
+
+        // ميزة "الذكاء": إذا كتب المستخدم مفتاح الدولة يدوياً يتغير العلم
+        phoneInput.addEventListener('input', function() {
+            const fullValue = phoneInput.value;
+            // التحقق إذا كان المستخدم يحاول كتابة كود دولة
+            if (fullValue.startsWith('+') || fullValue.length > 1) {
+                // المكتبة تقوم بالتعرف التلقائي على الكود وتغيير العلم
+            }
+        });
+
+        function send() {
+            const number = iti.getNumber(); // يجلب الرقم كاملاً مع الكود
+            const msg = encodeURIComponent(document.getElementById('message').value);
+            
+            if (!iti.isValidNumber()) {
+                alert("يرجى إدخال رقم هاتف صحيح");
+                return;
+            }
+
+            // فتح الرابط المباشر
+            const finalUrl = `https://wa.me/${number.replace('+', '')}?text=${msg}`;
+            window.open(finalUrl, '_blank');
         }
-
-        function toggleSearch() { dropdown.classList.toggle('active'); document.getElementById('search-box').focus(); }
-
-        function selectCountry(f, c) {
-            flagDisp.innerText = f;
-            dialInput.value = c;
-            dropdown.classList.remove('active');
-        }
-
-        // الميزة الذكية: تغير العلم بمجرد كتابة الكود
-        function codeToFlag() {
-            const val = dialInput.value;
-            const found = data.find(i => i.c === val);
-            if (found) flagDisp.innerText = found.f;
-        }
-
-        function filterData() {
-            const q = document.getElementById('search-box').value;
-            const filtered = data.filter(i => i.n.includes(q) || i.c.includes(q));
-            renderList(filtered);
-        }
-
-        function launch() {
-            const code = dialInput.value;
-            let phone = document.getElementById('phone-input').value;
-            const msg = encodeURIComponent(document.getElementById('msg-text').value);
-            if(!code || !phone) return alert("يا زول كمل البيانات!");
-            if(phone.startsWith('0')) phone = phone.substring(1);
-            window.open(`https://wa.me/${code}${phone}?text=${msg}`, '_blank');
-        }
-
-        // إغلاق عند الضغط خارجاً
-        window.onclick = (e) => { if(!e.target.closest('.relative')) dropdown.classList.remove('active'); };
-
-        renderList(data);
     </script>
 </body>
 </html>
