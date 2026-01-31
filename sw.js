@@ -1,10 +1,51 @@
-const cacheName = 'wa-direct-v1';
-const assets = ['./', './index.html', './manifest.json'];
+const CACHE_NAME = 'whatsapp-messenger-v20251227'; //  *** رقم الإصدار الجديد ***
+const urlsToCache = [
+    './', // يشير إلى index.html في هذا المسار
+    'index.html?v=20251227', 
+    'style.css?v=20251227', 
+    'script.js?v=20251227', 
+    'manifest.json?v=20251227', 
+    'https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css',
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
+    'https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap',
+    'whatsapp-icon.png'
+];
 
-self.addEventListener('install', e => {
-    e.waitUntil(caches.open(cacheName).then(cache => cache.addAll(assets)));
+self.addEventListener('install', event => {
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then(cache => {
+                console.log('Opened cache');
+                return cache.addAll(urlsToCache);
+            })
+    );
 });
 
-self.addEventListener('fetch', e => {
-    e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
+self.addEventListener('fetch', event => {
+    event.respondWith(
+        caches.match(event.request)
+            .then(response => {
+                if (response) {
+                    return response;
+                }
+                return fetch(event.request);
+            }
+        )
+    );
 });
+
+self.addEventListener('activate', event => {
+    const cacheWhitelist = [CACHE_NAME];
+    event.waitUntil(
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => {
+                    if (cacheWhitelist.indexOf(cacheName) === -1) {
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        })
+    );
+});
+
