@@ -1,75 +1,83 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" id="appHtml">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>دردشة مباشرة | المساعد الذكي</title>
-    
-    <link rel="stylesheet" href="style.css?v=2026">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet">
+    <title id="mainTitle">دردشة مباشرة</title>
+    <link rel="stylesheet" href="style.css?v=2.0">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
     <link rel="manifest" href="manifest.json">
-    <link rel="shortcut icon" href="whatsapp-icon.png" type="image/png">
 </head>
 <body>
-    
-    <div class="page-wrapper"> 
+    <div class="page-wrapper" id="pageWrapper">
+        <nav class="top-nav">
+            <button id="langToggle" onclick="toggleLanguage()" class="nav-btn">English</button>
+            <button id="installButton" class="nav-btn install-btn" style="display: none;"><i class="fas fa-download"></i></button>
+        </nav>
+
         <header class="app-header">
-            <img src="whatsapp-icon.png" alt="WhatsApp Icon" class="main-logo">
-            <h1 class="app-heading">دردشة زول</h1>
-            <p class="description">راسل أي رقم دولي أو محلي دون الحاجة لحفظه.</p>
+            <div class="logo-container">
+                <img src="whatsapp-icon.png" alt="Logo" class="main-logo">
+            </div>
+            <h1 id="txtTitle" class="app-heading">دردشة مباشرة</h1>
+            <p id="txtDesc" class="description">أسرع وسيلة للمراسلة دون حفظ الرقم.</p>
         </header>
 
-        <button id="installButton" class="install-prompt-button" style="display: none;">
-            <i class="fas fa-download"></i> تثبيت التطبيق على جهازك
-        </button>
-        
-        <main class="main-content">
-            <div class="input-container">
-                <label for="countrySearch" class="input-label">اختر الدولة أو ابحث عنها:</label>
-                <div class="search-box">
-                    <i class="fas fa-search search-icon"></i>
-                    <input list="country-options" id="countrySearch" placeholder="ابحث عن دولتك..." oninput="onCountrySelect(this.value)">
+        <main class="main-form">
+            <div class="input-group">
+                <label id="lblCountry" for="countryInput">اختر الدولة:</label>
+                <div class="search-wrapper">
+                    <input list="country-options" id="countryInput" placeholder="بحث عن دولة..." onchange="handleCountrySelection(this.value)">
                     <datalist id="country-options"></datalist>
                 </div>
             </div>
 
-            <div class="input-container">
-                <label class="input-label">أدخل رقم الهاتف:</label>
-                <div class="phone-input-wrapper">
-                    <div class="code-field">
-                        <span id="flagIcon" class="flag-icon flag-icon-sd"></span>
-                        <span class="plus-sign">+</span>
-                        <input type="tel" id="countryCode" value="249" maxlength="4" oninput="onCodeInput(this.value)" placeholder="الرمز">
-                    </div>
-                    <div class="number-field">
-                        <input type="tel" id="phoneInput" placeholder="أدخل الرقم هنا..." inputmode="numeric">
-                    </div>
+            <div class="phone-row">
+                <div class="country-box">
+                    <span id="currentFlag" class="flag-icon flag-icon-sd"></span>
+                    <input type="tel" id="codeInput" value="+249" oninput="handleCodeInput(this.value)">
                 </div>
+                <input type="tel" id="phoneInput" placeholder="رقم الهاتف" inputmode="numeric">
             </div>
 
-            <button id="whatsappButton" class="main-btn" onclick="openWhatsApp()">
-                <i class="fab fa-whatsapp"></i> بدء المحادثة الآن
+            <div class="input-group">
+                <label id="lblMsg" for="messageInput">الرسالة (اختياري):</label>
+                <textarea id="messageInput" placeholder="اكتب رسالتك هنا...">السلام عليكم</textarea>
+            </div>
+
+            <button id="whatsappButton" class="btn-primary" onclick="openWhatsApp()">
+                <i class="fab fa-whatsapp"></i> <span id="btnChat">بدء المحادثة</span>
+            </button>
+            
+            <button id="qrButton" class="btn-secondary" onclick="toggleQRScanner()">
+                <i class="fas fa-qrcode"></i> <span id="btnQR">مسح باركود</span>
             </button>
         </main>
 
-        <section class="share-section">
-            <p class="share-title">شارك الفائدة مع أصدقائك:</p>
+        <div class="share-section">
+            <p id="txtShare" class="share-title">شارك التطبيق:</p>
             <div class="share-grid">
-                <button class="share-btn fb" onclick="shareApp('facebook')"><i class="fab fa-facebook-f"></i></button>
-                <button class="share-btn share-native" onclick="shareContentInSamePage()"><i class="fas fa-share-alt"></i></button>
-                <button class="share-btn wa" onclick="shareApp('whatsapp')"><i class="fab fa-whatsapp"></i></button>
+                <button class="share-card" onclick="nativeShare()"><i class="fas fa-share-nodes"></i></button>
+                <button class="share-card wa" onclick="shareSocial('whatsapp')"><i class="fab fa-whatsapp"></i></button>
+                <button class="share-card fb" onclick="shareSocial('facebook')"><i class="fab fa-facebook-f"></i></button>
             </div>
-        </section>
-        
+        </div>
+
         <footer class="app-footer">
-            <a href="https://linktr.ee/abdul3ziz95" target="_blank" class="contact-link">📞 المطور: Abdulaziz Khalifa</a>
-            <p class="copyright">جميع الحقوق محفوظة © 2026</p>
+            <p class="copyright">© 2026 Abdul3ziz95</p>
         </footer>
     </div>
-    
-    <script src="script.js?v=2026"></script>
+
+    <div id="qrModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="toggleQRScanner()">&times;</span>
+            <div id="reader"></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="script.js?v=2.0"></script>
 </body>
 </html>
