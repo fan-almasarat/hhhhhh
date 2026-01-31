@@ -3,102 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ZOL CHAT PRO | النسخة المتكاملة</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>ZOL CHAT PRO | النسخة الكاملة</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    
+    <script src="https://unpkg.com/@zxing/library@latest"></script>
 </head>
 <body>
 
-    <div id="qrScannerOverlay" class="scanner-overlay">
-        <div class="scanner-header">
-            <button onclick="closeScanner()"><i class="fas fa-times"></i> إغلاق الماسح</button>
-            <p>ضع الباركود داخل المربع</p>
+    <div id="qrOverlay" class="scanner-screen">
+        <div class="scanner-top">
+            <button onclick="stopScanner()" class="exit-btn"><i class="fas fa-times"></i> إغلاق الكاميرا</button>
+            <p>وجه المربع نحو رمز الباركود</p>
         </div>
-        <div id="interactive" class="viewport">
-            <div class="scan-region-highlight"></div>
+        <div class="scanner-window">
+            <video id="videoElement"></video>
+            <div class="scan-laser"></div>
         </div>
-        <video id="video" style="width: 100%; height: 100%; object-fit: cover;"></video>
     </div>
 
-    <div class="app-shell">
-        <header class="main-header">
-            <div class="logo-area">
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo-group">
                 <div class="logo-icon"><i class="fab fa-whatsapp"></i></div>
                 <div class="logo-text">
                     <h1>ZOL CHAT <span>PRO</span></h1>
-                    <small>المراسلة الذكية 2026</small>
+                    <small>المراسلة الفورية المباشرة</small>
                 </div>
             </div>
-            <button class="qr-trigger" onclick="openScanner()">
+            <button class="scanner-trigger" onclick="startScanner()">
                 <i class="fas fa-qrcode"></i>
-                <span>مسح باركود</span>
+                <span>مسح كود</span>
             </button>
         </header>
 
-        <main class="content-area">
+        <main class="app-main">
             
-            <div class="glass-card">
-                <div class="status-pill">تحديد تلقائي للدولة: <span id="currentStatus">جاري الفحص...</span></div>
-                
-                <div class="input-section">
-                    <label>ابحث عن الدولة</label>
-                    <div class="search-box">
-                        <i class="fas fa-globe search-i"></i>
-                        <input type="text" id="countrySearch" placeholder="السعودية، مصر، الإمارات...">
-                        <div id="countryDropdown" class="mega-dropdown"></div>
+            <div class="action-card">
+                <div class="badge"><i class="fas fa-location-arrow"></i> تحديد تلقائي: <span id="locationSpan">جاري الفحص...</span></div>
+
+                <div class="field">
+                    <label>ابحث عن اسم الدولة أو مفتاحها</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-search s-icon"></i>
+                        <input type="text" id="countrySearch" placeholder="مثال: السعودية أو 966" autocomplete="off">
+                        <div id="countryList" class="drop-menu"></div>
                     </div>
                 </div>
 
-                <div class="input-section">
-                    <label>رقم الهاتف الواتساب</label>
-                    <div class="phone-box">
-                        <div class="country-flag-pill">
-                            <span id="activeFlag" class="flag-icon flag-icon-sa"></span>
-                            <span id="activeCode">+966</span>
+                <div class="field">
+                    <label>رقم هاتف الواتساب</label>
+                    <div class="phone-wrap">
+                        <div class="flag-box" id="currentFlagBtn">
+                            <span id="flagIcon" class="flag-icon flag-icon-sa"></span>
+                            <span id="dialCode">+966</span>
                         </div>
-                        <input type="tel" id="phoneNumber" placeholder="50xxxxxxx" inputmode="numeric">
+                        <input type="tel" id="phoneNumber" placeholder="ادخل الرقم بدون صفر" inputmode="numeric">
                     </div>
                 </div>
 
-                <button class="send-btn" onclick="startChat()">
-                    <span>بدء المحادثة الفورية</span>
-                    <i class="fas fa-paper-plane"></i>
+                <button class="submit-btn" onclick="openWhatsApp()">
+                    <span>بدء المحادثة الآن</span>
+                    <i class="fab fa-whatsapp"></i>
                 </button>
             </div>
 
             <div class="follow-section">
-                <a href="https://linktr.ee/abdul3ziz95" target="_blank" class="follow-card">
-                    <div class="follow-info">
-                        <div class="avatar"><img src="https://via.placeholder.com/50" alt="Admin"></div>
-                        <div class="names">
+                <a href="https://linktr.ee/abdul3ziz95" target="_blank" class="follow-bar">
+                    <div class="admin-info">
+                        <div class="admin-avatar"><i class="fas fa-user-shield"></i></div>
+                        <div class="admin-meta">
                             <strong>عبدالعزيز | Abdul3ziz95</strong>
-                            <span>تابعني على منصات التواصل</span>
+                            <span>مطور ومبرمج التطبيق</span>
                         </div>
                     </div>
-                    <div class="follow-btn">متابعة <i class="fas fa-plus"></i></div>
+                    <div class="follow-action">متابعة <i class="fas fa-plus"></i></div>
                 </a>
             </div>
 
         </main>
 
-        <footer class="app-nav">
-            <button class="nav-btn" onclick="shareSystem()">
-                <i class="fas fa-share-alt"></i>
+        <footer class="app-footer">
+            <button class="footer-item" onclick="systemShare()">
+                <i class="fas fa-external-link-alt"></i>
                 <span>مشاركة</span>
             </button>
             
-            <div class="nav-divider"></div>
+            <div class="footer-line"></div>
 
-            <a href="https://linktr.ee/abdul3ziz95" target="_blank" class="nav-btn">
-                <i class="fas fa-headset"></i>
+            <a href="https://linktr.ee/abdul3ziz95" target="_blank" class="footer-item">
+                <i class="fas fa-id-card"></i>
                 <span>اتصل بي</span>
             </a>
         </footer>
     </div>
 
-    <script src="https://unpkg.com/@zxing/library@latest"></script>
     <script src="script.js"></script>
 </body>
 </html>
