@@ -2,186 +2,263 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ZOL CHAT</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ZOL CHAT ULTIMATE</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body { background: #f0f2f5; height: 100vh; display: flex; flex-direction: column; }
+        :root { --wa: #25D366; --dark: #111b21; --gray: #667781; --bg: #f0f2f5; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
         
-        header { background: #fff; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; }
-        .logo { color: #25D366; font-weight: bold; font-size: 20px; display: flex; align-items: center; gap: 8px; }
-        .lang-btn { background: #25D366; color: #fff; border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        body, html { height: 100%; width: 100%; overflow: hidden; background: var(--bg); color: var(--dark); }
+        
+        .app-container { max-width: 500px; margin: 0 auto; height: 100%; background: #fff; display: flex; flex-direction: column; position: relative; }
+        
+        header { background: #fff; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
+        .logo { color: var(--wa); font-weight: 900; font-size: 22px; display: flex; align-items: center; gap: 8px; }
+        .lang-toggle { background: var(--wa); color: #fff; border: none; padding: 6px 12px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 13px; }
 
-        main { flex: 1; padding: 20px; overflow-y: auto; }
-        .card { background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        main { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .card { background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #eee; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         
-        label { display: block; margin-bottom: 8px; font-weight: bold; font-size: 14px; color: #555; }
-        .search-box { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 700; font-size: 13px; color: var(--gray); }
+        .input-field { width: 100%; padding: 12px; border: 2px solid #f0f2f5; border-radius: 10px; background: #f9f9f9; font-size: 15px; font-weight: 600; outline: none; margin-bottom: 10px; }
         
-        .phone-row { display: flex; gap: 10px; margin-bottom: 15px; }
-        .code-box { width: 80px; background: #eee; display: flex; align-items: center; justify-content: center; border-radius: 8px; padding: 5px; }
-        .code-box input { width: 100%; border: none; background: transparent; text-align: center; font-weight: bold; font-size: 16px; outline: none; }
-        
-        .num-input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 18px; font-weight: bold; outline: none; }
-        .msg-input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; height: 80px; margin-bottom: 10px; resize: none; }
+        .phone-input-row { display: flex; gap: 8px; margin-bottom: 10px; }
+        .country-selector { width: 100px; background: #f0f2f5; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 5px; border: 2px solid #f0f2f5; cursor: pointer; }
+        .country-selector input { width: 45px; border: none; background: transparent; font-weight: 800; text-align: center; font-size: 15px; outline: none; }
+        .phone-box { flex: 1; }
 
-        .sug-box { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; }
-        .sug-chip { background: #e7f8ef; color: #075E54; padding: 8px 15px; border-radius: 20px; border: none; font-size: 12px; font-weight: bold; white-space: nowrap; cursor: pointer; }
+        .sug-container { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 8px; }
+        .sug-item { background: #e7f8ef; color: #075E54; padding: 6px 12px; border-radius: 15px; border: none; font-size: 12px; font-weight: 700; white-space: nowrap; cursor: pointer; }
 
-        .btn-send { width: 100%; background: #25D366; color: #fff; border: none; padding: 15px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-primary { width: 100%; background: var(--wa); color: #fff; border: none; padding: 16px; border-radius: 12px; font-size: 17px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 5px; }
         
-        .btn-qr { width: 100%; background: #111b21; color: #fff; border: none; padding: 15px; border-radius: 10px; margin-top: 15px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+        .history-card { margin-top: 5px; }
+        .history-list { display: flex; flex-direction: column; }
+        .history-entry { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f5f5f5; cursor: pointer; }
         
-        #cam-layer { position: fixed; inset: 0; background: #000; z-index: 9999; display: none; flex-direction: column; }
-        video { width: 100%; height: 80%; object-fit: cover; }
+        .scan-btn { width: 100%; background: var(--dark); color: #fff; border: none; padding: 15px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; margin-top: 5px; }
 
-        footer { background: #fff; padding: 10px; display: flex; justify-content: space-around; border-top: 1px solid #ddd; }
-        .nav-item { border: none; background: none; color: #666; font-size: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        #camera-modal { position: fixed; inset: 0; background: #000; z-index: 10000; display: none; flex-direction: column; }
+        #video-stream { width: 100%; height: 100%; object-fit: cover; }
+        .scan-region { position: absolute; inset: 0; margin: auto; width: 260px; height: 260px; border: 3px solid var(--wa); border-radius: 20px; box-shadow: 0 0 0 2000px rgba(0,0,0,0.6); }
+
+        footer { background: #fff; padding: 8px; display: flex; justify-content: space-around; border-top: 1px solid #eee; }
+        .nav-link { border: none; background: none; color: var(--gray); font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; }
+        .nav-link.active { color: var(--wa); }
         
         body.en { direction: ltr; }
     </style>
 </head>
-<body id="b">
+<body id="body">
 
-    <div id="cam-layer">
-        <button onclick="stopScan()" style="padding: 20px; background: red; color: white; border: none; width: 100%;">إغلاق الكاميرا / Close</button>
-        <video id="v" playsinline></video>
+    <div id="camera-modal">
+        <div style="position:absolute; top:20px; width:100%; text-align:center; z-index:100;">
+            <button onclick="stopScanning()" style="background:var(--wa); color:white; border:none; padding:10px 30px; border-radius:50px; font-weight:900;">إلغاء المسح</button>
+        </div>
+        <video id="video-stream" playsinline></video>
+        <div class="scan-region"></div>
     </div>
 
-    <header>
-        <div class="logo"><i class="fab fa-whatsapp"></i> ZOL CHAT</div>
-        <button class="lang-btn" onclick="toggleLang()" id="lb">English</button>
-    </header>
+    <div class="app-container">
+        <header>
+            <div class="logo"><i class="fab fa-whatsapp"></i> ZOL CHAT</div>
+            <button class="lang-toggle" onclick="changeLang()" id="lBtn">English</button>
+        </header>
 
-    <main>
-        <div class="card">
-            <label id="t1">ابحث عن الدولة</label>
-            <input type="text" id="s" class="search-box" placeholder="مثال: السودان">
+        <main>
+            <div class="card">
+                <label id="txt1">ابحث عن الدولة أو المفتاح</label>
+                <input type="text" id="cSearch" class="input-field" placeholder="السودان، السعودية، 249...">
 
-            <label id="t2">رقم الجوال</label>
-            <div class="phone-row">
-                <div class="code-box">
-                    <span id="flag" class="flag-icon flag-icon-sd"></span>
-                    <input type="tel" id="c" value="249">
+                <label id="txt2">رقم الجوال</label>
+                <div class="phone-input-row">
+                    <div class="country-selector">
+                        <span id="flagIcon" class="flag-icon flag-icon-sd"></span>
+                        <input type="tel" id="pCode" value="249">
+                    </div>
+                    <input type="tel" id="pNum" class="input-field phone-box" placeholder="ادخل الرقم" inputmode="numeric">
                 </div>
-                <input type="tel" id="n" class="num-input" placeholder="ادخل الرقم">
+
+                <label id="txt3">الرسالة</label>
+                <textarea id="pMsg" class="input-field" style="height:70px; margin-bottom:5px;">السلام عليكم</textarea>
+                
+                <div class="sug-container" id="suggestions"></div>
+
+                <button class="btn-primary" onclick="launchWA()">
+                    <span id="txt4">فتح محادثة</span> <i class="fas fa-paper-plane"></i>
+                </button>
             </div>
 
-            <label id="t3">الرسالة</label>
-            <textarea id="m" class="msg-input">السلام عليكم</textarea>
-            
-            <div class="sug-box" id="sugs"></div>
-
-            <button class="btn-send" onclick="openWA()">
-                <span id="t4">فتح محادثة</span> <i class="fas fa-paper-plane"></i>
+            <button class="scan-btn" onclick="startScanning()">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <i class="fas fa-qrcode" style="font-size:24px; color:var(--wa);"></i>
+                    <div style="text-align:right;">
+                        <b id="txt5">مسح باركود واتساب</b><br>
+                        <small id="txt6" style="color:#8696a0;">التوجيه التلقائي للمحادثة</small>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-left" id="arr"></i>
             </button>
-        </div>
 
-        <button class="btn-qr" onclick="startScan()">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <i class="fas fa-qrcode" style="font-size:24px;"></i>
-                <div style="text-align:right;">
-                    <b id="t5" style="display:block;">مسح باركود</b>
-                    <small id="t6">فتح الكاميرا</small>
-                </div>
+            <div class="card history-card">
+                <label id="txt7">آخر المراسلات</label>
+                <div id="historyList" class="history-list"></div>
             </div>
-            <i class="fas fa-chevron-left" id="arr"></i>
-        </button>
-    </main>
+        </main>
 
-    <footer>
-        <button class="nav-item" onclick="location.reload()"><i class="fas fa-home"></i><span id="t7">الرئيسية</span></button>
-        <button class="nav-item" onclick="share()"><i class="fas fa-share"></i><span id="t8">مشاركة</span></button>
-        <a href="https://linktr.ee/abdul3ziz95" class="nav-item" style="text-decoration:none;"><i class="fas fa-user"></i><span id="t9">المطور</span></a>
-    </footer>
+        <footer>
+            <button class="nav-link active" onclick="location.reload()"><i class="fas fa-home"></i><span id="n1">الرئيسية</span></button>
+            <button class="nav-link" onclick="shareApp()"><i class="fas fa-share-nodes"></i><span id="n2">مشاركة</span></button>
+            <a href="https://linktr.ee/abdul3ziz95" target="_blank" class="nav-link" style="text-decoration:none;"><i class="fas fa-user-check"></i><span id="n3">المطور</span></a>
+        </footer>
+    </div>
 
     <script src="https://unpkg.com/@zxing/library@latest"></script>
     <script>
-        const countries = [
+        // قاعدة بيانات الدول الشاملة
+        const COUNTRIES = [
             {n:"السودان", e:"Sudan", c:"249", i:"sd"}, {n:"السعودية", e:"Saudi Arabia", c:"966", i:"sa"},
             {n:"مصر", e:"Egypt", c:"20", i:"eg"}, {n:"الإمارات", e:"UAE", c:"971", i:"ae"},
-            {n:"أمريكا", e:"USA", c:"1", i:"us"}, {n:"كندا", e:"Canada", c:"1", i:"ca"}
+            {n:"الكويت", e:"Kuwait", c:"965", i:"kw"}, {n:"قطر", e:"Qatar", c:"974", i:"qa"},
+            {n:"عمان", e:"Oman", c:"968", i:"om"}, {n:"البحرين", e:"Bahrain", c:"973", i:"bh"},
+            {n:"الأردن", e:"Jordan", c:"962", i:"jo"}, {n:"العراق", e:"Iraq", c:"964", i:"iq"},
+            {n:"اليمن", e:"Yemen", c:"967", i:"ye"}, {n:"فلسطين", e:"Palestine", c:"970", i:"ps"},
+            {n:"لبنان", e:"Lebanon", c:"961", i:"lb"}, {n:"سوريا", e:"Syria", c:"963", i:"sy"},
+            {n:"المغرب", e:"Morocco", c:"212", i:"ma"}, {n:"الجزائر", e:"Algeria", c:"213", i:"dz"},
+            {n:"تونس", e:"Tunisia", c:"216", i:"tn"}, {n:"ليبيا", e:"Libya", c:"218", i:"ly"},
+            {n:"أمريكا", e:"USA", c:"1", i:"us"}, {n:"كندا", e:"Canada", c:"1", i:"ca"},
+            {n:"تركيا", e:"Turkey", c:"90", i:"tr"}, {n:"بريطانيا", e:"UK", c:"44", i:"gb"}
         ];
 
         let lang = 'ar';
         const reader = new ZXing.BrowserMultiFormatReader();
 
-        function toggleLang() {
+        // 1. اكتشاف الدولة تلقائياً حسب الموقع
+        async function autoDetect() {
+            try {
+                const res = await fetch('https://ipapi.co/json/');
+                const data = await res.json();
+                const found = COUNTRIES.find(c => c.c === data.country_calling_code.replace('+',''));
+                if(found) {
+                    document.getElementById('pCode').value = found.c;
+                    document.getElementById('flagIcon').className = `flag-icon flag-icon-${found.i}`;
+                }
+            } catch(e) { console.log("Auto-detect failed"); }
+        }
+
+        function changeLang() {
             lang = lang === 'ar' ? 'en' : 'ar';
-            document.getElementById('b').className = lang;
-            document.getElementById('b').dir = lang === 'ar' ? 'rtl' : 'ltr';
+            document.getElementById('body').className = lang;
+            document.getElementById('body').dir = lang === 'ar' ? 'rtl' : 'ltr';
             
-            const t = {
-                ar: ["ابحث عن الدولة", "رقم الجوال", "الرسالة", "فتح محادثة", "مسح باركود", "فتح الكاميرا", "الرئيسية", "مشاركة", "المطور", "ادخل الرقم", "English"],
-                en: ["Search Country", "Phone Number", "Message", "Open Chat", "Scan QR", "Open Camera", "Home", "Share", "Developer", "Enter Number", "العربية"]
+            const trans = {
+                ar: ["ابحث عن الدولة أو المفتاح", "رقم الجوال", "الرسالة", "فتح محادثة", "مسح باركود واتساب", "التوجيه التلقائي للمحادثة", "آخر المراسلات", "الرئيسية", "مشاركة", "المطور", "ادخل الرقم", "English"],
+                en: ["Search Country or Code", "Phone Number", "Message", "Open Chat", "Scan WA QR", "Auto-redirect to chat", "Recent History", "Home", "Share", "Developer", "Enter Number", "العربية"]
             };
-            const cur = t[lang];
-            document.getElementById('t1').innerText = cur[0];
-            document.getElementById('t2').innerText = cur[1];
-            document.getElementById('t3').innerText = cur[2];
-            document.getElementById('t4').innerText = cur[3];
-            document.getElementById('t5').innerText = cur[4];
-            document.getElementById('t6').innerText = cur[5];
-            document.getElementById('t7').innerText = cur[6];
-            document.getElementById('t8').innerText = cur[7];
-            document.getElementById('t9').innerText = cur[8];
-            document.getElementById('n').placeholder = cur[9];
-            document.getElementById('lb').innerText = cur[10];
+            const c = trans[lang];
+            document.getElementById('txt1').innerText = c[0]; document.getElementById('txt2').innerText = c[1];
+            document.getElementById('txt3').innerText = c[2]; document.getElementById('txt4').innerText = c[3];
+            document.getElementById('txt5').innerText = c[4]; document.getElementById('txt6').innerText = c[5];
+            document.getElementById('txt7').innerText = c[6]; document.getElementById('n1').innerText = c[7];
+            document.getElementById('n2').innerText = c[8]; document.getElementById('n3').innerText = c[9];
+            document.getElementById('pNum').placeholder = c[10]; document.getElementById('lBtn').innerText = c[11];
             document.getElementById('arr').className = lang === 'ar' ? 'fas fa-chevron-left' : 'fas fa-chevron-right';
-            
             renderSugs();
         }
 
         function renderSugs() {
-            const s = lang === 'ar' ? ["السلام عليكم", "بكم السعر؟", "ممكن الموقع؟"] : ["Hello", "Price?", "Location?"];
-            const div = document.getElementById('sugs');
+            const list = lang === 'ar' ? ["السلام عليكم", "بكم السعر؟", "أرسل الموقع"] : ["Hello", "How much?", "Send Location"];
+            const div = document.getElementById('suggestions');
             div.innerHTML = '';
-            s.forEach(txt => {
+            list.forEach(s => {
                 const b = document.createElement('button');
-                b.className = 'sug-chip'; b.innerText = txt;
-                b.onclick = () => document.getElementById('m').value = txt;
+                b.className = 'sug-item'; b.innerText = s;
+                b.onclick = () => document.getElementById('pMsg').value = s;
                 div.appendChild(b);
             });
         }
 
-        document.getElementById('s').oninput = (e) => {
-            const v = e.target.value;
-            const found = countries.find(c => c.n.includes(v) || c.e.toLowerCase().includes(v) || c.c.includes(v));
+        // البحث اليدوي عن الدولة
+        document.getElementById('cSearch').oninput = (e) => {
+            const v = e.target.value.toLowerCase();
+            const found = COUNTRIES.find(c => c.n.includes(v) || c.e.toLowerCase().includes(v) || c.c.includes(v));
             if(found) {
-                document.getElementById('c').value = found.c;
-                document.getElementById('flag').className = `flag-icon flag-icon-${found.i}`;
+                document.getElementById('pCode').value = found.c;
+                document.getElementById('flagIcon').className = `flag-icon flag-icon-${found.i}`;
             }
         };
 
-        function openWA() {
-            const code = document.getElementById('c').value.replace(/\D/g,'');
-            const num = document.getElementById('n').value.replace(/\D/g,'');
-            const msg = encodeURIComponent(document.getElementById('m').value);
-            if(num) window.open(`https://wa.me/${code}${num}?text=${msg}`, '_blank');
+        // المفتاح اليدوي (للفرق بين أمريكا وكندا)
+        document.getElementById('pCode').oninput = (e) => {
+            const v = e.target.value;
+            const found = COUNTRIES.find(c => c.c === v);
+            if(found) document.getElementById('flagIcon').className = `flag-icon flag-icon-${found.i}`;
+        };
+
+        function launchWA() {
+            const code = document.getElementById('pCode').value.replace(/\D/g,'');
+            const num = document.getElementById('pNum').value.replace(/\D/g,'');
+            const msg = encodeURIComponent(document.getElementById('pMsg').value);
+            if(num) {
+                const full = code + num;
+                addToHistory(full);
+                window.location.href = `https://wa.me/${full}?text=${msg}`;
+            }
         }
 
-        async function startScan() {
-            document.getElementById('cam-layer').style.display = 'flex';
+        // مسح الباركود والتوجيه التلقائي
+        async function startScanning() {
+            document.getElementById('camera-modal').style.display = 'flex';
             try {
                 const devs = await reader.listVideoInputDevices();
                 const back = devs.find(d => d.label.toLowerCase().includes('back')) || devs[0];
-                reader.decodeFromVideoDevice(back.deviceId, 'v', (res) => {
-                    if(res) { document.getElementById('n').value = res.text; stopScan(); }
+                reader.decodeFromVideoDevice(back.deviceId, 'video-stream', (res) => {
+                    if(res) {
+                        const url = res.text;
+                        stopScanning();
+                        // إذا كان الرابط يحتوي على رقم واتساب، وجهه مباشرة
+                        if(url.includes('wa.me') || url.includes('whatsapp.com')) {
+                            window.location.href = url;
+                        } else {
+                            // إذا كان باركود لرقم فقط
+                            document.getElementById('pNum').value = url.replace(/\D/g,'');
+                            launchWA();
+                        }
+                    }
                 });
-            } catch(e) { stopScan(); alert("Camera Error"); }
+            } catch(e) { stopScanning(); alert("خطأ في الكاميرا"); }
         }
 
-        function stopScan() { reader.reset(); document.getElementById('cam-layer').style.display = 'none'; }
+        function stopScanning() { reader.reset(); document.getElementById('camera-modal').style.display = 'none'; }
 
-        function share() {
+        function addToHistory(n) {
+            let h = JSON.parse(localStorage.getItem('zol_hist') || '[]');
+            if(!h.includes(n)) { h.unshift(n); if(h.length > 5) h.pop(); localStorage.setItem('zol_hist', JSON.stringify(h)); }
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const div = document.getElementById('historyList');
+            div.innerHTML = '';
+            const h = JSON.parse(localStorage.getItem('zol_hist') || '[]');
+            h.forEach(n => {
+                const entry = document.createElement('div');
+                entry.className = 'history-entry';
+                entry.innerHTML = `<b>+${n}</b> <i class="fab fa-whatsapp" style="color:var(--wa)"></i>`;
+                entry.onclick = () => { document.getElementById('pNum').value = n.substring(3); launchWA(); };
+                div.appendChild(entry);
+            });
+        }
+
+        function shareApp() {
             if(navigator.share) navigator.share({title:'Zol Chat', url:location.href});
-            else alert(location.href);
+            else { navigator.clipboard.writeText(location.href); alert("تم نسخ الرابط"); }
         }
 
-        window.onload = renderSugs;
+        window.onload = () => { autoDetect(); renderSugs(); renderHistory(); };
     </script>
 </body>
 </html>
