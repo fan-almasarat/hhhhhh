@@ -3,118 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدخال رقم الهاتف المتطور</title>
+    <title>نظام إدخال الهاتف المتطور</title>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@19.2.16/build/css/intlTelInput.css">
 
     <style>
-        /* تنسيقات التصميم الحديث */
+        :root {
+            --primary-color: #2563eb;
+            --error-color: #dc2626;
+            --success-color: #16a34a;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
+            background-color: #f3f4f6;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
         }
 
-        .form-card {
-            background: white;
+        .phone-card {
+            background: #ffffff;
             padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 400px;
+            max-width: 450px;
         }
 
-        h2 {
+        .header {
             text-align: center;
-            color: #333;
             margin-bottom: 1.5rem;
-            font-size: 1.2rem;
         }
 
-        /* ضبط حاوية الإدخال لتكون مرنة */
+        .header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: #1f2937;
+        }
+
+        .header p {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        /* تعديلات حقل الإدخال ليكون "متطوراً" */
         .iti {
             width: 100%;
-            display: block;
+            direction: ltr; /* المكتبة تتطلب LTR للأرقام لتعمل بشكل سليم */
         }
 
-        input[type="tel"] {
-            width: 100%;
-            height: 45px;
-            border: 2px solid #eee;
+        .iti__country-list {
+            max-width: 300px;
+            text-align: left;
             border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        #phone {
+            width: 100%;
+            height: 50px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
             font-size: 16px;
-            padding-right: 10px;
-            transition: all 0.3s ease;
+            padding-left: 10px;
+            transition: all 0.2s ease-in-out;
             outline: none;
         }
 
-        input[type="tel"]:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 8px rgba(0,123,255,0.2);
+        #phone:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
         }
 
-        .btn-submit {
+        .helper-text {
+            margin-top: 8px;
+            font-size: 12px;
+            height: 15px;
+            text-align: right;
+            direction: rtl;
+        }
+
+        .submit-btn {
             width: 100%;
-            background-color: #007bff;
+            background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 12px;
-            margin-top: 20px;
-            border-radius: 8px;
-            cursor: pointer;
+            padding: 14px;
+            border-radius: 10px;
             font-size: 16px;
-            font-weight: bold;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s;
         }
 
-        .btn-submit:hover {
-            background-color: #0056b3;
+        .submit-btn:hover {
+            background-color: #1d4ed8;
         }
 
-        /* تنسيق خاص لجعل قائمة الدول تظهر بشكل صحيح مع الكتابة العربية */
-        .iti__country-list {
-            text-align: left; /* لضمان ظهور أسماء الدول بوضوح */
-            direction: ltr;
-        }
+        /* العلم سيبقى ثابتاً بفضل الإعدادات في JS */
     </style>
 </head>
 <body>
 
-<div class="form-card">
-    <h2 id="title">رقم الهاتف / Phone Number</h2>
-    <form id="phone-form">
-        <input id="phone" type="tel" name="phone">
-        <button type="submit" class="btn-submit">إرسال / Submit</button>
+<div class="phone-card">
+    <div class="header">
+        <h2>رقم الهاتف / Phone Number</h2>
+        <p>اختر الدولة وأدخل الرقم بدون المفتاح</p>
+    </div>
+
+    <form id="contact-form">
+        <input id="phone" type="tel" placeholder="50 123 4567">
+        <div id="message" class="helper-text"></div>
+        
+        <button type="submit" class="submit-btn">تأكيد الرقم / Confirm</button>
     </form>
-    <p id="result" style="margin-top:10px; font-size: 14px; text-align: center;"></p>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@19.2.16/build/js/intlTelInput.min.js"></script>
 
 <script>
-    // اختيار الحقل
     const input = document.querySelector("#phone");
-    const resultDisplay = document.querySelector("#result");
+    const message = document.querySelector("#message");
 
-    // تهيئة المكتبة
+    // تهيئة المكتبة مع تلبية كافة طلباتك
     const iti = window.intlTelInput(input, {
-        // دعم اللغتين وتفضيل الدول العربية في أعلى القائمة
-        preferredCountries: ["sa", "ae", "eg", "kw"],
+        // 1. تثبيت العلم تماماً ومنعه من التغير عند الكتابة
+        separateDialCode: true, 
         
-        // إظهار المفتاح بجانب العلم (وهذا ما يمنع العلم من التغير عند الكتابة)
-        separateDialCode: true,
+        // 2. قائمة دول العالم كاملة مع تفضيل الدول العربية في البداية
+        preferredCountries: ["sa", "ae", "eg", "kw", "qa"],
         
-        // البحث عن الدول وتنسيق تلقائي
-        autoPlaceholder: "aggressive",
-        
-        // جعل القائمة تضم كل دول العالم
+        // 3. دعم البحث عن الدول داخل القائمة
         allowDropdown: true,
 
-        // اختيار الدولة بناءً على عنوان الـ IP الخاص بالمستخدم (اختياري)
+        // 4. التعرف التلقائي على دولة المستخدم
         initialCountry: "auto",
         geoIpLookup: function(callback) {
             fetch("https://ipapi.co/json")
@@ -122,21 +149,40 @@
                 .then(data => callback(data.country_code))
                 .catch(() => callback("sa"));
         },
+
+        // 5. تحميل ملفات التنسيق والتحقق الذكية
+        utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@19.2.16/build/js/utils.js"
     });
 
-    // التعامل مع إرسال النموذج
-    document.getElementById("phone-form").addEventListener("submit", function(e) {
-        e.preventDefault();
-        
-        // الحصول على الرقم كاملًا مع مفتاح الدولة
-        const fullNumber = iti.getNumber(); 
-        
-        if (iti.isValidNumber()) {
-            resultDisplay.style.color = "green";
-            resultDisplay.innerHTML = "تم بنجاح: " + fullNumber;
+    // دالة للتحقق اللحظي أثناء الكتابة
+    const handleChange = () => {
+        if (input.value.trim()) {
+            if (iti.isValidNumber()) {
+                message.innerHTML = "✅ الرقم صحيح / Valid";
+                message.style.color = "var(--success-color)";
+                input.style.borderColor = "var(--success-color)";
+            } else {
+                message.innerHTML = "❌ رقم غير صحيح / Invalid";
+                message.style.color = "var(--error-color)";
+                input.style.borderColor = "var(--error-color)";
+            }
         } else {
-            resultDisplay.style.color = "red";
-            resultDisplay.innerHTML = "الرقم غير صحيح، يرجى المحاولة مرة أخرى.";
+            message.innerHTML = "";
+            input.style.borderColor = "#e5e7eb";
+        }
+    };
+
+    input.addEventListener('keyup', handleChange);
+    input.addEventListener('change', handleChange);
+
+    // عند الضغط على إرسال
+    document.querySelector("#contact-form").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const fullNumber = iti.getNumber(); // الحصول على الرقم الدولي الكامل
+        if (iti.isValidNumber()) {
+            alert("تم قبول الرقم: " + fullNumber);
+        } else {
+            alert("يرجى التأكد من الرقم أولاً");
         }
     });
 </script>
