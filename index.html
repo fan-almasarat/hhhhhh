@@ -3,461 +3,208 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>واتساب برو المطور | المراسلة المباشرة</title>
+    <title>واتساب المباشر PRO</title>
     
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
-        /* ================================================================
-           SECTION 1: CSS RESET & ADVANCED UI VARIABLES
-           (هذا القسم مخصص لضمان استقرار الواجهة على كافة المتصفحات)
-           ================================================================
-        */
-        :root {
-            --wa-green: #00a884;
-            --wa-green-dark: #008f72;
-            --wa-bg-light: #f0f2f5;
-            --wa-white: #ffffff;
-            --wa-text-main: #111b21;
-            --wa-text-secondary: #667781;
-            --wa-danger: #ea0038;
-            --wa-accent: #0072ff;
-            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        :root { --brand: #00a884; --bg: #f0f2f5; --surface: #ffffff; --text: #111b21; --gray: #667781; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; justify-content: center; }
+        .app-shell { width: 100%; max-width: 500px; background: var(--surface); height: 100%; display: flex; flex-direction: column; position: relative; }
 
-        * {
-            margin: 0; padding: 0; box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
+        header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
+        .logo-box { display: flex; align-items: center; gap: 10px; }
+        .logo-box img { width: 42px; height: 42px; border-radius: 12px; object-fit: cover; }
+        .logo-box h1 { font-size: 19px; font-weight: 800; }
 
-        body, html {
-            height: 100vh; width: 100%; overflow: hidden;
-            background-color: #d1d7db; /* لون خلفية خارجي للمتصفحات الواسعة */
-            display: flex; justify-content: center; align-items: center;
-        }
+        main { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+        
+        label { font-size: 13px; font-weight: 700; color: var(--gray); margin-bottom: 5px; display: block; }
 
-        /* حاوية التطبيق الرئيسية - محاكاة هاتف */
-        .app-container {
-            width: 100%; max-width: 500px; height: 100%;
-            background-color: var(--wa-white);
-            position: relative; display: flex; flex-direction: column;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        }
+        /* تنسيق الحقول */
+        .input-row { display: flex; gap: 10px; align-items: center; }
+        .country-input-box { display: flex; align-items: center; background: var(--bg); border-radius: 15px; padding: 0 12px; width: 110px; height: 60px; flex-shrink: 0; }
+        .dial-field { width: 100%; border: none; background: transparent; font-weight: 800; font-size: 18px; text-align: center; outline: none; }
+        .main-input { flex: 1; height: 60px; background: var(--bg); border-radius: 15px; border: 2px solid transparent; padding: 0 15px; font-size: 20px; font-weight: 800; outline: none; min-width: 0; }
+        .main-input:focus { border-color: var(--brand); background: #fff; }
 
-        /* ================================================================
-           SECTION 2: HEADER & NAVIGATION STYLES
-           ================================================================
-        */
-        header {
-            background: var(--wa-white); padding: 15px 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid rgba(0,0,0,0.05); z-index: 100;
-        }
+        .text-box { width: 100%; height: 100px; background: var(--bg); border-radius: 15px; border: none; padding: 15px; font-size: 16px; outline: none; resize: none; }
 
-        .brand-section { display: flex; align-items: center; gap: 12px; }
-        .brand-section img {
-            width: 42px; height: 42px; border-radius: 12px;
-            object-fit: cover; border: 1px solid #f0f2f5;
-        }
-        .brand-section h1 { font-size: 20px; font-weight: 800; color: var(--wa-text-main); }
+        /* الرسائل المقترحة */
+        .chips-container { display: flex; gap: 8px; overflow-x: auto; padding: 5px 0; scrollbar-width: none; }
+        .chip { background: #e7f8ef; color: var(--brand); border: none; padding: 10px 18px; border-radius: 20px; font-size: 13px; font-weight: 700; white-space: nowrap; cursor: pointer; }
 
-        .lang-toggle-btn {
-            background: var(--wa-bg-light); border: none; padding: 8px 16px;
-            border-radius: 20px; font-weight: 700; cursor: pointer; transition: var(--transition-smooth);
-        }
+        /* الأزرار */
+        .btn { width: 100%; height: 60px; border-radius: 18px; border: none; font-size: 17px; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
+        .btn-primary { background: var(--brand); color: #fff; box-shadow: 0 8px 15px rgba(0,168,132,0.2); }
+        .btn-dark { background: #202124; color: #fff; }
+        .btn-install { background: linear-gradient(45deg, #0072ff, #00d2ff); color: white; display: none; animation: pulse 2s infinite; }
 
-        /* ================================================================
-           SECTION 3: SCANNER UI (WHATSAPP ORIGINAL STYLE)
-           ================================================================
-        */
-        #scanner-overlay {
-            position: fixed; inset: 0; background: #000; z-index: 9999;
-            display: none; flex-direction: column;
-        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
 
-        .scanner-header {
-            padding: 40px 20px 20px; display: flex; align-items: center;
-            justify-content: space-between; color: #fff; z-index: 10;
-        }
+        /* واجهة الباركود */
+        #scanner-ui { position: fixed; inset: 0; background: #000; z-index: 5000; display: none; }
+        #video-view { width: 100%; height: 100%; object-fit: cover; }
+        .scan-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .scan-box { width: 260px; height: 260px; border: 4px solid #fff; border-radius: 30px; position: relative; box-shadow: 0 0 0 1000px rgba(0,0,0,0.6); }
+        .scan-line { position: absolute; width: 100%; height: 2px; background: var(--brand); top: 0; animation: scanning 2s linear infinite; }
+        @keyframes scanning { 0% { top: 0; } 100% { top: 100%; } }
 
-        .scanner-container {
-            flex: 1; position: relative; display: flex;
-            justify-content: center; align-items: center;
-        }
+        /* السجل */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: none; align-items: flex-end; }
+        .modal-body { width: 100%; background: #fff; border-radius: 25px 25px 0 0; padding: 25px; max-height: 70%; overflow-y: auto; }
+        .hist-item { padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; font-weight: bold; cursor: pointer; }
 
-        .scan-viewfinder {
-            width: 280px; height: 280px; border: 2px solid rgba(255,255,255,0.2);
-            border-radius: 40px; position: relative;
-            box-shadow: 0 0 0 5000px rgba(0,0,0,0.6);
-        }
-
-        /* زوايا الإطار */
-        .corner {
-            position: absolute; width: 40px; height: 40px;
-            border: 4px solid var(--wa-green); border-radius: 10px;
-        }
-        .tl { top: -2px; left: -2px; border-right: 0; border-bottom: 0; border-bottom-left-radius: 0; border-top-right-radius: 0; }
-        .tr { top: -2px; right: -2px; border-left: 0; border-bottom: 0; border-bottom-right-radius: 0; border-top-left-radius: 0; }
-        .bl { bottom: -2px; left: -2px; border-right: 0; border-top: 0; border-top-left-radius: 0; border-bottom-right-radius: 0; }
-        .br { bottom: -2px; right: -2px; border-left: 0; border-top: 0; border-top-right-radius: 0; border-bottom-left-radius: 0; }
-
-        .laser-line {
-            position: absolute; width: 90%; height: 3px;
-            background: linear-gradient(to right, transparent, var(--wa-green), transparent);
-            top: 20%; left: 5%; box-shadow: 0 0 15px var(--wa-green);
-            animation: moveLaser 2.5s infinite linear;
-        }
-        @keyframes moveLaser { 0%, 100% { top: 10%; } 50% { top: 90%; } }
-
-        /* ================================================================
-           SECTION 4: MAIN FORM & INPUTS
-           ================================================================
-        */
-        main { flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 24px; }
-
-        .field-group { display: flex; flex-direction: column; gap: 8px; }
-        .field-group label { font-size: 14px; font-weight: 700; color: var(--wa-text-secondary); padding-right: 5px; }
-
-        .search-container { position: relative; }
-        .search-input {
-            width: 100%; height: 54px; background: var(--wa-bg-light);
-            border: 2px solid transparent; border-radius: 15px; padding: 0 15px;
-            font-size: 16px; outline: none; transition: var(--transition-smooth);
-        }
-
-        .phone-wrapper { display: flex; gap: 12px; }
-        .country-unit {
-            width: 115px; height: 65px; background: var(--wa-bg-light);
-            border-radius: 18px; display: flex; align-items: center; justify-content: center;
-            gap: 5px; cursor: pointer; border: 2px solid transparent; transition: var(--transition-smooth);
-        }
-        .dial-input {
-            width: 60px; background: transparent; border: none; outline: none;
-            font-size: 18px; font-weight: 800; text-align: center;
-        }
-        .number-input-field {
-            flex: 1; height: 65px; background: var(--wa-bg-light); border-radius: 18px;
-            padding: 0 20px; font-size: 22px; font-weight: 800; border: 2px solid transparent;
-            outline: none; transition: var(--transition-smooth);
-        }
-        .number-input-field:focus { border-color: var(--wa-green); background: #fff; box-shadow: 0 10px 20px rgba(0,168,132,0.1); }
-
-        .message-box {
-            width: 100%; height: 120px; background: var(--wa-bg-light); border-radius: 18px;
-            padding: 15px; font-size: 16px; border: none; outline: none; resize: none;
-        }
-
-        /* ================================================================
-           SECTION 5: ADVANCED BUTTONS
-           ================================================================
-        */
-        .btn-action {
-            width: 100%; height: 65px; border-radius: 20px; border: none;
-            font-size: 18px; font-weight: 900; cursor: pointer; display: flex;
-            align-items: center; justify-content: center; gap: 12px; transition: var(--transition-smooth);
-        }
-        .btn-whatsapp { background: var(--wa-green); color: #fff; box-shadow: 0 10px 20px rgba(0,168,132,0.2); }
-        .btn-whatsapp:active { transform: scale(0.96); }
-
-        .btn-scan { background: var(--wa-text-main); color: #fff; }
-
-        .btn-install-pwa {
-            background: linear-gradient(135deg, var(--wa-accent) 0%, #00d2ff 100%);
-            color: white; display: none; animation: pulseGlow 2s infinite;
-        }
-        @keyframes pulseGlow {
-            0% { box-shadow: 0 0 0 0 rgba(0, 114, 255, 0.4); }
-            70% { box-shadow: 0 0 0 15px rgba(0, 114, 255, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(0, 114, 255, 0); }
-        }
-
-        /* ================================================================
-           SECTION 6: MODALS & FOOTER
-           ================================================================
-        */
-        .history-panel {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000;
-            display: none; align-items: flex-end;
-        }
-        .history-content {
-            width: 100%; max-width: 500px; background: #fff; border-radius: 30px 30px 0 0;
-            padding: 30px; transform: translateY(100%); transition: transform 0.4s ease;
-        }
-        .history-content.active { transform: translateY(0); }
-
-        footer {
-            height: 85px; background: #fff; border-top: 1px solid #f0f2f5;
-            display: flex; align-items: center; padding-bottom: 10px;
-        }
-        .nav-item {
-            flex: 1; display: flex; flex-direction: column; align-items: center;
-            gap: 5px; color: var(--wa-text-secondary); cursor: pointer; transition: 0.3s;
-        }
-        .nav-item.active { color: var(--wa-green); }
-        .nav-item i { font-size: 22px; }
-        .nav-item span { font-size: 12px; font-weight: 700; }
-
-        /* الاتجاهات للإنجليزية */
-        body.en { direction: ltr; }
+        footer { background: #fff; padding: 10px; border-top: 1px solid #eee; display: flex; justify-content: space-around; }
+        .nav-btn { border: none; background: none; color: var(--gray); display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; cursor: pointer; }
+        .nav-btn.active { color: var(--brand); }
     </style>
 </head>
-<body id="app-body">
+<body>
 
-<div id="scanner-overlay">
-    <div class="scanner-header">
-        <button onclick="stopCamera()" style="background:none; border:none; color:#fff; font-size:24px;"><i class="fas fa-times"></i></button>
-        <h2 style="font-size:18px;">مسح رمز WhatsApp</h2>
-        <div style="width:24px;"></div>
-    </div>
-    <div class="scanner-container">
-        <video id="video-feed" style="width:100%; height:100%; object-fit:cover;"></video>
-        <div class="scan-viewfinder">
-            <div class="corner tl"></div><div class="corner tr"></div>
-            <div class="corner bl"></div><div class="corner br"></div>
-            <div class="laser-line"></div>
-        </div>
-    </div>
-    <div style="padding: 40px; text-align: center; color: #fff; font-size: 14px; background: rgba(0,0,0,0.8);">
-        ضع رمز المربع داخل الإطار للمسح التلقائي
+<div id="scanner-ui">
+    <video id="video-view"></video>
+    <div class="scan-overlay">
+        <button onclick="stopCamera()" style="position:absolute; top:40px; left:20px; padding:10px 20px; border-radius:20px; border:none; background:rgba(255,255,255,0.3); color:#fff; font-weight:bold;">إغلاق</button>
+        <div class="scan-box"><div class="scan-line"></div></div>
     </div>
 </div>
 
-<div class="app-container">
+<div class="app-shell">
     <header>
-        <div class="brand-section">
+        <div class="logo-box">
             <img src="whatsapp-icon.jpg" onerror="this.src='https://cdn-icons-png.flaticon.com/512/5968/5968841.png'">
             <h1>دردشة مباشرة</h1>
         </div>
-        <button class="lang-toggle-btn" id="langBtn" onclick="toggleLanguage()">English</button>
+        <button onclick="alert('اللغة العربية مفعلة')" style="border:none; background:var(--bg); padding:8px 15px; border-radius:15px; font-weight:bold;">AR</button>
     </header>
 
     <main>
-        <div class="field-group">
-            <label id="lbl-search">البحث السريع عن الدولة</label>
-            <div class="search-container">
-                <input type="text" id="countrySearchBox" class="search-input" placeholder="اسم الدولة أو المفتاح الدولي...">
-            </div>
+        <div>
+            <label>البحث عن الدولة</label>
+            <input type="text" id="countrySearch" class="main-input" style="font-size:16px; height:50px; width:100%;" placeholder="ابحث باسم الدولة...">
         </div>
 
-        <div class="field-group">
-            <label id="lbl-phone">رقم الجوال الواتساب</label>
-            <div class="phone-wrapper">
-                <div class="country-unit" id="countryBtn">
-                    <span id="flagDisplay" class="flag-icon flag-icon-sd" style="font-size:24px;"></span>
-                    <span style="font-weight:900;">+</span>
-                    <input type="tel" id="dialInput" class="dial-input" value="249">
+        <div>
+            <label>رقم الجوال</label>
+            <div class="input-row">
+                <div class="country-input-box">
+                    <span id="flagIcon" class="flag-icon flag-icon-sd"></span>
+                    <span style="font-weight:900; margin:0 5px;">+</span>
+                    <input type="tel" id="dialCode" class="dial-field" value="249">
                 </div>
-                <input type="tel" id="numField" class="number-input-field" placeholder="000000000">
+                <input type="tel" id="phoneNum" class="main-input" placeholder="ادخل الرقم">
             </div>
         </div>
 
-        <div class="field-group">
-            <label id="lbl-msg">نص الرسالة (اختياري)</label>
-            <textarea id="msgField" class="message-box" placeholder="اكتب رسالتك هنا..."></textarea>
+        <div>
+            <label>الرسالة</label>
+            <textarea id="msg" class="text-box">السلام عليكم</textarea>
+            <div class="chips-container" id="chips"></div>
         </div>
 
-        <button class="btn-action btn-whatsapp" onclick="handleSend()">
-            <span id="txt-send">بدء المحادثة الآن</span>
-            <i class="fas fa-paper-plane"></i>
-        </button>
-
-        <button class="btn-action btn-scan" onclick="startCamera()">
-            <i class="fas fa-qrcode"></i>
-            <span id="txt-scan">مسح رمز باركود</span>
-        </button>
-
-        <button id="pwaBtn" class="btn-action btn-install-pwa" onclick="initPWAInstallation()">
-            <i class="fas fa-download"></i>
-            <span id="txt-install">تثبيت التطبيق على الهاتف</span>
-        </button>
+        <button class="btn btn-primary" onclick="goWA()">بدء المراسلة <i class="fas fa-paper-plane"></i></button>
+        <button class="btn btn-dark" onclick="startCamera()">مسح باركود <i class="fas fa-qrcode"></i></button>
+        <button id="pwaBtn" class="btn btn-install" onclick="installApp()">تثبيت التطبيق <i class="fas fa-download"></i></button>
     </main>
 
-    <div id="historyModal" class="history-panel" onclick="closeHistory()">
-        <div class="history-content" id="hContent" onclick="event.stopPropagation()">
-            <h3 style="text-align:center; margin-bottom:20px;" id="txt-history-title">آخر المراسلات</h3>
-            <div id="historyItemsList" style="max-height: 300px; overflow-y: auto;"></div>
-            <button class="btn-action" style="background:#f0f2f5; margin-top:15px;" onclick="closeHistory()">إغلاق</button>
+    <div id="histModal" class="modal" onclick="closeHist()">
+        <div class="modal-body" onclick="event.stopPropagation()">
+            <h3 style="text-align:center; margin-bottom:20px;">آخر المراسلات</h3>
+            <div id="histList"></div>
+            <button onclick="closeHist()" style="width:100%; padding:15px; margin-top:15px; border:none; border-radius:15px; background:var(--bg);">إغلاق</button>
         </div>
     </div>
 
     <footer>
-        <div class="nav-item active" onclick="location.reload()">
-            <i class="fas fa-comment-dots"></i>
-            <span id="nav-chat">المراسلة</span>
-        </div>
-        <div class="nav-item" onclick="openHistory()">
-            <i class="fas fa-clock-rotate-left"></i>
-            <span id="nav-hist">السجل</span>
-        </div>
-        <div class="nav-item" onclick="handleShare()">
-            <i class="fas fa-share-nodes"></i>
-            <span id="nav-share">مشاركة</span>
-        </div>
+        <div class="nav-btn active" onclick="location.reload()"><i class="fas fa-house"></i><span>الرئيسية</span></div>
+        <div class="nav-btn" onclick="openHist()"><i class="fas fa-history"></i><span>السجل</span></div>
+        <div class="nav-btn" onclick="navigator.share({url: location.href})"><i class="fas fa-share-nodes"></i><span>مشاركة</span></div>
     </footer>
 </div>
 
 <script src="https://unpkg.com/@zxing/library@latest"></script>
-
 <script>
-    /* ================================================================
-       SECTION 7: HUGE COUNTRY DATABASE (لضمان كود طويل ومفيد)
-       ================================================================
-    */
-    const WORLD_DATA = [
-        { n: "السودان", e: "Sudan", c: "249", f: "sd" },
-        { n: "المملكة العربية السعودية", e: "Saudi Arabia", c: "966", f: "sa" },
-        { n: "مصر", e: "Egypt", c: "20", f: "eg" },
-        { n: "الإمارات العربية المتحدة", e: "UAE", c: "971", f: "ae" },
-        { n: "قطر", e: "Qatar", c: "974", f: "qa" },
-        { n: "الكويت", e: "Kuwait", c: "965", f: "kw" },
-        { n: "عمان", e: "Oman", c: "968", f: "om" },
-        { n: "البحرين", e: "Bahrain", c: "973", f: "bh" },
-        { n: "الأردن", e: "Jordan", c: "962", f: "jo" },
-        { n: "فلسطين", e: "Palestine", c: "970", f: "ps" },
-        { n: "العراق", e: "Iraq", c: "964", f: "iq" },
-        { n: "اليمن", e: "Yemen", c: "967", f: "ye" },
-        { n: "سوريا", e: "Syria", c: "963", f: "sy" },
-        { n: "لبنان", e: "Lebanon", c: "961", f: "lb" },
-        { n: "المغرب", e: "Morocco", c: "212", f: "ma" },
-        { n: "تونس", e: "Tunisia", c: "216", f: "tn" },
-        { n: "الجزائر", e: "Algeria", c: "213", f: "dz" },
-        { n: "ليبيا", e: "Libya", c: "218", f: "ly" },
-        { n: "تركيا", e: "Turkey", c: "90", f: "tr" },
-        { n: "الولايات المتحدة", e: "USA", c: "1", f: "us" },
-        { n: "المملكة المتحدة", e: "UK", c: "44", f: "gb" },
-        { n: "ألمانيا", e: "Germany", c: "49", f: "de" },
-        { n: "فرنسا", e: "France", c: "33", f: "fr" }
-        // ... يمكن إضافة المزيد من الدول هنا للوصول لـ 1000 سطر فعلياً
-    ];
-
-    /* ================================================================
-       SECTION 8: LOGIC & ENGINE
-       ================================================================
-    */
     const codeReader = new ZXing.BrowserMultiFormatReader();
-    let currentLang = 'ar';
-    let deferredPrompt;
+    let countries = [];
 
-    // 1. تحديد الموقع التلقائي
-    async function autoDetect() {
-        try {
-            const res = await fetch('https://ipapi.co/json/');
-            const data = await res.json();
-            const found = WORLD_DATA.find(c => c.f === data.country.toLowerCase());
-            if (found) updateUI(found.c, found.f);
-        } catch (e) { console.log("Detection offline"); }
-    }
-
-    function updateUI(code, flag) {
-        document.getElementById('dialInput').value = code;
-        document.getElementById('flagDisplay').className = `flag-icon flag-icon-${flag}`;
-    }
-
-    // 2. تغيير العلم عند كتابة الكود يدوياً
-    document.getElementById('dialInput').addEventListener('input', (e) => {
-        const val = e.target.value.trim();
-        const match = WORLD_DATA.find(c => c.c === val);
-        if (match) document.getElementById('flagDisplay').className = `flag-icon flag-icon-${match.f}`;
-    });
-
-    // 3. الكاميرا والباركود
-    async function startCamera() {
-        document.getElementById('scanner-overlay').style.display = 'flex';
-        try {
-            codeReader.decodeFromVideoDevice(null, 'video-feed', (result, err) => {
-                if (result) {
-                    let text = result.text;
-                    if (text.includes('wa.me/')) {
-                        const num = text.split('wa.me/')[1].split('?')[0].replace(/\D/g,'');
-                        document.getElementById('numField').value = num;
-                    } else {
-                        document.getElementById('numField').value = text.replace(/\D/g,'');
-                    }
-                    stopCamera();
-                }
-            });
-        } catch (e) { alert("Camera error"); stopCamera(); }
-    }
-
-    function stopCamera() {
-        codeReader.reset();
-        document.getElementById('scanner-overlay').style.display = 'none';
-    }
-
-    // 4. إرسال وحفظ السجل
-    function handleSend() {
-        const dial = document.getElementById('dialInput').value.replace(/\D/g,'');
-        const num = document.getElementById('numField').value.replace(/\D/g,'');
-        const msg = encodeURIComponent(document.getElementById('msgField').value);
-
-        if (num.length < 5) { alert(currentLang === 'ar' ? "رقم غير صحيح" : "Invalid number"); return; }
-
-        const fullNum = dial + num;
-        saveToLocal(fullNum);
-        window.location.href = `https://wa.me/${fullNum}?text=${msg}`;
-    }
-
-    function saveToLocal(n) {
-        let history = JSON.parse(localStorage.getItem('wa_pro_history') || '[]');
-        if (!history.includes(n)) {
-            history.unshift(n);
-            localStorage.setItem('wa_pro_history', JSON.stringify(history.slice(0,15)));
-        }
-    }
-
-    // 5. إدارة السجل والترجمة والتثبيت (بقية الوظائف لإكمال الكود)
-    function openHistory() {
-        const list = document.getElementById('historyItemsList');
-        list.innerHTML = '';
-        const history = JSON.parse(localStorage.getItem('wa_pro_history') || '[]');
-        
-        history.forEach(n => {
-            const item = document.createElement('div');
-            item.style = "padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; cursor:pointer;";
-            item.innerHTML = `<strong>+${n}</strong> <i class="fab fa-whatsapp" style="color:green"></i>`;
-            item.onclick = () => { document.getElementById('numField').value = n; closeHistory(); };
-            list.appendChild(item);
+    async function init() {
+        // رسائل مقترحة
+        const msgs = ["السلام عليكم", "بكم السعر؟", "ممكن الموقع؟", "متوفر حالياً؟"];
+        const container = document.getElementById('chips');
+        msgs.forEach(t => {
+            const btn = document.createElement('button'); btn.className = 'chip'; btn.innerText = t;
+            btn.onclick = () => document.getElementById('msg').value = t;
+            container.appendChild(btn);
         });
 
-        document.getElementById('historyModal').style.display = 'flex';
-        setTimeout(() => document.getElementById('hContent').classList.add('active'), 10);
+        // جلب الدول
+        const res = await fetch('https://restcountries.com/v3.1/all?fields=idd,cca2,translations');
+        const data = await res.json();
+        countries = data.map(c => ({
+            name: c.translations.ara?.common || c.name.common,
+            code: (c.idd.root + (c.idd.suffixes ? c.idd.suffixes[0] : "")).replace('+', ''),
+            flag: c.cca2.toLowerCase()
+        }));
+
+        // تحديد الموقع تلقائياً
+        try {
+            const geo = await fetch('https://ipapi.co/json/').then(r => r.json());
+            document.getElementById('dialCode').value = geo.country_calling_code.replace('+', '');
+            document.getElementById('flagIcon').className = `flag-icon flag-icon-${geo.country_code.toLowerCase()}`;
+        } catch(e) {}
+
+        // تحديث العلم عند الكتابة
+        document.getElementById('dialCode').oninput = (e) => {
+            const found = countries.find(c => c.code === e.target.value.trim());
+            if(found) document.getElementById('flagIcon').className = `flag-icon flag-icon-${found.flag}`;
+        };
     }
 
-    function closeHistory() {
-        document.getElementById('hContent').classList.remove('active');
-        setTimeout(() => document.getElementById('historyModal').style.display = 'none', 400);
+    function startCamera() {
+        document.getElementById('scanner-ui').style.display = 'block';
+        codeReader.decodeFromVideoDevice(null, 'video-view', (result) => {
+            if (result) {
+                let text = result.text;
+                document.getElementById('phoneNum').value = text.includes('wa.me/') ? text.split('wa.me/')[1].split('?')[0] : text.replace(/\D/g, '');
+                stopCamera();
+            }
+        });
+    }
+    function stopCamera() { codeReader.reset(); document.getElementById('scanner-ui').style.display = 'none'; }
+
+    function goWA() {
+        const full = document.getElementById('dialCode').value + document.getElementById('phoneNum').value;
+        if(full.length < 5) return alert("الرقم غير مكتمل");
+        
+        let h = JSON.parse(localStorage.getItem('wa_hist') || '[]');
+        if(!h.includes(full)) { h.unshift(full); localStorage.setItem('wa_hist', JSON.stringify(h.slice(0,10))); }
+        
+        window.location.href = `https://wa.me/${full}?text=${encodeURIComponent(document.getElementById('msg').value)}`;
     }
 
-    function toggleLanguage() {
-        currentLang = currentLang === 'ar' ? 'en' : 'ar';
-        document.body.className = currentLang;
-        document.getElementById('langBtn').innerText = currentLang === 'ar' ? "English" : "العربية";
-        // إضافة ترجمة لكافة النصوص هنا لجعل الكود طويلاً ومفيداً
+    function openHist() {
+        const list = document.getElementById('histList'); list.innerHTML = '';
+        const h = JSON.parse(localStorage.getItem('wa_hist') || '[]');
+        h.forEach(n => {
+            const d = document.createElement('div'); d.className = 'hist-item';
+            d.innerHTML = `<span>+${n}</span><i class="fab fa-whatsapp" style="color:green"></i>`;
+            d.onclick = () => { document.getElementById('phoneNum').value = n; closeHist(); };
+            list.appendChild(d);
+        });
+        document.getElementById('histModal').style.display = 'flex';
     }
+    function closeHist() { document.getElementById('histModal').style.display = 'none'; }
 
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault(); deferredPrompt = e;
-        document.getElementById('pwaBtn').style.display = 'flex';
-    });
+    let defP;
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); defP = e; document.getElementById('pwaBtn').style.display = 'flex'; });
+    function installApp() { if(defP) { defP.prompt(); defP = null; } }
 
-    function initPWAInstallation() {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then(() => { deferredPrompt = null; document.getElementById('pwaBtn').style.display = 'none'; });
-        }
-    }
-
-    function handleShare() {
-        if (navigator.share) navigator.share({ title: 'دردشة مباشرة', url: window.location.href });
-    }
-
-    window.onload = autoDetect;
-
-    /* تكرار بعض منطق معالجة البيانات والتحقق من صحة المدخلات 
-       بشكل مفصل جداً للوصول للعدد المستهدف من الأسطر...
-    */
+    window.onload = init;
 </script>
 </body>
 </html>
