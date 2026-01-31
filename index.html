@@ -3,70 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>واتساب برو | Smart Chat</title>
+    <title>Zol Chat Pro | المساعد الذكي</title>
+    
     <link rel="stylesheet" href="style.css?v=2026">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="manifest" href="manifest.json">
 </head>
 <body>
-    <div class="app-shell">
-        <header class="main-header">
-            <div class="status-bar">
-                <span id="clock"></span>
-                <div class="status-icons"><i class="fas fa-wifi"></i> <i class="fas fa-battery-full"></i></div>
+
+    <div class="app-card">
+        <header class="app-header">
+            <div class="logo-circle">
+                <img src="whatsapp-icon.png" alt="logo">
             </div>
-            <div class="brand-box">
-                <div class="logo-wrapper">
-                    <img src="whatsapp-icon.png" alt="logo">
-                </div>
-                <h1>دردشة ذكية</h1>
-            </div>
+            <h1>دردشة فورية</h1>
+            <p>أدخل الرقم وابدأ المراسلة فوراً</p>
         </header>
 
-        <main class="content-area">
-            <div class="input-card">
-                <div class="group-title">إرسال رسالة سريعة</div>
-                
-                <div class="input-wrapper">
-                    <i class="fas fa-globe-americas"></i>
-                    <input list="countries" id="countryInput" placeholder="اختر الدولة..." onchange="handleCountryChange(this.value)">
-                    <datalist id="countries"></datalist>
+        <div class="main-form">
+            <div class="input-group">
+                <label><i class="fas fa-search-location"></i> ابحث عن الدولة</label>
+                <div class="search-box">
+                    <input list="countries-list" id="countrySearch" placeholder="اكتب اسم الدولة هنا..." oninput="onCountrySelect(this.value)">
+                    <datalist id="countries-list"></datalist>
                 </div>
-
-                <div class="phone-grid">
-                    <div class="prefix-input">
-                        <span id="flagIcon" class="flag-icon flag-icon-sd"></span>
-                        <input type="text" id="countryCode" value="+249">
-                    </div>
-                    <div class="main-number">
-                        <input type="tel" id="phoneNumber" placeholder="رقم الهاتف" inputmode="numeric">
-                    </div>
-                </div>
-
-                <button class="prime-btn" onclick="processChat()">
-                    <span>ابدأ المحادثة</span>
-                    <i class="fab fa-whatsapp"></i>
-                </button>
             </div>
 
-            <section class="history-section">
-                <div class="section-header">
-                    <h3>المراسلات الأخيرة</h3>
-                    <button onclick="clearHistory()" class="clear-btn">مسح الكل</button>
+            <div class="phone-container">
+                <div class="prefix-field">
+                    <span id="flagIcon" class="flag-icon flag-icon-sd"></span>
+                    <div class="plus-sign">+</div>
+                    <input type="tel" id="countryCode" value="249" oninput="onCodeInput(this.value)" maxlength="4">
                 </div>
-                <div id="historyList" class="history-list">
-                    </div>
-            </section>
-        </main>
+                <div class="number-field">
+                    <input type="tel" id="phoneNumber" placeholder="رقم الهاتف" inputmode="numeric">
+                </div>
+            </div>
 
-        <footer class="dock-menu">
-            <button onclick="shareApp('whatsapp')"><i class="fas fa-share-alt"></i></button>
-            <button class="active"><i class="fas fa-home"></i></button>
-            <button onclick="window.open('https://linktr.ee/abdul3ziz95')"><i class="fas fa-user-ninja"></i></button>
+            <button class="action-btn" onclick="openWhatsApp()">
+                <span>فتح المحادثة</span>
+                <i class="fab fa-whatsapp"></i>
+            </button>
+        </div>
+
+        <div class="recent-header">المراسلات الأخيرة</div>
+        <div id="recentHistory" class="history-grid">
+            </div>
+
+        <footer class="app-footer">
+            <div class="social-links">
+                <button onclick="shareApp('whatsapp')"><i class="fab fa-whatsapp"></i></button>
+                <button onclick="shareApp('facebook')"><i class="fab fa-facebook-f"></i></button>
+            </div>
+            <p>© 2026 تم التطوير بواسطة <b>Abdulaziz</b></p>
         </footer>
     </div>
+
     <script src="script.js?v=2026"></script>
 </body>
 </html>
