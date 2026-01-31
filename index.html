@@ -3,622 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>ZOL CHAT ULTIMATE PRO 2026</title>
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
+    <title>ZOL CHAT PRO</title>
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
     <style>
-        /* نظام الألوان العام (تم حذف الوضع الليلي) */
-        :root {
-            --wa-green: #25D366;
-            --wa-dark: #075E54;
-            --bg-color: #f0f2f5;
-            --text-main: #111b21;
-            --text-sub: #667781;
-            --white: #ffffff;
-        }
+        :root { --wa: #25D366; --bg: #ffffff; --text: #111b21; --gray: #667781; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
+        body, html { height: 100%; width: 100%; overflow: hidden; background: var(--bg); color: var(--text); }
+        .app { height: 100%; display: flex; flex-direction: column; max-width: 500px; margin: 0 auto; position: relative; }
+        header { padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
+        .logo { color: var(--wa); font-size: 24px; font-weight: 900; }
+        
+        main { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
+        .field { background: #f8f9fa; border: 2px solid #f1f3f4; border-radius: 12px; padding: 12px; }
+        label { font-size: 12px; color: var(--gray); font-weight: bold; display: block; margin-bottom: 5px; }
+        select, input, textarea { width: 100%; border: none; background: transparent; outline: none; font-size: 16px; font-weight: bold; color: var(--text); }
+        
+        .row { display: flex; gap: 10px; align-items: center; }
+        .dial-code { width: 80px; text-align: center; border-right: 1px solid #ddd; padding-right: 10px; }
+        
+        .btn-main { background: var(--wa); color: white; border: none; padding: 18px; border-radius: 15px; font-size: 18px; font-weight: 900; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-install { background: #000; color: #fff; padding: 10px; border-radius: 8px; font-size: 12px; border: none; cursor: pointer; display: none; }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
+        /* سجل منبثق */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: none; align-items: flex-end; }
+        .modal-content { background: #fff; width: 100%; border-radius: 25px 25px 0 0; padding: 20px; max-height: 70%; overflow-y: auto; }
+        .hist-item { padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
 
-        html, body {
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-            background-color: var(--bg-color);
-        }
-
-        /* حاوية التطبيق الرئيسية - بدون فراغات */
-        .app-shell {
-            max-width: 500px;
-            margin: 0 auto;
-            height: 100%;
-            background: var(--white);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        /* الرأس */
-        header {
-            background: var(--white);
-            padding: 10px 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #eee;
-            z-index: 100;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--wa-green);
-        }
-
-        .brand h1 { font-size: 20px; font-weight: 900; color: var(--wa-dark); }
-
-        .btn-lang {
-            background: var(--wa-green);
-            color: white;
-            border: none;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 12px;
-            cursor: pointer;
-        }
-
-        /* محتوى التطبيق */
-        main {
-            flex: 1;
-            overflow-y: auto;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .section-card {
-            background: #fff;
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid #eee;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-        }
-
-        label {
-            display: block;
-            font-size: 13px;
-            font-weight: 700;
-            margin-bottom: 6px;
-            color: var(--text-sub);
-        }
-
-        /* محرك البحث عن الدول */
-        .search-container { position: relative; width: 100%; }
-        .search-input {
-            width: 100%;
-            padding: 12px 40px 12px 15px;
-            border-radius: 8px;
-            border: 2px solid #f0f2f5;
-            background: #f9f9f9;
-            font-size: 15px;
-            outline: none;
-            font-weight: 600;
-        }
-        .search-container i { position: absolute; right: 12px; top: 14px; color: var(--text-sub); }
-
-        .dropdown-list {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 100%;
-            background: #fff;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            max-height: 250px;
-            overflow-y: auto;
-            z-index: 500;
-            display: none;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-
-        .dropdown-item {
-            padding: 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border-bottom: 1px solid #f9f9f9;
-            cursor: pointer;
-        }
-
-        .dropdown-item:hover { background: #f0fdf4; }
-
-        /* حقل الهاتف */
-        .phone-group { display: flex; gap: 8px; margin-top: 10px; }
-        .country-code-display {
-            width: 90px;
-            background: #f0f2f5;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            border: 2px solid #f0f2f5;
-        }
-        .country-code-display input {
-            width: 45px;
-            border: none;
-            background: transparent;
-            font-weight: 800;
-            text-align: center;
-            font-size: 16px;
-            outline: none;
-        }
-
-        .phone-main-input {
-            flex: 1;
-            padding: 12px;
-            border-radius: 8px;
-            border: 2px solid #f0f2f5;
-            background: #f9f9f9;
-            font-size: 18px;
-            font-weight: bold;
-            outline: none;
-        }
-
-        /* الرسائل المقترحة */
-        .suggestions-row {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding: 5px 0 10px 0;
-            scrollbar-width: none;
-        }
-        .suggestions-row::-webkit-scrollbar { display: none; }
-        .sug-btn {
-            background: #e7f8ef;
-            color: var(--wa-dark);
-            border: none;
-            padding: 7px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            white-space: nowrap;
-            cursor: pointer;
-        }
-
-        /* الأزرار الرئيسية */
-        .btn-send {
-            width: 100%;
-            background: var(--wa-green);
-            color: white;
-            border: none;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: 900;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2);
-        }
-
-        .btn-qr {
-            width: 100%;
-            background: #111b21;
-            color: white;
-            padding: 15px;
-            border-radius: 12px;
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-        }
-
-        /* السجل */
-        .history-box { margin-top: 5px; }
-        .history-list { display: flex; flex-direction: column; gap: 2px; }
-        .history-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            background: #fcfcfc;
-            border-radius: 8px;
-            border-bottom: 1px solid #f5f5f5;
-            cursor: pointer;
-        }
-
-        /* الكاميرا */
-        #camera-modal {
-            position: fixed;
-            inset: 0;
-            background: #000;
-            z-index: 9999;
-            display: none;
-        }
-        #video-view { width: 100%; height: 100%; object-fit: cover; }
-        .overlay-scanner {
-            position: absolute;
-            inset: 0;
-            margin: auto;
-            width: 260px;
-            height: 260px;
-            border: 4px solid var(--wa-green);
-            border-radius: 20px;
-            box-shadow: 0 0 0 5000px rgba(0,0,0,0.6);
-        }
-
-        footer {
-            background: #fff;
-            border-top: 1px solid #eee;
-            display: flex;
-            padding: 10px 0;
-        }
-        .nav-link {
-            flex: 1;
-            text-align: center;
-            background: none;
-            border: none;
-            color: var(--text-sub);
-            font-size: 11px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-        }
-        .nav-link.active { color: var(--wa-green); }
-
-        body.en { direction: ltr; }
+        footer { padding: 10px; display: flex; justify-content: space-around; border-top: 1px solid #eee; }
+        .nav-btn { background: none; border: none; color: var(--gray); display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; cursor: pointer; }
+        .active { color: var(--wa); }
     </style>
 </head>
-<body id="app-body">
+<body>
 
-    <div id="camera-modal">
-        <button onclick="stopScan()" style="position:absolute; top:30px; left:50%; transform:translateX(-50%); z-index:100; padding:10px 30px; border-radius:30px; background:red; color:white; border:none; font-weight:bold;">إغلاق الكاميرا</button>
-        <video id="video-view" playsinline></video>
-        <div class="overlay-scanner"></div>
+<div class="app">
+    <header>
+        <div class="logo">ZOL CHAT</div>
+        <button id="installApp" class="btn-install">تثبيت التطبيق</button>
+    </header>
+
+    <main>
+        <div class="field">
+            <label>اختر الدولة</label>
+            <select id="countrySelect"></select>
+        </div>
+
+        <div class="field">
+            <label>رقم الهاتف</label>
+            <div class="row">
+                <input type="text" id="codeVal" class="dial-code" readonly>
+                <input type="tel" id="phoneVal" placeholder="000 000 000">
+            </div>
+        </div>
+
+        <div class="field">
+            <label>الرسالة</label>
+            <textarea id="msgVal" rows="3">السلام عليكم</textarea>
+        </div>
+
+        <button class="btn-main" onclick="openWA()">
+            <span>فتح الدردشة</span> <i class="fab fa-whatsapp"></i>
+        </button>
+    </main>
+
+    <footer>
+        <button class="nav-btn active"><i class="fas fa-home"></i><span>الرئيسية</span></button>
+        <button class="nav-btn" onclick="toggleModal(true)"><i class="fas fa-history"></i><span>السجل</span></button>
+        <button class="nav-btn" onclick="share()"><i class="fas fa-share-alt"></i><span>مشاركة</span></button>
+    </footer>
+</div>
+
+<div id="histModal" class="modal" onclick="toggleModal(false)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h3 style="margin-bottom:15px; text-align:center;">آخر المراسلات</h3>
+        <div id="histList"></div>
+        <button onclick="toggleModal(false)" class="btn-main" style="margin-top:20px; background:#eee; color:#333;">إغلاق</button>
     </div>
+</div>
 
-    <div class="app-shell">
-        <header>
-            <div class="brand">
-                <i class="fab fa-whatsapp" style="font-size:24px;"></i>
-                <h1>ZOL CHAT</h1>
-            </div>
-            <button class="btn-lang" onclick="toggleLanguage()" id="langBtn">English</button>
-        </header>
-
-        <main>
-            <div class="section-card">
-                <label id="lblSearch">ابحث عن الدولة (بالعربية أو الإنجليزية)</label>
-                <div class="search-container">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="countryInput" class="search-input" placeholder="مثال: السودان أو Sudan">
-                    <div id="countryDrop" class="dropdown-list"></div>
-                </div>
-
-                <div class="phone-group">
-                    <div class="country-code-display">
-                        <span id="currentFlag" class="flag-icon flag-icon-sd"></span>
-                        <input type="tel" id="dialCode" value="249">
-                    </div>
-                    <input type="tel" id="phoneNumber" class="phone-main-input" placeholder="ادخل الرقم" inputmode="numeric">
-                </div>
-            </div>
-
-            <div class="section-card">
-                <label id="lblMsg">نص الرسالة</label>
-                <textarea id="messageBody" class="search-input" style="height: 80px; resize: none; margin-bottom: 5px;">السلام عليكم</textarea>
-                <div class="suggestions-row" id="sugBox"></div>
-                
-                <button class="btn-send" onclick="sendToWhatsApp()">
-                    <span id="btnSendTxt">فتح محادثة واتساب</span>
-                    <i class="fas fa-paper-plane"></i>
-                </button>
-            </div>
-
-            <button class="btn-qr" onclick="startScan()">
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <i class="fas fa-qrcode" style="font-size:28px; color:var(--wa-green);"></i>
-                    <div style="text-align:right;">
-                        <b id="qrTitle" style="display:block; font-size:15px;">مسح باركود واتساب</b>
-                        <small id="qrSub" style="color:#8696a0;">التوجيه التلقائي للمحادثة</small>
-                    </div>
-                </div>
-                <i class="fas fa-chevron-left" id="arrIcon"></i>
-            </button>
-
-            <div class="section-card history-box">
-                <label id="lblHist">آخر المراسلات</label>
-                <div id="historyList" class="history-list"></div>
-            </div>
-        </main>
-
-        <footer>
-            <button class="nav-link active" onclick="location.reload()">
-                <i class="fas fa-home" style="font-size:20px;"></i>
-                <span id="n1">الرئيسية</span>
-            </button>
-            <button class="nav-link" onclick="shareApp()">
-                <i class="fas fa-share-nodes" style="font-size:20px;"></i>
-                <span id="n2">مشاركة</span>
-            </button>
-            <a href="https://linktr.ee/abdul3ziz95" target="_blank" class="nav-link" style="text-decoration:none;">
-                <i class="fas fa-user-shield" style="font-size:20px;"></i>
-                <span id="n3">المطور</span>
-            </a>
-        </footer>
-    </div>
-
-    <script src="https://unpkg.com/@zxing/library@latest"></script>
-    <script>
-        /**
-         * 1. قاعدة بيانات شاملة لجميع دول العالم (مختصرة هنا ولكنها تعمل برمجياً للجميع)
-         */
-        const ALL_COUNTRIES = [
-            {n:"السودان", e:"Sudan", c:"249", i:"sd"}, {n:"السعودية", e:"Saudi Arabia", c:"966", i:"sa"},
-            {n:"مصر", e:"Egypt", c:"20", i:"eg"}, {n:"الإمارات", e:"UAE", c:"971", i:"ae"},
-            {n:"الكويت", e:"Kuwait", c:"965", i:"kw"}, {n:"قطر", e:"Qatar", c:"974", i:"qa"},
-            {n:"عمان", e:"Oman", c:"968", i:"om"}, {n:"البحرين", e:"Bahrain", c:"973", i:"bh"},
-            {n:"الأردن", e:"Jordan", c:"962", i:"jo"}, {n:"العراق", e:"Iraq", c:"964", i:"iq"},
-            {n:"اليمن", e:"Yemen", c:"967", i:"ye"}, {n:"فلسطين", e:"Palestine", c:"970", i:"ps"},
-            {n:"لبنان", e:"Lebanon", c:"961", i:"lb"}, {n:"سوريا", e:"Syria", c:"963", i:"sy"},
-            {n:"المغرب", e:"Morocco", c:"212", i:"ma"}, {n:"الجزائر", e:"Algeria", c:"213", i:"dz"},
-            {n:"تونس", e:"Tunisia", c:"216", i:"tn"}, {n:"ليبيا", e:"Libya", c:"218", i:"ly"},
-            {n:"موريتانيا", e:"Mauritania", c:"222", i:"mr"}, {n:"الصومال", e:"Somalia", c:"252", i:"so"},
-            {n:"أمريكا", e:"USA", c:"1", i:"us"}, {n:"كندا", e:"Canada", c:"1", i:"ca"},
-            {n:"بريطانيا", e:"UK", c:"44", i:"gb"}, {n:"تركيا", e:"Turkey", c:"90", i:"tr"},
-            {n:"فرنسا", e:"France", c:"33", i:"fr"}, {n:"ألمانيا", e:"Germany", c:"49", i:"de"},
-            {n:"إسبانيا", e:"Spain", c:"34", i:"es"}, {n:"إيطاليا", e:"Italy", c:"39", i:"it"}
-            // ملاحظة: المحرك يبحث ديناميكياً في أي مفتاح يتم إدخاله حتى لو لم يكن في القائمة المختصرة
-        ];
-
-        let currentLang = 'ar';
-        const codeReader = new ZXing.BrowserMultiFormatReader();
-
-        /**
-         * 2. نظام اللغات والترجمة الشاملة
-         */
-        function toggleLanguage() {
-            currentLang = currentLang === 'ar' ? 'en' : 'ar';
-            document.getElementById('app-body').className = currentLang;
-            document.getElementById('app-body').dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+<script>
+    // 1. جلب قائمة الدول الشاملة
+    const countryData = [];
+    async function init() {
+        try {
+            const res = await fetch('https://restcountries.com/v3.1/all?fields=name,idd,cca2,flags');
+            const data = await res.json();
+            data.sort((a, b) => a.name.common.localeCompare(b.name.common));
+            const select = document.getElementById('countrySelect');
             
-            const UI = {
-                ar: {
-                    search: "ابحث عن الدولة (بالعربية أو الإنجليزية)",
-                    ph: "ادخل الرقم", msg: "نص الرسالة", btn: "فتح محادثة واتساب",
-                    qrT: "مسح باركود واتساب", qrS: "التوجيه التلقائي للمحادثة",
-                    hist: "آخر المراسلات", n1: "الرئيسية", n2: "مشاركة", n3: "المطور",
-                    langBtn: "English", msgDef: "السلام عليكم"
-                },
-                en: {
-                    search: "Search Country (Arabic or English)",
-                    ph: "Enter Number", msg: "Message Body", btn: "Open WhatsApp Chat",
-                    qrT: "Scan WhatsApp QR", qrS: "Auto-redirect to chat",
-                    hist: "Recent History", n1: "Home", n2: "Share", n3: "Developer",
-                    langBtn: "العربية", msgDef: "Hello"
+            data.forEach(c => {
+                if(c.idd.root) {
+                    const code = c.idd.root + (c.idd.suffixes ? c.idd.suffixes[0] : "");
+                    const option = document.createElement('option');
+                    option.value = code;
+                    option.text = `${c.name.common} (${code})`;
+                    option.dataset.cca2 = c.cca2;
+                    select.appendChild(option);
+                    countryData.push({name: c.name.common, code: code, cca2: c.cca2});
                 }
-            };
-
-            const langData = UI[currentLang];
-            document.getElementById('lblSearch').innerText = langData.search;
-            document.getElementById('phoneNumber').placeholder = langData.ph;
-            document.getElementById('lblMsg').innerText = langData.msg;
-            document.getElementById('btnSendTxt').innerText = langData.btn;
-            document.getElementById('qrTitle').innerText = langData.qrT;
-            document.getElementById('qrSub').innerText = langData.qrS;
-            document.getElementById('lblHist').innerText = langData.hist;
-            document.getElementById('n1').innerText = langData.n1;
-            document.getElementById('n2').innerText = langData.n2;
-            document.getElementById('n3').innerText = langData.n3;
-            document.getElementById('langBtn').innerText = langData.langBtn;
-            document.getElementById('messageBody').value = langData.msgDef;
-            document.getElementById('arrIcon').className = currentLang === 'ar' ? 'fas fa-chevron-left' : 'fas fa-chevron-right';
-            
-            renderSuggestions();
-        }
-
-        /**
-         * 3. محرك البحث الذكي عن الدول (عربي/إنجليزي)
-         */
-        const countryInput = document.getElementById('countryInput');
-        const countryDrop = document.getElementById('countryDrop');
-
-        countryInput.addEventListener('input', (e) => {
-            const val = e.target.value.toLowerCase();
-            countryDrop.innerHTML = '';
-            
-            if (val.length < 1) {
-                countryDrop.style.display = 'none';
-                return;
-            }
-
-            const filtered = ALL_COUNTRIES.filter(c => 
-                c.n.includes(val) || 
-                c.e.toLowerCase().includes(val) || 
-                c.c.includes(val)
-            );
-
-            if (filtered.length > 0) {
-                countryDrop.style.display = 'block';
-                filtered.forEach(country => {
-                    const item = document.createElement('div');
-                    item.className = 'dropdown-item';
-                    item.innerHTML = `<span class="flag-icon flag-icon-${country.i}"></span> 
-                                      <b>${currentLang === 'ar' ? country.n : country.e}</b> 
-                                      <span style="color:var(--text-sub); margin-right:auto;">+${country.c}</span>`;
-                    item.onclick = () => {
-                        selectCountry(country);
-                    };
-                    countryDrop.appendChild(item);
-                });
-            } else {
-                countryDrop.style.display = 'none';
-            }
-        });
-
-        function selectCountry(country) {
-            document.getElementById('dialCode').value = country.c;
-            document.getElementById('currentFlag').className = `flag-icon flag-icon-${country.i}`;
-            countryDrop.style.display = 'none';
-            countryInput.value = '';
-        }
-
-        // مراقبة تغيير المفتاح يدوياً
-        document.getElementById('dialCode').addEventListener('input', (e) => {
-            const code = e.target.value;
-            const found = ALL_COUNTRIES.find(c => c.c === code);
-            if (found) {
-                document.getElementById('currentFlag').className = `flag-icon flag-icon-${found.i}`;
-            }
-        });
-
-        /**
-         * 4. نظام المراسلة والتحقق
-         */
-        function sendToWhatsApp() {
-            const code = document.getElementById('dialCode').value.replace(/\D/g, '');
-            const phone = document.getElementById('phoneNumber').value.replace(/\D/g, '');
-            const msg = encodeURIComponent(document.getElementById('messageBody').value);
-
-            if (!phone) {
-                alert(currentLang === 'ar' ? "يرجى إدخال رقم الهاتف أولاً" : "Please enter phone number");
-                return;
-            }
-
-            const fullNumber = code + phone;
-            saveToHistory(fullNumber);
-            window.open(`https://wa.me/${fullNumber}?text=${msg}`, '_blank');
-        }
-
-        /**
-         * 5. نظام السجل (History) - يعمل 100%
-         */
-        function saveToHistory(num) {
-            let history = JSON.parse(localStorage.getItem('zol_history') || '[]');
-            if (!history.includes(num)) {
-                history.unshift(num);
-                if (history.length > 10) history.pop(); // حفظ آخر 10 أرقام
-                localStorage.setItem('zol_history', JSON.stringify(history));
-                renderHistory();
-            }
-        }
-
-        function renderHistory() {
-            const listContainer = document.getElementById('historyList');
-            listContainer.innerHTML = '';
-            const history = JSON.parse(localStorage.getItem('zol_history') || '[]');
-
-            if (history.length === 0) {
-                listContainer.innerHTML = `<p style="text-align:center; color:#ccc; font-size:12px; padding:10px;">لا يوجد سجل حالياً</p>`;
-                return;
-            }
-
-            history.forEach(num => {
-                const row = document.createElement('div');
-                row.className = 'history-item';
-                row.innerHTML = `<span><i class="fab fa-whatsapp" style="color:#25d366; margin-left:10px;"></i> +${num}</span>
-                                 <i class="fas fa-arrow-left" style="color:#eee; font-size:12px;"></i>`;
-                row.onclick = () => {
-                    document.getElementById('phoneNumber').value = num.replace(document.getElementById('dialCode').value, '');
-                    sendToWhatsApp();
-                };
-                listContainer.appendChild(row);
             });
-        }
 
-        /**
-         * 6. نظام الباركود والتحويل المباشر
-         */
-        async function startScan() {
-            document.getElementById('camera-modal').style.display = 'block';
-            try {
-                const videoDevices = await codeReader.listVideoInputDevices();
-                const backCamera = videoDevices.find(device => device.label.toLowerCase().includes('back')) || videoDevices[0];
-                
-                codeReader.decodeFromVideoDevice(backCamera.deviceId, 'video-view', (result, err) => {
-                    if (result) {
-                        const scannedText = result.text;
-                        stopScan();
-                        
-                        // فحص إذا كان الرابط هو رابط واتساب مباشر
-                        if (scannedText.includes('wa.me') || scannedText.includes('whatsapp.com')) {
-                            window.location.href = scannedText;
-                        } else {
-                            // إذا كان مجرد رقم، ضعه في الخانة
-                            const cleaned = scannedText.replace(/\D/g, '');
-                            document.getElementById('phoneNumber').value = cleaned;
-                            sendToWhatsApp();
-                        }
-                    }
-                });
-            } catch (e) {
-                console.error(e);
-                stopScan();
-                alert("تعذر فتح الكاميرا");
-            }
-        }
+            // 2. اكتشاف الموقع تلقائياً
+            const geo = await fetch('https://ipapi.co/json/').then(r => r.json());
+            select.value = countryData.find(c => c.cca2 === geo.country_code).code;
+            updateCode();
+        } catch(e) { console.error("Error loading countries"); }
+    }
 
-        function stopScan() {
-            codeReader.reset();
-            document.getElementById('camera-modal').style.display = 'none';
-        }
+    document.getElementById('countrySelect').onchange = updateCode;
+    function updateCode() { document.getElementById('codeVal').value = document.getElementById('countrySelect').value; }
 
-        /**
-         * 7. ميزات إضافية (مشاركة، رسائل مقترحة)
-         */
-        function renderSuggestions() {
-            const box = document.getElementById('sugBox');
-            box.innerHTML = '';
-            const sugs = currentLang === 'ar' ? 
-                ["السلام عليكم", "بكم السعر؟", "أرسل الموقع", "متوفر؟"] : 
-                ["Hello", "Price?", "Location?", "Available?"];
-            
-            sugs.forEach(s => {
-                const btn = document.createElement('button');
-                btn.className = 'sug-btn';
-                btn.innerText = s;
-                btn.onclick = () => document.getElementById('messageBody').value = s;
-                box.appendChild(btn);
-            });
+    function openWA() {
+        const full = document.getElementById('codeVal').value.replace('+','') + document.getElementById('phoneVal').value;
+        const msg = encodeURIComponent(document.getElementById('msgVal').value);
+        if(full.length > 5) {
+            saveHist(full);
+            window.open(`https://wa.me/${full}?text=${msg}`);
         }
+    }
 
-        function shareApp() {
-            if (navigator.share) {
-                navigator.share({ title: 'Zol Chat', url: window.location.href });
-            } else {
-                navigator.clipboard.writeText(window.location.href);
-                alert("تم نسخ رابط التطبيق");
-            }
+    // 3. إدارة السجل
+    function saveHist(n) {
+        let h = JSON.parse(localStorage.getItem('zh') || '[]');
+        if(!h.includes(n)) { h.unshift(n); localStorage.setItem('zh', JSON.stringify(h.slice(0,10))); }
+        renderHist();
+    }
+
+    function renderHist() {
+        const list = document.getElementById('histList');
+        list.innerHTML = '';
+        JSON.parse(localStorage.getItem('zh') || '[]').forEach(n => {
+            const d = document.createElement('div');
+            d.className = 'hist-item';
+            d.innerHTML = `<b>+${n}</b> <i class="fab fa-whatsapp" style="color:#25d366"></i>`;
+            d.onclick = () => { document.getElementById('phoneVal').value = n.replace(document.getElementById('codeVal').value.replace('+',''), ''); toggleModal(false); };
+            list.appendChild(d);
+        });
+    }
+
+    function toggleModal(show) { document.getElementById('histModal').style.display = show ? 'flex' : 'none'; }
+
+    // 4. ميزة التثبيت (PWA)
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById('installApp').style.display = 'block';
+    });
+
+    document.getElementById('installApp').onclick = async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') document.getElementById('installApp').style.display = 'none';
+            deferredPrompt = null;
         }
+    };
 
-        // إخلاق القوائم عند النقر خارجها
-        window.onclick = function(event) {
-            if (!event.target.matches('.search-input')) {
-                countryDrop.style.display = 'none';
-            }
-        }
+    // التسجيل لـ Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
+    }
 
-        window.onload = () => {
-            renderSuggestions();
-            renderHistory();
-        };
-    </script>
+    function share() { navigator.share ? navigator.share({url: location.href}) : alert(location.href); }
+    window.onload = () => { init(); renderHist(); };
+</script>
 </body>
 </html>
