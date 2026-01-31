@@ -1,71 +1,72 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" id="appHtml">
+<html lang="en" dir="ltr" id="appHtml">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>دردشة مباشرة</title>
+    <title>Direct Chat Pro</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="manifest" href="manifest.json">
 </head>
 <body>
     <div class="page-wrapper">
+        <div id="installBanner" class="install-banner" style="display: none;">
+            <div class="install-info">
+                <img src="whatsapp-icon.png" width="40">
+                <div>
+                    <strong>Install App</strong>
+                    <p>Faster access on your home screen</p>
+                </div>
+            </div>
+            <button id="btnInstallAction">Add</button>
+        </div>
+
         <nav class="top-nav">
-            <button id="langToggle" onclick="toggleLanguage()" class="nav-btn">English</button>
-            <button id="installButton" class="install-btn" style="display:none;"><i class="fas fa-download"></i> <span id="txtInstall">تثبيت</span></button>
+            <h2 id="txtTitle">Direct Chat</h2>
+            <button id="langToggle" onclick="toggleLanguage()">العربية</button>
         </nav>
 
-        <header class="app-header">
-            <img src="whatsapp-icon.png" alt="Logo" class="main-logo">
-            <h1 id="txtTitle" class="app-heading">دردشة مباشرة</h1>
-            <p id="txtDesc" class="description">مراسلة فورية عالمية دون حفظ الرقم.</p>
-        </header>
-
-        <main class="main-form">
-            <div class="input-group">
-                <label id="lblCountry">اختر الدولة:</label>
-                <input type="text" id="countryInput" list="countriesList" oninput="handleCountrySelection(this.value)" autocomplete="off">
-                <datalist id="countriesList"></datalist>
-            </div>
-
-            <div class="phone-row">
-                <div class="country-box">
-                    <span id="currentFlag" class="flag-icon flag-icon-sa"></span>
-                    <input type="text" id="codeInput" value="+966" readonly>
+        <div class="main-content">
+            <div class="input-card">
+                <label id="lblCountry">Select Country</label>
+                <div class="search-box">
+                    <input type="text" id="countryInput" placeholder="Search country..." oninput="filterCountries(this.value)">
+                    <div id="countriesDropdown" class="dropdown-content"></div>
                 </div>
-                <input type="tel" id="phoneInput" placeholder="رقم الهاتف" inputmode="numeric">
+
+                <div class="phone-row">
+                    <div class="code-display">
+                        <span id="currentFlag" class="flag-icon flag-icon-us"></span>
+                        <input type="text" id="codeInput" value="+1" readonly>
+                    </div>
+                    <input type="tel" id="phoneInput" placeholder="Phone Number" inputmode="numeric">
+                </div>
+
+                <label id="lblMsg">Ready Message</label>
+                <textarea id="messageInput">Peace be upon you</textarea>
+
+                <button class="btn-send" onclick="openWhatsApp()">
+                    <i class="fab fa-whatsapp"></i> <span id="btnChat">Start Chat</span>
+                </button>
             </div>
 
-            <div class="input-group">
-                <label id="lblMsg">الرسالة:</label>
-                <textarea id="messageInput">السلام عليكم</textarea>
-            </div>
-
-            <button class="btn-primary" onclick="openWhatsApp()">
-                <i class="fab fa-whatsapp"></i> <span id="btnChat">بدء المحادثة</span>
-            </button>
-            
-            <button class="btn-secondary" onclick="startQRScanner()">
-                <i class="fas fa-qrcode"></i> <span id="btnQR">مسح باركود واتساب</span>
-            </button>
-        </main>
-
-        <div class="share-section">
-            <p id="txtShare" class="share-title">شارك التطبيق:</p>
-            <div class="share-grid">
-                <button class="share-card main-share" onclick="handleNativeShare()"><i class="fas fa-share-alt"></i></button>
-                <button class="share-card wa" onclick="socialShare('wa')"><i class="fab fa-whatsapp"></i></button>
-                <button class="share-card fb" onclick="socialShare('fb')"><i class="fab fa-facebook-f"></i></button>
+            <div class="action-grid">
+                <button class="action-btn" onclick="startQRScanner()">
+                    <i class="fas fa-qrcode"></i> <span id="btnQR">Scan QR</span>
+                </button>
+                <button class="action-btn" onclick="handleNativeShare()">
+                    <i class="fas fa-share-nodes"></i> <span id="txtShareBtn">Share</span>
+                </button>
             </div>
         </div>
     </div>
 
-    <div id="qrModal" class="qr-modal">
-        <div class="qr-content">
+    <div id="qrModal" class="modal">
+        <div class="modal-content">
             <div id="reader"></div>
-            <button onclick="stopQRScanner()" class="close-qr">إغلاق</button>
+            <button onclick="stopQRScanner()" class="close-btn">Close Camera</button>
         </div>
     </div>
 
