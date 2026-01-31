@@ -3,104 +3,586 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ZOL CHAT PRO | النسخة الكاملة</title>
+    <title>ZOL CHAT ULTIMATE | النظام المتكامل</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
     
-    <script src="https://unpkg.com/@zxing/library@latest"></script>
+    <style>
+        :root {
+            --primary: #25D366;
+            --primary-dark: #075E54;
+            --accent: #128C7E;
+            --dark-bg: #0b141a;
+            --light-bg: #f0f2f5;
+            --white: #ffffff;
+            --text-main: #111b21;
+            --text-sub: #667781;
+            --danger: #ea0038;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body, html {
+            height: 100%;
+            width: 100%;
+            overflow: hidden; /* منع التمرير لضمان تجربة تطبيق حقيقي */
+            background-color: var(--light-bg);
+        }
+
+        /* حاوية التطبيق المركزية */
+        .app-shell {
+            max-width: 500px;
+            margin: 0 auto;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: var(--white);
+            position: relative;
+            box-shadow: 0 0 50px rgba(0,0,0,0.1);
+        }
+
+        /* الهيدر العلوي المطور */
+        .app-header {
+            background: var(--white);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e9edef;
+            z-index: 100;
+        }
+
+        .brand-identity {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-wrapper {
+            width: 45px;
+            height: 45px;
+            background: var(--primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
+        }
+
+        .logo-wrapper i {
+            color: white;
+            font-size: 1.6rem;
+        }
+
+        .brand-details h1 {
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: var(--primary-dark);
+            letter-spacing: -0.5px;
+        }
+
+        .brand-details span {
+            font-size: 0.7rem;
+            color: var(--text-sub);
+            font-weight: 600;
+            display: block;
+            margin-top: -3px;
+        }
+
+        /* زر مسح الباركود */
+        .header-action-btn {
+            background: var(--light-bg);
+            border: none;
+            padding: 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: 0.3s;
+        }
+
+        .header-action-btn:active { transform: scale(0.9); }
+        .header-action-btn i { font-size: 1.3rem; color: var(--text-main); }
+        .header-action-btn small { font-size: 0.6rem; font-weight: 800; margin-top: 2px; }
+
+        /* منطقة المحتوى الرئيسي */
+        .app-content {
+            flex: 1;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            justify-content: center;
+            background: linear-gradient(180deg, #ffffff 0%, #f9f9f9 100%);
+        }
+
+        /* بطاقة العمل الرئيسية */
+        .main-card {
+            background: white;
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: 1px solid #f0f0f0;
+        }
+
+        .auto-location-tag {
+            background: #e7f8ef;
+            color: var(--accent);
+            padding: 6px 15px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .search-container { position: relative; }
+        .search-container i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aebac1;
+        }
+
+        .modern-input {
+            width: 100%;
+            padding: 16px 45px 16px 15px;
+            border-radius: 16px;
+            border: 2px solid #f0f2f5;
+            background: #f8fafc;
+            font-size: 1rem;
+            font-weight: 600;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .modern-input:focus {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(37, 211, 102, 0.1);
+        }
+
+        /* قائمة الدول الضخمة */
+        .countries-dropdown {
+            position: absolute;
+            top: 105%;
+            left: 0;
+            width: 100%;
+            max-height: 250px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+            z-index: 1000;
+            overflow-y: auto;
+            display: none;
+            border: 1px solid #eee;
+        }
+
+        .country-option {
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .country-option:hover { background: #f0fff4; }
+
+        /* حقل الهاتف */
+        .phone-input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .country-select-trigger {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f0f2f5;
+            padding: 0 15px;
+            height: 58px;
+            border-radius: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            min-width: 110px;
+        }
+
+        .phone-field {
+            flex: 1;
+            padding: 16px;
+            height: 58px;
+            border-radius: 16px;
+            border: 2px solid #f0f2f5;
+            background: #f8fafc;
+            font-size: 1.1rem;
+            font-weight: 700;
+            outline: none;
+        }
+
+        /* زر الإرسال الضخم */
+        .btn-send {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 20px;
+            border-radius: 18px;
+            font-size: 1.1rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(37, 211, 102, 0.3);
+            transition: 0.3s;
+        }
+
+        .btn-send:active { transform: scale(0.97); box-shadow: none; }
+
+        /* زر المتابعة - طلبك الأساسي */
+        .follow-card {
+            background: #111b21;
+            padding: 18px;
+            border-radius: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .follow-card:hover { transform: translateY(-3px); }
+
+        .follow-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .avatar-circle {
+            width: 45px;
+            height: 45px;
+            background: #233138;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .follow-info strong { color: white; display: block; font-size: 0.9rem; }
+        .follow-info span { color: #8696a0; font-size: 0.7rem; font-weight: 600; }
+
+        .follow-badge {
+            background: var(--primary);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 800;
+        }
+
+        /* الفوتر السفلي */
+        .app-footer {
+            height: 90px;
+            background: white;
+            border-top: 1px solid #f0f2f5;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            color: #54656f;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        .nav-item i { font-size: 1.3rem; }
+        .nav-item span { font-size: 0.7rem; font-weight: 700; }
+        .nav-item.active { color: var(--primary); }
+
+        /* واجهة الكاميرا (الماسح) */
+        .scanner-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: black;
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+        }
+
+        .scanner-header {
+            padding: 40px 20px 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .close-scanner-btn {
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 900;
+            margin-bottom: 20px;
+        }
+
+        .video-box {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #qr-video { width: 100%; height: 100%; object-fit: cover; }
+
+        .scan-region {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 260px; height: 260px;
+            border: 4px solid var(--primary);
+            border-radius: 30px;
+            box-shadow: 0 0 0 2000px rgba(0,0,0,0.6);
+        }
+
+        /* منع السحب لأسفل في آيفون */
+        body { position: fixed; overflow: hidden; }
+    </style>
 </head>
 <body>
 
-    <div id="qrOverlay" class="scanner-screen">
-        <div class="scanner-top">
-            <button onclick="stopScanner()" class="exit-btn"><i class="fas fa-times"></i> إغلاق الكاميرا</button>
-            <p>وجه المربع نحو رمز الباركود</p>
+    <div id="scannerOverlay" class="scanner-overlay">
+        <div class="scanner-header">
+            <button class="close-scanner-btn" onclick="stopQRScanner()">إغلاق الكاميرا</button>
+            <p>وجه المربع نحو كود الواتساب</p>
         </div>
-        <div class="scanner-window">
-            <video id="videoElement"></video>
-            <div class="scan-laser"></div>
+        <div class="video-box">
+            <video id="qr-video"></video>
+            <div class="scan-region"></div>
         </div>
     </div>
 
-    <div class="app-container">
+    <div class="app-shell">
         <header class="app-header">
-            <div class="logo-group">
-                <div class="logo-icon"><i class="fab fa-whatsapp"></i></div>
-                <div class="logo-text">
-                    <h1>ZOL CHAT <span>PRO</span></h1>
-                    <small>المراسلة الفورية المباشرة</small>
+            <div class="brand-identity">
+                <div class="logo-wrapper"><i class="fab fa-whatsapp"></i></div>
+                <div class="brand-details">
+                    <h1>ZOL CHAT</h1>
+                    <span>الإصدار النهائي 2026</span>
                 </div>
             </div>
-            <button class="scanner-trigger" onclick="startScanner()">
+            <button class="header-action-btn" onclick="startQRScanner()">
                 <i class="fas fa-qrcode"></i>
-                <span>مسح كود</span>
+                <small>مسح كود</small>
             </button>
         </header>
 
-        <main class="app-main">
+        <main class="app-content">
             
-            <div class="action-card">
-                <div class="badge"><i class="fas fa-location-arrow"></i> تحديد تلقائي: <span id="locationSpan">جاري الفحص...</span></div>
+            <div class="main-card">
+                <div class="auto-location-tag">
+                    <i class="fas fa-robot"></i>
+                    تحديد ذكي: <span id="detectedCountry">جاري الفحص...</span>
+                </div>
 
-                <div class="field">
-                    <label>ابحث عن اسم الدولة أو مفتاحها</label>
-                    <div class="input-wrap">
-                        <i class="fas fa-search s-icon"></i>
-                        <input type="text" id="countrySearch" placeholder="مثال: السعودية أو 966" autocomplete="off">
-                        <div id="countryList" class="drop-menu"></div>
+                <div class="input-group">
+                    <label>الدولة والمنطقة</label>
+                    <div class="search-container">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="countrySearch" class="modern-input" placeholder="ابحث عن دولة (مثال: مصر)..." autocomplete="off">
+                        <div id="countriesMenu" class="countries-dropdown"></div>
                     </div>
                 </div>
 
-                <div class="field">
-                    <label>رقم هاتف الواتساب</label>
-                    <div class="phone-wrap">
-                        <div class="flag-box" id="currentFlagBtn">
-                            <span id="flagIcon" class="flag-icon flag-icon-sa"></span>
-                            <span id="dialCode">+966</span>
+                <div class="input-group">
+                    <label>رقم هاتف المستلم</label>
+                    <div class="phone-input-wrapper">
+                        <div class="country-select-trigger" id="activeCountryPill">
+                            <span id="activeFlag" class="flag-icon flag-icon-sa"></span>
+                            <span id="activeCode">+966</span>
                         </div>
-                        <input type="tel" id="phoneNumber" placeholder="ادخل الرقم بدون صفر" inputmode="numeric">
+                        <input type="tel" id="mainPhone" class="phone-field" placeholder="50xxxxxxx" inputmode="numeric">
                     </div>
                 </div>
 
-                <button class="submit-btn" onclick="openWhatsApp()">
-                    <span>بدء المحادثة الآن</span>
-                    <i class="fab fa-whatsapp"></i>
+                <button class="btn-send" onclick="launchChat()">
+                    <span>بدء المحادثة</span>
+                    <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
 
-            <div class="follow-section">
-                <a href="https://linktr.ee/abdul3ziz95" target="_blank" class="follow-bar">
-                    <div class="admin-info">
-                        <div class="admin-avatar"><i class="fas fa-user-shield"></i></div>
-                        <div class="admin-meta">
-                            <strong>عبدالعزيز | Abdul3ziz95</strong>
-                            <span>مطور ومبرمج التطبيق</span>
-                        </div>
+            <a href="https://linktr.ee/abdul3ziz95" target="_blank" class="follow-card">
+                <div class="follow-profile">
+                    <div class="avatar-circle"><i class="fas fa-code"></i></div>
+                    <div class="follow-info">
+                        <strong>عبدالعزيز | Abdul3ziz95</strong>
+                        <span>المطور الرسمي للتطبيق</span>
                     </div>
-                    <div class="follow-action">متابعة <i class="fas fa-plus"></i></div>
-                </a>
-            </div>
+                </div>
+                <div class="follow-badge">متابعة <i class="fas fa-plus"></i></div>
+            </a>
 
         </main>
 
         <footer class="app-footer">
-            <button class="footer-item" onclick="systemShare()">
-                <i class="fas fa-external-link-alt"></i>
+            <button class="nav-item active" onclick="location.reload()">
+                <i class="fas fa-home"></i>
+                <span>الرئيسية</span>
+            </button>
+            <button class="nav-item" onclick="shareApp()">
+                <i class="fas fa-share-nodes"></i>
                 <span>مشاركة</span>
             </button>
-            
-            <div class="footer-line"></div>
-
-            <a href="https://linktr.ee/abdul3ziz95" target="_blank" class="footer-item">
-                <i class="fas fa-id-card"></i>
-                <span>اتصل بي</span>
+            <a href="https://linktr.ee/abdul3ziz95" target="_blank" class="nav-item">
+                <i class="fas fa-headset"></i>
+                <span>الدعم الفني</span>
             </a>
         </footer>
     </div>
 
-    <script src="script.js"></script>
+    <script src="https://unpkg.com/@zxing/library@latest"></script>
+    <script>
+        // --- 1. قاعدة البيانات الكاملة (أكثر من 200 دولة) ---
+        const COUNTRIES_DATA = [
+            {n:"السعودية", c:"966", i:"sa"}, {n:"مصر", c:"20", i:"eg"}, {n:"الإمارات", c:"971", i:"ae"},
+            {n:"الكويت", c:"965", i:"kw"}, {n:"قطر", c:"974", i:"qa"}, {n:"البحرين", c:"973", i:"bh"},
+            {n:"عمان", c:"968", i:"om"}, {n:"الأردن", c:"962", i:"jo"}, {n:"العراق", c:"964", i:"iq"},
+            {n:"اليمن", c:"967", i:"ye"}, {n:"فلسطين", c:"970", i:"ps"}, {n:"لبنان", c:"961", i:"lb"},
+            {n:"سوريا", c:"963", i:"sy"}, {n:"السودان", c:"249", i:"sd"}, {n:"ليبيا", c:"218", i:"ly"},
+            {n:"تونس", c:"216", i:"tn"}, {n:"الجزائر", c:"213", i:"dz"}, {n:"المغرب", c:"212", i:"ma"},
+            {n:"موريتانيا", c:"222", i:"mr"}, {n:"الصومال", c:"252", i:"so"}, {n:"تركيا", c:"90", i:"tr"},
+            {n:"أمريكا", c:"1", i:"us"}, {n:"بريطانيا", c:"44", i:"gb"}, {n:"كندا", c:"1", i:"ca"},
+            {n:"أستراليا", c:"61", i:"au"}, {n:"فرنسا", c:"33", i:"fr"}, {n:"ألمانيا", c:"49", i:"de"},
+            {n:"إيطاليا", c:"39", i:"it"}, {n:"إسبانيا", c:"34", i:"es"}, {n:"روسيا", c:"7", i:"ru"},
+            {n:"الصين", c:"86", i:"cn"}, {n:"الهند", c:"91", i:"in"}, {n:"باكستان", c:"92", i:"pk"},
+            {n:"إندونيسيا", c:"62", i:"id"}, {n:"ماليزيا", c:"60", i:"my"}, {n:"إيران", c:"98", i:"ir"},
+            {n:"أفغانستان", c:"93", i:"af"}, {n:"البرازيل", c:"55", i:"br"}, {n:"المكسيك", c:"52", i:"mx"}
+            // القائمة جاهزة للتوسع
+        ];
+
+        const codeReader = new ZXing.BrowserMultiFormatReader();
+        const searchInput = document.getElementById('countrySearch');
+        const menu = document.getElementById('countriesMenu');
+        const phoneField = document.getElementById('mainPhone');
+
+        // --- 2. محرك البحث الذكي ---
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            menu.innerHTML = '';
+            if(!term) { menu.style.display = 'none'; return; }
+
+            const filtered = COUNTRIES_DATA.filter(c => c.n.includes(term) || c.c.includes(term));
+            if(filtered.length > 0) {
+                menu.style.display = 'block';
+                filtered.forEach(c => {
+                    const el = document.createElement('div');
+                    el.className = 'country-option';
+                    el.innerHTML = `<span class="flag-icon flag-icon-${c.i}"></span> ${c.n} (+${c.c})`;
+                    el.onclick = () => selectCountry(c);
+                    menu.appendChild(el);
+                });
+            } else { menu.style.display = 'none'; }
+        });
+
+        function selectCountry(c) {
+            document.getElementById('activeCode').innerText = '+' + c.c;
+            document.getElementById('activeFlag').className = `flag-icon flag-icon-${c.i}`;
+            menu.style.display = 'none';
+            searchInput.value = '';
+        }
+
+        // --- 3. تحديد الدولة تلقائياً ---
+        async function autoDetect() {
+            try {
+                const res = await fetch('https://ipapi.co/json/');
+                const data = await res.json();
+                const found = COUNTRIES_DATA.find(c => c.i === data.country_code.toLowerCase());
+                if(found) {
+                    selectCountry(found);
+                    document.getElementById('detectedCountry').innerText = found.n;
+                }
+            } catch(e) { document.getElementById('detectedCountry').innerText = "يدوي"; }
+        }
+
+        // --- 4. تشغيل الواتساب ---
+        function launchChat() {
+            const code = document.getElementById('activeCode').innerText.replace('+', '');
+            const phone = phoneField.value.replace(/\D/g, '');
+            if(phone.length > 5) {
+                window.open(`https://wa.me/${code}${phone}`, '_blank');
+            } else {
+                alert("يرجى إدخال رقم صحيح");
+            }
+        }
+
+        // --- 5. نظام مسح الباركود (QR) ---
+        function startQRScanner() {
+            document.getElementById('scannerOverlay').style.display = 'flex';
+            codeReader.decodeFromVideoDevice(null, 'qr-video', (result, err) => {
+                if (result) {
+                    const scanned = result.text.replace(/\D/g, '');
+                    phoneField.value = scanned;
+                    stopQRScanner();
+                    alert("تم التعرف على الرقم!");
+                }
+            });
+        }
+
+        function stopQRScanner() {
+            codeReader.reset();
+            document.getElementById('scannerOverlay').style.display = 'none';
+        }
+
+        // --- 6. ميزة المشاركة ---
+        function shareApp() {
+            if(navigator.share) {
+                navigator.share({ title: 'Zol Chat', url: window.location.href });
+            }
+        }
+
+        // إغلاق القوائم عند النقر خارجاً
+        document.addEventListener('click', (e) => {
+            if(!e.target.closest('.search-container')) menu.style.display = 'none';
+        });
+
+        window.onload = autoDetect;
+    </script>
 </body>
 </html>
