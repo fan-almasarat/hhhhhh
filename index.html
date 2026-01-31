@@ -1,121 +1,155 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" id="html-root">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دردشة مباشرة - التفاعل الكامل</title>
+    <title>WhatsApp Direct - Global Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
-        body { background-color: #e4f5e9; font-family: 'Tajawal', sans-serif; }
-        .main-card { background: white; border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; padding: 30px; position: relative; }
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Inter:wght@400;700&display=swap');
         
-        /* تنسيق القائمة المنسدلة للبحث */
-        .search-container { position: relative; width: 100%; }
-        .dropdown-list { 
+        body { background-color: #f0f7f2; transition: all 0.3s ease; }
+        .ar { font-family: 'Tajawal', sans-serif; }
+        .en { font-family: 'Inter', sans-serif; }
+
+        .main-card { background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.06); width: 100%; max-width: 480px; padding: 35px; }
+        
+        .input-style { width: 100%; padding: 14px; border: 1.5px solid #e2e8f0; border-radius: 12px; text-align: center; font-weight: bold; outline: none; transition: 0.3s; background: #fff; }
+        .input-style:focus { border-color: #25D366; box-shadow: 0 0 0 4px rgba(37, 211, 102, 0.1); }
+
+        /* قائمة الدول المنسدلة */
+        .dropdown-box { 
             position: absolute; top: 100%; left: 0; right: 0; 
-            background: white; border: 1px solid #ddd; border-radius: 8px; 
-            max-height: 200px; overflow-y: auto; z-index: 50; display: none;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            background: white; border: 1px solid #e2e8f0; border-radius: 12px; 
+            max-height: 250px; overflow-y: auto; z-index: 100; display: none;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1); margin-top: 5px;
         }
-        .dropdown-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
-        .dropdown-item:hover { background: #f0fdf4; }
+        .country-row { padding: 12px 20px; cursor: pointer; border-bottom: 1px solid #f8fafc; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+        .country-row:hover { background: #f0fdf4; }
 
-        .input-style { width: 100%; padding: 12px; border: 1.5px solid #ddd; border-radius: 10px; text-align: center; font-weight: bold; outline: none; transition: 0.3s; }
-        .input-style:focus { border-color: #25D366; }
+        .dial-container { display: flex; align-items: center; background: #f1f5f9; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 0 15px; width: 130px; }
+        .dial-container input { background: transparent; border: none; width: 100%; text-align: center; font-weight: bold; outline: none; padding: 14px 0; font-size: 16px; }
 
-        .dial-input-group { display: flex; align-items: center; background: #f1f3f4; border: 1.5px solid #ddd; border-radius: 10px; padding: 0 12px; width: 120px; }
-        .dial-input-group input { background: transparent; border: none; width: 100%; text-align: center; font-weight: bold; outline: none; padding: 12px 0; }
+        .btn-action { background: #4cd964; color: white; width: 100%; padding: 18px; border-radius: 12px; font-weight: bold; font-size: 18px; transition: 0.3s; box-shadow: 0 4px 15px rgba(76, 217, 100, 0.3); }
+        .btn-action:hover { background: #3ec455; transform: translateY(-2px); }
 
-        .btn-send { background: #4cd964; color: white; width: 100%; padding: 16px; border-radius: 10px; font-weight: bold; font-size: 18px; margin-top: 15px; transition: 0.3s; }
-        .btn-send:hover { background: #3ec455; transform: translateY(-2px); }
-
-        .install-footer { position: fixed; bottom: 20px; background: #1a73e8; color: white; padding: 12px 30px; border-radius: 50px; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.2); cursor: pointer; }
+        .floating-install { position: fixed; bottom: 25px; background: #1a73e8; color: white; padding: 14px 30px; border-radius: 50px; font-weight: bold; box-shadow: 0 10px 20px rgba(26, 115, 232, 0.3); cursor: pointer; z-index: 1000; display: flex; align-items: center; gap: 8px; }
+        
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen p-4">
+<body class="flex flex-col items-center justify-center min-h-screen p-4 ar">
 
-    <div class="main-card">
-        <div class="text-center mb-6">
-            <h1 class="text-2xl font-bold text-[#1d4d38]">دردشة مباشرة</h1>
-            <p class="text-gray-400 text-[11px] mt-1">ابحث عن الدولة أو اكتب المفتاح يدوياً</p>
+    <div class="main-card relative">
+        <button onclick="toggleLanguage()" class="absolute top-4 left-4 bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-bold hover:bg-gray-200 transition">
+            <span id="btn-lang-toggle">English</span>
+        </button>
+
+        <div class="text-center mb-10">
+            <h1 id="txt-title" class="text-2xl font-bold text-gray-800">دردشة مباشرة</h1>
+            <p id="txt-subtitle" class="text-gray-400 text-xs mt-2">راسل أي رقم في العالم بضغطة زر</p>
         </div>
 
-        <div class="mb-6 search-container">
-            <label class="text-xs font-bold text-gray-500 mb-2 block text-center">اختر الدولة أو ابحث عنها:</label>
-            <input type="text" id="country-search" class="input-style" placeholder="اكتب اسم الدولة هنا..." onfocus="showDropdown()" oninput="filterCountries()">
-            <div id="dropdown" class="dropdown-list"></div>
+        <div class="mb-6 relative" id="search-area">
+            <label id="lbl-search" class="text-[11px] font-bold text-gray-400 mb-2 block text-center uppercase tracking-widest">ابحث عن الدولة:</label>
+            <input type="text" id="country-search" class="input-style" placeholder="اكتب اسم الدولة..." onfocus="openDropdown()" oninput="filterCountries()">
+            <div id="dropdown" class="dropdown-box"></div>
         </div>
 
-        <div class="flex gap-3 items-end mb-8" dir="ltr">
+        <div class="flex gap-3 items-end mb-8" id="inputs-wrapper">
             <div class="flex flex-col items-center gap-1">
-                <label class="text-[10px] font-bold text-gray-400" dir="rtl">الرمز</label>
-                <div class="dial-input-group">
-                    <img id="flag-img" src="https://flagcdn.com/w40/sa.png" class="w-6 shadow-sm">
+                <label id="lbl-code" class="text-[10px] font-bold text-gray-400 uppercase">الرمز</label>
+                <div class="dial-container">
+                    <img id="flag-img" src="https://flagcdn.com/w40/sa.png" class="w-6 rounded-sm shadow-sm">
                     <span class="text-green-600 font-bold ml-1">+</span>
                     <input type="number" id="manual-code" value="966" oninput="syncByCode()">
                 </div>
             </div>
 
             <div class="flex-1">
-                <label class="text-[10px] font-bold text-gray-400 mb-1 block text-right" dir="rtl">الرقم المحلي</label>
-                <input type="number" id="phone-num" placeholder="50xxxxxxx" class="input-style">
+                <label id="lbl-phone" class="text-[10px] font-bold text-gray-400 mb-1 block">الرقم المحلي</label>
+                <input type="number" id="phone-input" placeholder="50xxxxxxx" class="input-style">
             </div>
         </div>
 
-        <button onclick="launchWhatsApp()" class="btn-send">بدء المحادثة الآن</button>
-
-        <div class="mt-8 flex justify-center gap-4 border-t pt-6">
-            <div class="text-[10px] text-gray-400 italic">نظام التزامن الثنائي الذكي 2026</div>
-        </div>
+        <button onclick="sendWhatsApp()" class="btn-action" id="btn-chat">بدء المحادثة الآن</button>
     </div>
 
-    <div class="install-footer" onclick="alert('جاري التثبيت...')">📲 تثبيت التطبيق المتطور</div>
+    <div class="floating-install" id="btn-install">
+        <span>📲</span>
+        <span id="txt-install">تثبيت التطبيق</span>
+    </div>
 
     <script>
+        // قاعدة بيانات ضخمة (أهم الدول مع دعم اللغتين)
         const countries = [
-            { n: "المملكة العربية السعودية", c: "966", i: "sa" },
-            { n: "مصر", c: "20", i: "eg" },
-            { n: "السودان", c: "249", i: "sd" },
-            { n: "الإمارات العربية المتحدة", c: "971", i: "ae" },
-            { n: "الكويت", c: "965", i: "kw" },
-            { n: "قطر", c: "974", i: "qa" },
-            { n: "الأردن", c: "962", i: "jo" },
-            { n: "سلطنة عمان", c: "968", i: "om" },
-            { n: "البحرين", c: "973", i: "bh" },
-            { n: "العراق", c: "964", i: "iq" },
-            { n: "اليمن", c: "967", i: "ye" },
-            { n: "المغرب", c: "212", i: "ma" },
-            { n: "تركيا", c: "90", i: "tr" }
+            { ar: "السعودية", en: "Saudi Arabia", c: "966", i: "sa" },
+            { ar: "مصر", en: "Egypt", c: "20", i: "eg" },
+            { ar: "السودان", en: "Sudan", c: "249", i: "sd" },
+            { ar: "الإمارات", en: "UAE", c: "971", i: "ae" },
+            { ar: "الكويت", en: "Kuwait", c: "965", i: "kw" },
+            { ar: "قطر", en: "Qatar", c: "974", i: "qa" },
+            { ar: "الأردن", en: "Jordan", c: "962", i: "jo" },
+            { ar: "سلطنة عمان", en: "Oman", c: "968", i: "om" },
+            { ar: "البحرين", en: "Bahrain", c: "973", i: "bh" },
+            { ar: "اليمن", en: "Yemen", c: "967", i: "ye" },
+            { ar: "العراق", en: "Iraq", c: "964", i: "iq" },
+            { ar: "فلسطين", en: "Palestine", c: "970", i: "ps" },
+            { ar: "لبنان", en: "Lebanon", c: "961", i: "lb" },
+            { ar: "سوريا", en: "Syria", c: "963", i: "sy" },
+            { ar: "تركيا", en: "Turkey", c: "90", i: "tr" },
+            { ar: "المغرب", en: "Morocco", c: "212", i: "ma" },
+            { ar: "تونس", en: "Tunisia", c: "216", i: "tn" },
+            { ar: "الجزائر", en: "Algeria", c: "213", i: "dz" },
+            { ar: "ليبيا", en: "Libya", c: "218", i: "ly" },
+            { ar: "أمريكا", en: "USA", c: "1", i: "us" },
+            { ar: "بريطانيا", en: "UK", c: "44", i: "gb" },
+            { ar: "فرنسا", en: "France", c: "33", i: "fr" },
+            { ar: "ألمانيا", en: "Germany", c: "49", i: "de" }
         ];
 
+        let lang = 'ar';
         const searchInput = document.getElementById('country-search');
-        const dropdown = document.getElementById('dropdown');
         const manualCode = document.getElementById('manual-code');
         const flagImg = document.getElementById('flag-img');
+        const dropdown = document.getElementById('dropdown');
 
-        // إظهار القائمة
-        function showDropdown() { dropdown.style.display = 'block'; renderList(countries); }
-
-        // البحث وتصفية الدول
-        function filterCountries() {
-            const term = searchInput.value.toLowerCase();
-            const filtered = countries.filter(c => c.n.includes(term) || c.c.includes(term));
-            renderList(filtered);
+        function toggleLanguage() {
+            lang = lang === 'ar' ? 'en' : 'ar';
+            const root = document.getElementById('html-root');
+            root.dir = lang === 'ar' ? 'rtl' : 'ltr';
+            root.className = `flex flex-col items-center justify-center min-h-screen p-4 ${lang}`;
+            
+            document.getElementById('txt-title').innerText = lang === 'ar' ? "دردشة مباشرة" : "Direct Chat";
+            document.getElementById('txt-subtitle').innerText = lang === 'ar' ? "راسل أي رقم في العالم بضغطة زر" : "Message any global number instantly";
+            document.getElementById('lbl-search').innerText = lang === 'ar' ? "ابحث عن الدولة:" : "Search Country:";
+            document.getElementById('lbl-code').innerText = lang === 'ar' ? "الرمز" : "Code";
+            document.getElementById('lbl-phone').innerText = lang === 'ar' ? "الرقم المحلي" : "Local Number";
+            document.getElementById('btn-chat').innerText = lang === 'ar' ? "بدء المحادثة الآن" : "Start Chat Now";
+            document.getElementById('txt-install').innerText = lang === 'ar' ? "تثبيت التطبيق" : "Install App";
+            document.getElementById('btn-lang-toggle').innerText = lang === 'ar' ? "English" : "العربية";
+            searchInput.placeholder = lang === 'ar' ? "اكتب اسم الدولة..." : "Type country name...";
+            
+            syncByCode(); // تحديث اسم الدولة في الحقل حسب اللغة
         }
 
-        // بناء القائمة
+        function openDropdown() { dropdown.style.display = 'block'; renderList(countries); }
+
         function renderList(list) {
             dropdown.innerHTML = list.map(c => `
-                <div class="dropdown-item" onclick="selectCountry('${c.n}', '${c.c}', '${c.i}')">
-                    <span>${c.n}</span>
+                <div class="country-row" onclick="selectCountry('${c[lang]}', '${c.c}', '${c.i}')">
+                    <span>${c[lang]}</span>
                     <span class="text-green-600 font-bold">+${c.c}</span>
                 </div>
             `).join('');
         }
 
-        // عند اختيار دولة من القائمة (تحديث المفتاح والعلم)
+        function filterCountries() {
+            const term = searchInput.value.toLowerCase();
+            const filtered = countries.filter(c => c.ar.includes(term) || c.en.toLowerCase().includes(term) || c.c.includes(term));
+            renderList(filtered);
+        }
+
         function selectCountry(name, code, iso) {
             searchInput.value = name;
             manualCode.value = code;
@@ -123,33 +157,29 @@
             dropdown.style.display = 'none';
         }
 
-        // عند كتابة المفتاح يدوياً (تحديث البحث والعلم)
         function syncByCode() {
             const code = manualCode.value;
             const found = countries.find(c => c.c === code);
             if (found) {
-                searchInput.value = found.n;
+                searchInput.value = found[lang];
                 flagImg.src = `https://flagcdn.com/w40/${found.i}.png`;
             } else {
-                searchInput.value = "دولة غير معروفة";
+                searchInput.value = lang === 'ar' ? "دولة غير مسجلة" : "Unknown Country";
             }
         }
 
-        function launchWhatsApp() {
+        function sendWhatsApp() {
             const code = manualCode.value;
-            let num = document.getElementById('phone-num').value;
-            if(!code || !num) return alert("أدخل البيانات كاملة!");
+            let num = document.getElementById('phone-input').value;
+            if(!code || !num) return alert(lang === 'ar' ? "البيانات ناقصة يا زول!" : "Data is missing!");
             if(num.startsWith('0')) num = num.substring(1);
             window.open(`https://wa.me/${code}${num}`, '_blank');
         }
 
-        // إغلاق القائمة عند الضغط خارجها
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.search-container')) dropdown.style.display = 'none';
-        });
+        // إغلاق المنسدلة عند الضغط خارجها
+        document.addEventListener('click', (e) => { if(!e.target.closest('#search-area')) dropdown.style.display = 'none'; });
 
-        // القيمة الافتراضية
-        window.onload = () => { searchInput.value = countries[0].n; };
+        window.onload = () => { syncByCode(); };
     </script>
 </body>
 </html>
