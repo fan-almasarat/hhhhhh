@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Direct Chat</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Direct Chat Elite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -12,56 +12,70 @@
 </head>
 <body>
 
-    <div class="app-container">
-        <nav class="top-nav">
-            <button id="langBtn" class="nav-btn" onclick="toggleAppLanguage()">العربية</button>
-            <button id="installBtn" class="install-btn" style="display: none;">📲 Install</button>
+    <div class="bg-decoration"></div>
+
+    <div class="app-frame">
+        <nav class="glass-nav">
+            <button id="langBtn" class="nav-icon-btn" onclick="toggleAppLanguage()">
+                <i class="fas fa-language"></i> <span>EN</span>
+            </button>
+            <button id="installBtn" class="nav-icon-btn install-pulse" style="display: none;">
+                <i class="fas fa-download"></i> <span>تثبيت</span>
+            </button>
         </nav>
 
-        <header class="header">
-            <h1 id="mainTitle">Direct Chat</h1>
-            <p id="subTitle">Chat on WhatsApp without saving numbers.</p>
-        </header>
+        <main class="main-card">
+            <div class="header-text">
+                <h1 id="appTitle">Direct Chat</h1>
+                <p id="appDesc">تواصل فوراً دون حفظ الرقم</p>
+            </div>
 
-        <main class="content-area">
-            
-            <div class="input-wrapper search-section">
-                <label id="lblCountry">Select Country</label>
-                <div class="search-container">
-                    <input type="text" id="countrySearch" placeholder="Search country..." autocomplete="off">
-                    <i class="fas fa-search search-icon"></i>
-                    <div id="countriesDropdown" class="custom-dropdown"></div>
+            <div class="inputs-container">
+                <div class="input-box search-box">
+                    <label id="lblCountry">الدولة</label>
+                    <div class="relative-wrapper">
+                        <input type="text" id="countrySearch" placeholder="ابحث عن الدولة..." autocomplete="off">
+                        <i class="fas fa-search input-icon"></i>
+                        <div id="countriesDropdown" class="modern-dropdown"></div>
+                    </div>
+                </div>
+
+                <div class="input-box phone-box">
+                    <label id="lblPhone">رقم الهاتف</label>
+                    <div class="phone-input-group">
+                        <div class="flag-code-pill">
+                            <span id="flagIcon" class="flag-icon flag-icon-sa"></span>
+                            <span id="codeText">+966</span>
+                        </div>
+                        <input type="tel" id="phoneNumber" placeholder="ادخل الرقم هنا" inputmode="numeric">
+                    </div>
                 </div>
             </div>
 
-            <div class="phone-container">
-                <div class="code-badge">
-                    <span id="flagIcon" class="flag-icon flag-icon-us"></span>
-                    <span id="codeText">+1</span>
-                </div>
-                <input type="tel" id="phoneNumber" placeholder="Phone Number" inputmode="numeric">
-            </div>
-
-            <button id="startChatBtn" class="main-action-btn" onclick="startWhatsAppChat()">
-                <i class="fab fa-whatsapp"></i> <span id="btnChatText">Start Chat</span>
+            <button id="startChatBtn" class="action-btn" onclick="startWhatsAppChat()">
+                <span id="btnText">ابدأ المحادثة</span> <i class="fab fa-whatsapp"></i>
             </button>
-
         </main>
 
-        <footer class="footer-area">
-            <p id="shareLabel">Share App</p>
-            <button class="share-system-btn" onclick="shareAppNative()">
-                <i class="fas fa-share-nodes"></i> <span id="btnShareText">Share with friends</span>
-            </button>
-            <div class="copyright">
-                <p>© 2026 Direct Chat App</p>
+        <footer class="glass-footer">
+            <div class="footer-actions">
+                <button class="footer-btn share-btn" onclick="shareAppNative()">
+                    <i class="fas fa-share-nodes"></i>
+                    <span id="txtShare">مشاركة التطبيق</span>
+                </button>
+                
+                <a href="https://linktr.ee/abdul3ziz95" target="_blank" class="footer-btn contact-btn">
+                    <i class="fas fa-link"></i>
+                    <span id="txtContact">اتصل بي</span>
+                </a>
             </div>
+            
+            <p class="copyright">© 2026 Abdul3ziz95</p>
         </footer>
     </div>
 
     <script src="script.js"></script>
     <script>
-        // تسجيل Service Worker
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js').catch(console.error);
         }
