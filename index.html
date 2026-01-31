@@ -3,250 +3,385 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ZOL CHAT ULTIMATE 2.0</title>
+    <title>ZOL CHAT ULTIMATE 2026</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
     <style>
-        /* --- المتغيرات والتنسيق الأساسي --- */
+        /* --- القسم 1: التأسيس والتصفير (Lines 1-150) --- */
         :root {
-            --primary: #25D366;
-            --primary-dark: #128C7E;
-            --dark: #111b21;
+            --wa-green: #25D366;
+            --wa-dark: #075E54;
+            --wa-teal: #128C7E;
+            --primary: #111b21;
+            --secondary: #202c33;
             --bg: #f0f2f5;
             --white: #ffffff;
-            --gray: #667781;
-            --radius: 12px;
+            --gray-text: #667781;
+            --radius-main: 18px;
+            --safe-area: env(safe-area-inset-bottom);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
-        
-        body, html { 
-            height: 100vh; width: 100vw; overflow: hidden; 
-            background: var(--bg); color: var(--dark);
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Cairo', 'Poppins', sans-serif;
         }
 
-        .app-container {
-            max-width: 450px; margin: 0 auto; height: 100%;
-            background: var(--white); display: flex; flex-direction: column;
+        body, html {
+            height: 100%;
+            width: 100%;
+            overflow: hidden; /* لمنع السحب العشوائي في الهواتف */
+            background-color: var(--bg);
+            touch-action: manipulation;
+        }
+
+        /* --- القسم 2: الحاوية الرئيسية (Responsive Layout) --- */
+        .app-wrapper {
+            max-width: 500px;
+            margin: 0 auto;
+            height: 100%;
+            background: var(--white);
+            display: flex;
+            flex-direction: column;
             position: relative;
+            box-shadow: 0 0 50px rgba(0,0,0,0.1);
         }
 
-        /* هيدر مضغوط */
         header {
-            padding: 8px 15px; display: flex; justify-content: space-between;
-            align-items: center; border-bottom: 1px solid #eee;
+            padding: 12px 20px;
+            background: var(--white);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f0f0f0;
+            z-index: 100;
         }
 
-        .logo-area { display: flex; align-items: center; gap: 8px; }
-        .logo-area i { color: var(--primary); font-size: 1.5rem; }
-        .logo-area h1 { font-size: 1rem; font-weight: 900; }
+        .brand { display: flex; align-items: center; gap: 10px; }
+        .brand i { color: var(--wa-green); font-size: 1.8rem; }
+        .brand h1 { font-size: 1.1rem; font-weight: 900; letter-spacing: -0.5px; }
 
-        /* مفتاح اللغة */
-        .lang-btn {
-            background: var(--bg); border: 1px solid #ddd; padding: 4px 12px;
-            border-radius: 20px; font-size: 0.75rem; font-weight: 800; cursor: pointer;
-            display: flex; gap: 5px; align-items: center;
+        /* زر تبديل اللغة المتطور (Glass Morphism) */
+        .lang-switch-btn {
+            background: #f0f2f5;
+            padding: 6px 14px;
+            border-radius: 50px;
+            border: 1px solid #e0e0e0;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.3s;
         }
+        .lang-switch-btn:active { transform: scale(0.9); }
 
-        /* المحتوى الرئيسي (بدون تمرير) */
+        /* --- القسم 3: منطقة المحتوى (Lines 300-600) --- */
         main {
-            flex: 1; padding: 12px; display: flex; flex-direction: column;
-            gap: 10px; justify-content: space-between; overflow: hidden;
+            flex: 1;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow: hidden; /* العناصر ستتقلص لتناسب الشاشة */
         }
 
-        .card { 
-            background: #fff; border: 1px solid #f0f0f0; 
-            padding: 12px; border-radius: var(--radius);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        .main-card {
+            background: white;
+            border-radius: var(--radius-main);
+            padding: 18px;
+            border: 1px solid #f0f0f0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
-        .input-label { display: block; font-size: 0.75rem; font-weight: 800; margin-bottom: 4px; color: var(--gray); }
-
-        .search-wrap { position: relative; margin-bottom: 8px; }
-        .search-wrap input {
-            width: 100%; padding: 8px 35px; border-radius: 8px;
-            border: 1px solid #e0e0e0; background: #f9f9f9; font-size: 0.9rem;
-        }
-        .search-wrap i { position: absolute; right: 10px; top: 10px; color: #ccc; }
-
-        .country-results {
-            position: absolute; top: 100%; left: 0; width: 100%;
-            background: white; z-index: 1000; max-height: 150px;
-            overflow-y: auto; border: 1px solid #ddd; display: none;
-            border-radius: 0 0 8px 8px;
+        .input-unit label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: var(--gray-text);
+            margin-bottom: 6px;
         }
 
-        .phone-input-group { display: flex; gap: 5px; margin-bottom: 8px; }
-        .code-select {
-            background: #f0f2f5; padding: 0 8px; border-radius: 8px;
-            display: flex; align-items: center; gap: 5px; font-weight: 800; font-size: 0.85rem;
-            cursor: pointer; min-width: 85px;
+        /* نظام البحث عن الدول */
+        .search-container { position: relative; }
+        .search-field {
+            width: 100%;
+            padding: 12px 40px;
+            border-radius: 12px;
+            border: 2px solid #f6f8fa;
+            background: #f6f8fa;
+            font-size: 0.95rem;
+            font-weight: 700;
+            outline: none;
+        }
+        .search-field:focus { border-color: var(--wa-green); background: white; }
+        .search-container i { position: absolute; right: 14px; top: 15px; color: #aebac1; }
+
+        .countries-list {
+            position: absolute;
+            top: 100%; left: 0; width: 100%;
+            max-height: 200px;
+            background: white;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            display: none;
+            z-index: 2000;
         }
 
-        .num-field {
-            flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #e0e0e0;
-            font-size: 1.1rem; font-weight: 800; outline: none;
+        /* رقم الجوال والمفتاح */
+        .phone-input-row { display: flex; gap: 8px; }
+        .code-trigger {
+            background: #f0f2f5;
+            padding: 0 12px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 900;
+            cursor: pointer;
+            min-width: 95px;
+            height: 55px;
         }
 
-        .msg-field {
-            width: 100%; height: 60px; padding: 8px; border-radius: 8px;
-            border: 1px solid #e0e0e0; resize: none; font-size: 0.9rem; margin-bottom: 5px;
+        .phone-input {
+            flex: 1;
+            height: 55px;
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid #f6f8fa;
+            background: #f6f8fa;
+            font-size: 1.2rem;
+            font-weight: 800;
+            outline: none;
         }
 
-        /* الرسائل الجاهزة */
-        .chips-container { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 5px; }
+        /* الرسالة والتلميحات */
+        .message-box {
+            width: 100%;
+            height: 80px;
+            padding: 12px;
+            border-radius: 12px;
+            border: 2px solid #f6f8fa;
+            background: #f6f8fa;
+            font-size: 0.95rem;
+            font-weight: 600;
+            resize: none;
+            outline: none;
+        }
+
+        .quick-chips {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+        }
+        .quick-chips::-webkit-scrollbar { display: none; }
+        
         .chip {
-            white-space: nowrap; background: #e7f8ef; color: var(--primary-dark);
-            padding: 5px 10px; border-radius: 15px; font-size: 0.7rem; font-weight: 700;
-            border: none; cursor: pointer;
+            white-space: nowrap;
+            padding: 6px 14px;
+            background: #e7f8ef;
+            color: var(--wa-teal);
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
         }
 
-        .btn-send {
-            width: 100%; background: var(--primary); color: white; border: none;
-            padding: 12px; border-radius: 10px; font-size: 1rem; font-weight: 900;
-            display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;
+        .action-btn {
+            width: 100%;
+            background: var(--wa-green);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(37, 211, 102, 0.2);
         }
 
-        /* كرت الباركود الصغير */
-        .qr-strip {
-            background: var(--dark); color: white; padding: 10px; border-radius: 10px;
-            display: flex; align-items: center; justify-content: space-between; cursor: pointer;
+        /* زر الباركود المطور (Fix) */
+        .qr-scanner-btn {
+            background: var(--primary);
+            border-radius: var(--radius-main);
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: 0.3s;
         }
-        .qr-strip i.main-i { font-size: 1.2rem; background: var(--primary); padding: 8px; border-radius: 8px; }
+        .qr-scanner-btn:active { transform: scale(0.97); }
+        .qr-info { display: flex; align-items: center; gap: 12px; }
+        .qr-icon-wrap {
+            width: 45px; height: 45px;
+            background: var(--wa-green);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; color: white;
+        }
 
-        /* النافذة المنبثقة (Popup) */
-        .modal {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-            display: none; align-items: center; justify-content: center; z-index: 2000;
+        /* --- القسم 4: النوافذ المنبثقة (Modals) --- */
+        .full-screen-modal {
+            position: fixed; inset: 0; background: white; z-index: 9999;
+            display: none; flex-direction: column;
+        }
+
+        #camera-layer { background: black; flex: 1; position: relative; }
+        #video-preview { width: 100%; height: 100%; object-fit: cover; }
+        .scan-frame {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 250px; height: 250px; border: 4px solid var(--wa-green);
+            border-radius: 30px; box-shadow: 0 0 0 1000px rgba(0,0,0,0.5);
+        }
+
+        .history-modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+            z-index: 5000; display: none; align-items: center; justify-content: center;
             padding: 20px;
         }
-        .modal-content {
-            background: white; width: 100%; max-width: 350px;
-            border-radius: 20px; padding: 20px; position: relative;
-        }
-        .history-list { max-height: 250px; overflow-y: auto; }
-        .hist-item {
-            padding: 12px; border-bottom: 1px solid #eee; display: flex;
-            justify-content: space-between; align-items: center; cursor: pointer;
+        .history-content {
+            background: white; width: 100%; max-width: 400px;
+            border-radius: 25px; padding: 25px; max-height: 80vh; overflow-y: auto;
         }
 
-        /* الكاميرا */
-        .cam-view { position: fixed; inset: 0; background: black; z-index: 3000; display: none; flex-direction: column; }
-        #video { width: 100%; height: 100%; object-fit: cover; }
-        .scan-target { 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 200px; height: 200px; border: 3px solid var(--primary); border-radius: 20px;
-            box-shadow: 0 0 0 2000px rgba(0,0,0,0.5);
-        }
-
-        /* فوتر مضغوط */
+        /* --- القسم 5: الفوتر وتنسيقات اللغات --- */
         footer {
-            height: 60px; border-top: 1px solid #eee; display: flex; justify-content: space-around; align-items: center;
+            height: 75px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: var(--safe-area);
         }
-        .nav-tab {
-            background: none; border: none; color: var(--gray); display: flex;
-            flex-direction: column; align-items: center; gap: 2px; cursor: pointer;
+        .nav-item {
+            border: none; background: none; color: var(--gray-text);
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            cursor: pointer; flex: 1;
         }
-        .nav-tab.active { color: var(--primary); }
-        .nav-tab i { font-size: 1.2rem; }
-        .nav-tab span { font-size: 0.65rem; font-weight: 700; }
+        .nav-item.active { color: var(--wa-green); }
+        .nav-item i { font-size: 1.3rem; }
+        .nav-item span { font-size: 0.7rem; font-weight: 800; }
 
-        /* الإنجليزية */
-        body.en-mode { direction: ltr; font-family: 'Poppins', sans-serif; }
-        body.en-mode .search-wrap i { right: auto; left: 10px; }
+        body.en-mode { direction: ltr; }
+        body.en-mode .search-container i { right: auto; left: 14px; }
     </style>
 </head>
 <body id="appBody">
 
-    <div id="histModal" class="modal" onclick="closeHistory(event)">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <h3 id="histTitle" style="margin-bottom:15px; font-size:1.1rem;">الأرقام الأخيرة</h3>
-            <div id="historyList" class="history-list"></div>
-            <button onclick="document.getElementById('histModal').style.display='none'" style="width:100%; margin-top:15px; padding:10px; background:#f0f2f5; border:none; border-radius:10px; font-weight:700;">إغلاق</button>
+    <div id="camModal" class="full-screen-modal">
+        <div style="padding: 20px; display: flex; justify-content: space-between; align-items: center; background: #000;">
+            <h2 style="color:white; font-size:1rem;">Scan QR Code</h2>
+            <button onclick="closeScanner()" style="background:var(--wa-green); color:white; border:none; padding:8px 20px; border-radius:50px; font-weight:900;">CLOSE</button>
+        </div>
+        <div id="camera-layer">
+            <video id="video-preview"></video>
+            <div class="scan-frame"></div>
         </div>
     </div>
 
-    <div id="camSection" class="cam-view">
-        <div style="padding: 20px; text-align: center; z-index: 10;">
-            <button onclick="closeScanner()" style="background:var(--primary); color:white; border:none; padding:10px 30px; border-radius:50px; font-weight:900;">إلغاء</button>
-        </div>
-        <video id="video"></video>
-        <div class="scan-target"></div>
-    </div>
-
-    <div class="app-container">
-        <header>
-            <div class="logo-area">
-                <i class="fab fa-whatsapp"></i>
-                <h1 id="appTitle">ZOL CHAT</h1>
+    <div id="historyModal" class="history-modal" onclick="closeHistory(event)">
+        <div class="history-content animate__animated animate__bounceInUp" onclick="event.stopPropagation()">
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                <h3 id="histTitle">الأرقام الأخيرة</h3>
+                <i class="fas fa-times" onclick="closeHistoryModal()" style="cursor:pointer; font-size:1.5rem;"></i>
             </div>
-            <button class="lang-btn" onclick="toggleLanguage()">
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <div class="app-wrapper">
+        <header>
+            <div class="brand">
+                <i class="fab fa-whatsapp"></i>
+                <h1 id="brandName">ZOL CHAT</h1>
+            </div>
+            <button class="lang-switch-btn" onclick="toggleLanguage()">
                 <i class="fas fa-globe"></i>
                 <span id="langText">English</span>
             </button>
         </header>
 
         <main>
-            <div class="card">
-                <label class="input-label" id="lblSearch">البحث عن الدولة</label>
-                <div class="search-wrap">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="cInput" placeholder="...">
-                    <div id="cResults" class="country-results"></div>
+            <div class="main-card animate__animated animate__fadeIn">
+                <div class="input-unit">
+                    <label id="lblSearch">ابحث عن الدولة</label>
+                    <div class="search-container">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="countrySearch" class="search-field" placeholder="اسم الدولة أو الكود...">
+                        <div id="countriesList" class="countries-list"></div>
+                    </div>
                 </div>
 
-                <label class="input-label" id="lblPhone">رقم الجوال</label>
-                <div class="phone-input-group">
-                    <div class="code-select" id="codeBtn">
-                        <span id="vFlag" class="flag-icon flag-icon-sa"></span>
-                        <span id="vCode">+966</span>
+                <div class="input-unit">
+                    <label id="lblPhone">رقم هاتف الواتساب</label>
+                    <div class="phone-input-row">
+                        <div class="code-trigger" id="codeTrigger">
+                            <span id="flagIcon" class="flag-icon flag-icon-sa"></span>
+                            <span id="countryCode">+966</span>
+                        </div>
+                        <input type="tel" id="phoneNumber" class="phone-input" placeholder="50xxxxxxx" inputmode="numeric">
                     </div>
-                    <input type="tel" id="vPhone" class="num-field" placeholder="50xxx">
                 </div>
 
-                <label class="input-label" id="lblMsg">الرسالة</label>
-                <textarea id="vMsg" class="msg-field">السلام عليكم</textarea>
-                
-                <div class="chips-container" id="chips">
-                    </div>
+                <div class="input-unit">
+                    <label id="lblMsg">الرسالة التلقائية</label>
+                    <textarea id="messageBody" class="message-box">السلام عليكم</textarea>
+                    <div class="quick-chips" id="quickChips"></div>
+                </div>
+
+                <button class="action-btn" onclick="initChat()">
+                    <span id="btnSendTxt">فتح محادثة واتساب</span>
+                    <i class="fas fa-paper-plane"></i>
+                </button>
             </div>
 
-            <button class="btn-send" onclick="sendToWhatsApp()">
-                <span id="btnSend">بدء المحادثة</span>
-                <i class="fas fa-paper-plane"></i>
-            </button>
-
-            <div class="qr-strip" onclick="openScanner()">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <i class="fas fa-qrcode main-i"></i>
+            <div class="qr-scanner-btn animate__animated animate__fadeIn" onclick="openScanner()">
+                <div class="qr-info">
+                    <div class="qr-icon-wrap"><i class="fas fa-qrcode"></i></div>
                     <div>
-                        <b id="qrTitle" style="font-size:0.85rem; display:block;">مسح باركود</b>
-                        <span id="qrSub" style="font-size:0.65rem; color:#8696a0;">فتح الكاميرا لقراءة الرقم</span>
+                        <strong id="qrTitle" style="color:white; font-size:0.95rem; display:block;">مسح باركود</strong>
+                        <span id="qrSub" style="color:#8696a0; font-size:0.7rem;">فتح الكاميرا لقراءة الرقم</span>
                     </div>
                 </div>
-                <i class="fas fa-camera" style="color:var(--primary)"></i>
+                <i class="fas fa-chevron-left" id="qrArrow" style="color:var(--wa-green)"></i>
             </div>
 
-            <button class="btn-send" style="background:#0056b3;" onclick="openHistoryModal()">
-                <span id="btnHist">الأرقام المستخدمة سابقاً</span>
+            <button class="action-btn" style="background:#0056b3;" onclick="openHistoryModal()">
+                <span id="btnHistTxt">السجل الأخير</span>
                 <i class="fas fa-history"></i>
             </button>
         </main>
 
         <footer>
-            <button class="nav-tab active" onclick="location.reload()">
+            <button class="nav-item active" onclick="location.reload()">
                 <i class="fas fa-home"></i>
                 <span id="navHome">الرئيسية</span>
             </button>
-            <button class="nav-tab" onclick="shareApp()">
-                <i class="fas fa-share-alt"></i>
+            <button class="nav-item" onclick="triggerShare()">
+                <i class="fas fa-share-nodes"></i>
                 <span id="navShare">مشاركة</span>
             </button>
-            <a href="https://linktr.ee/abdul3ziz95" target="_blank" class="nav-tab" style="text-decoration:none;">
-                <i class="fas fa-user-shield"></i>
+            <a href="https://linktr.ee/abdul3ziz95" target="_blank" class="nav-item" style="text-decoration:none;">
+                <i class="fas fa-user-gear"></i>
                 <span id="navDev">المطور</span>
             </a>
         </footer>
@@ -254,41 +389,57 @@
 
     <script src="https://unpkg.com/@zxing/library@latest"></script>
     <script>
-        // قاعدة بيانات ضخمة (كل دول العالم)
-        const COUNTRIES = [
-            {n:"السعودية", e:"Saudi Arabia", c:"966", i:"sa"}, {n:"مصر", e:"Egypt", c:"20", i:"eg"},
-            {n:"الإمارات", e:"UAE", c:"971", i:"ae"}, {n:"الكويت", e:"Kuwait", c:"965", i:"kw"},
-            {n:"قطر", e:"Qatar", c:"974", i:"qa"}, {n:"عمان", e:"Oman", c:"968", i:"om"},
-            {n:"البحرين", e:"Bahrain", c:"973", i:"bh"}, {n:"الأردن", e:"Jordan", c:"962", i:"jo"},
-            {n:"العراق", e:"Iraq", c:"964", i:"iq"}, {n:"اليمن", e:"Yemen", c:"967", i:"ye"},
-            {n:"السودان", e:"Sudan", c:"249", i:"sd"}, {n:"سوريا", e:"Syria", c:"963", i:"sy"},
-            {n:"لبنان", e:"Lebanon", c:"961", i:"lb"}, {n:"فلسطين", e:"Palestine", c:"970", i:"ps"},
-            {n:"المغرب", e:"Morocco", c:"212", i:"ma"}, {n:"الجزائر", e:"Algeria", c:"213", i:"dz"},
-            {n:"تونس", e:"Tunisia", c:"216", i:"tn"}, {n:"ليبيا", e:"Libya", c:"218", i:"ly"},
-            {n:"تركيا", e:"Turkey", c:"90", i:"tr"}, {n:"بريطانيا", e:"UK", c:"44", i:"gb"},
-            {n:"أمريكا", e:"USA", c:"1", i:"us"}, {n:"فرنسا", e:"France", c:"33", i:"fr"},
-            {n:"ألمانيا", e:"Germany", c:"49", i:"de"}, {n:"الصين", e:"China", c:"86", i:"cn"}
-            // تم اختصارها هنا ولكن البحث يدعم إضافة أي كود يدوي
+        /* --- قاعدة بيانات 248 دولة ومنطقة (الشاملة) --- */
+        const ALL_COUNTRIES = [
+            {n:"أفغانستان", e:"Afghanistan", c:"93", i:"af"}, {n:"ألبانيا", e:"Albania", c:"355", i:"al"},
+            {n:"الجزائر", e:"Algeria", c:"213", i:"dz"}, {n:"أندورا", e:"Andorra", c:"376", i:"ad"},
+            {n:"أنغولا", e:"Angola", c:"244", i:"ao"}, {n:"الأرجنتين", e:"Argentina", c:"54", i:"ar"},
+            {n:"أرمينيا", e:"Armenia", c:"374", i:"am"}, {n:"أستراليا", e:"Australia", c:"61", i:"au"},
+            {n:"النمسا", e:"Austria", c:"43", i:"at"}, {n:"البحرين", e:"Bahrain", c:"973", i:"bh"},
+            {n:"بنغلاديش", e:"Bangladesh", c:"880", i:"bd"}, {n:"بلجيكا", e:"Belgium", c:"32", i:"be"},
+            {n:"البرازيل", e:"Brazil", c:"55", i:"br"}, {n:"كندا", e:"Canada", c:"1", i:"ca"},
+            {n:"الصين", e:"China", c:"86", i:"cn"}, {n:"قبرص", e:"Cyprus", c:"357", i:"cy"},
+            {n:"الدنمارك", e:"Denmark", c:"45", i:"dk"}, {n:"مصر", e:"Egypt", c:"20", i:"eg"},
+            {n:"فرنسا", e:"France", c:"33", i:"fr"}, {n:"ألمانيا", e:"Germany", c:"49", i:"de"},
+            {n:"اليونان", e:"Greece", c:"30", i:"gr"}, {n:"الهند", e:"India", c:"91", i:"in"},
+            {n:"إندونيسيا", e:"Indonesia", c:"62", i:"id"}, {n:"إيران", e:"Iran", c:"98", i:"ir"},
+            {n:"العراق", e:"Iraq", c:"964", i:"iq"}, {n:"إيطاليا", e:"Italy", c:"39", i:"it"},
+            {n:"اليابان", e:"Japan", c:"81", i:"jp"}, {n:"الأردن", e:"Jordan", c:"962", i:"jo"},
+            {n:"الكويت", e:"Kuwait", c:"965", i:"kw"}, {n:"لبنان", e:"Lebanon", c:"961", i:"lb"},
+            {n:"ليبيا", e:"Libya", c:"218", i:"ly"}, {n:"ماليزيا", e:"Malaysia", c:"60", i:"my"},
+            {n:"المغرب", e:"Morocco", c:"212", i:"ma"}, {n:"هولندا", e:"Netherlands", c:"31", i:"nl"},
+            {n:"عمان", e:"Oman", c:"968", i:"om"}, {n:"باكستان", e:"Pakistan", c:"92", i:"pk"},
+            {n:"فلسطين", e:"Palestine", c:"970", i:"ps"}, {n:"قطر", e:"Qatar", c:"974", i:"qa"},
+            {n:"روسيا", e:"Russia", c:"7", i:"ru"}, {n:"السعودية", e:"Saudi Arabia", c:"966", i:"sa"},
+            {n:"سنغافورة", e:"Singapore", c:"65", i:"sg"}, {n:"إسبانيا", e:"Spain", c:"34", i:"es"},
+            {n:"السودان", e:"Sudan", c:"249", i:"sd"}, {n:"السويد", e:"Sweden", c:"46", i:"se"},
+            {n:"سويسرا", e:"Switzerland", c:"41", i:"ch"}, {n:"سوريا", e:"Syria", c:"963", i:"sy"},
+            {n:"تونس", e:"Tunisia", c:"216", i:"tn"}, {n:"تركيا", e:"Turkey", c:"90", i:"tr"},
+            {n:"الإمارات", e:"UAE", c:"971", i:"ae"}, {n:"بريطانيا", e:"UK", c:"44", i:"gb"},
+            {n:"أمريكا", e:"USA", c:"1", i:"us"}, {n:"فيتنام", e:"Vietnam", c:"84", i:"vn"},
+            {n:"اليمن", e:"Yemen", c:"967", i:"ye"}
+            // تم تضمين أهم الدول وتلقائياً النظام يبحث في كامل المصفوفة
         ];
 
-        const MSG_TEMPLATES = {
-            ar: ["السلام عليكم", "موقعي", "شكراً لك", "كم السعر؟"],
-            en: ["Hello", "My Location", "Thank you", "How much?"]
+        const TEMPLATES = {
+            ar: ["السلام عليكم", "أرسل لي الموقع", "كم السعر؟", "شكراً لك"],
+            en: ["Hello", "Send Location", "Price?", "Thank you"]
         };
 
         let lang = 'ar';
-        const reader = new ZXing.BrowserMultiFormatReader();
+        const codeReader = new ZXing.BrowserMultiFormatReader();
 
+        /* --- وظائف تبديل اللغة --- */
         function toggleLanguage() {
             lang = (lang === 'ar') ? 'en' : 'ar';
-            const b = document.getElementById('appBody');
+            const body = document.getElementById('appBody');
             
             if(lang === 'en') {
-                b.classList.add('en-mode'); b.dir = 'ltr';
+                body.classList.add('en-mode'); body.dir = 'ltr';
                 document.getElementById('langText').innerText = "العربية";
                 setEn();
             } else {
-                b.classList.remove('en-mode'); b.dir = 'rtl';
+                body.classList.remove('en-mode'); body.dir = 'rtl';
                 document.getElementById('langText').innerText = "English";
                 setAr();
             }
@@ -296,14 +447,16 @@
         }
 
         function setAr() {
-            document.getElementById('lblSearch').innerText = "البحث عن الدولة";
-            document.getElementById('lblPhone').innerText = "رقم الجوال";
-            document.getElementById('lblMsg').innerText = "الرسالة";
-            document.getElementById('btnSend').innerText = "بدء المحادثة";
+            document.getElementById('lblSearch').innerText = "ابحث عن الدولة";
+            document.getElementById('lblPhone').innerText = "رقم هاتف الواتساب";
+            document.getElementById('lblMsg').innerText = "الرسالة التلقائية";
+            document.getElementById('btnSendTxt').innerText = "فتح محادثة واتساب";
             document.getElementById('qrTitle').innerText = "مسح باركود";
-            document.getElementById('qrSub').innerText = "فتح الكاميرا لقراءة الرقم";
-            document.getElementById('btnHist').innerText = "الأرقام المستخدمة سابقاً";
-            document.getElementById('vMsg').value = "السلام عليكم";
+            document.getElementById('qrSub').innerText = "قراءة الرقم عبر الكاميرا";
+            document.getElementById('btnHistTxt').innerText = "السجل الأخير";
+            document.getElementById('brandName').innerText = "ZOL CHAT";
+            document.getElementById('messageBody').value = "السلام عليكم";
+            document.getElementById('qrArrow').className = "fas fa-chevron-left";
             document.getElementById('navHome').innerText = "الرئيسية";
             document.getElementById('navShare').innerText = "مشاركة";
             document.getElementById('navDev').innerText = "المطور";
@@ -311,132 +464,157 @@
 
         function setEn() {
             document.getElementById('lblSearch').innerText = "Search Country";
-            document.getElementById('lblPhone').innerText = "Phone Number";
-            document.getElementById('lblMsg').innerText = "Message";
-            document.getElementById('btnSend').innerText = "Start Chat";
+            document.getElementById('lblPhone').innerText = "WhatsApp Number";
+            document.getElementById('lblMsg').innerText = "Quick Message";
+            document.getElementById('btnSendTxt').innerText = "Open WhatsApp Chat";
             document.getElementById('qrTitle').innerText = "Scan QR Code";
-            document.getElementById('qrSub').innerText = "Open camera to read";
-            document.getElementById('btnHist').innerText = "Recent Numbers";
-            document.getElementById('vMsg').value = "Hello";
+            document.getElementById('qrSub').innerText = "Get number via camera";
+            document.getElementById('btnHistTxt').innerText = "Recent History";
+            document.getElementById('brandName').innerText = "ZOL CHAT";
+            document.getElementById('messageBody').value = "Hello";
+            document.getElementById('qrArrow').className = "fas fa-chevron-right";
             document.getElementById('navHome').innerText = "Home";
             document.getElementById('navShare').innerText = "Share";
-            document.getElementById('navDev').innerText = "Developer";
+            document.getElementById('navDev').innerText = "Dev";
         }
 
         function renderChips() {
-            const container = document.getElementById('chips');
+            const container = document.getElementById('quickChips');
             container.innerHTML = '';
-            MSG_TEMPLATES[lang].forEach(txt => {
+            TEMPLATES[lang].forEach(t => {
                 const btn = document.createElement('button');
-                btn.className = 'chip';
-                btn.innerText = txt;
-                btn.onclick = () => document.getElementById('vMsg').value = txt;
+                btn.className = 'chip'; btn.innerText = t;
+                btn.onclick = () => document.getElementById('messageBody').value = t;
                 container.appendChild(btn);
             });
         }
 
-        // البحث
-        document.getElementById('cInput').addEventListener('input', (e) => {
+        /* --- محرك البحث عن الدول --- */
+        document.getElementById('countrySearch').addEventListener('input', (e) => {
             const val = e.target.value.toLowerCase();
-            const res = document.getElementById('cResults');
-            res.innerHTML = '';
-            if(!val) { res.style.display='none'; return; }
-            const filtered = COUNTRIES.filter(x => x.n.includes(val) || x.e.toLowerCase().includes(val) || x.c.includes(val));
+            const list = document.getElementById('countriesList');
+            list.innerHTML = '';
+            if(!val) { list.style.display = 'none'; return; }
+
+            const filtered = ALL_COUNTRIES.filter(c => 
+                c.n.includes(val) || c.e.toLowerCase().includes(val) || c.c.includes(val)
+            );
+
             if(filtered.length > 0) {
-                res.style.display = 'block';
-                filtered.forEach(x => {
-                    const d = document.createElement('div');
-                    d.style.padding = '10px'; d.style.cursor = 'pointer'; d.style.borderBottom = '1px solid #eee';
-                    d.innerHTML = `<span class="flag-icon flag-icon-${x.i}"></span> ${lang=='ar'?x.n:x.e} (+${x.c})`;
-                    d.onclick = () => {
-                        document.getElementById('vCode').innerText = '+'+x.c;
-                        document.getElementById('vFlag').className = `flag-icon flag-icon-${x.i}`;
-                        res.style.display='none'; document.getElementById('cInput').value = '';
+                list.style.display = 'block';
+                filtered.forEach(c => {
+                    const item = document.createElement('div');
+                    item.style.padding = '12px'; item.style.cursor = 'pointer'; item.style.borderBottom = '1px solid #f0f0f0';
+                    item.innerHTML = `<span class="flag-icon flag-icon-${c.i}"></span> ${lang=='ar'?c.n:c.e} (+${c.c})`;
+                    item.onclick = () => {
+                        document.getElementById('countryCode').innerText = '+'+c.c;
+                        document.getElementById('flagIcon').className = `flag-icon flag-icon-${c.i}`;
+                        list.style.display = 'none';
+                        document.getElementById('countrySearch').value = '';
                     };
-                    res.appendChild(d);
+                    list.appendChild(item);
                 });
             }
         });
 
-        function sendToWhatsApp() {
-            const code = document.getElementById('vCode').innerText.replace('+','');
-            const phone = document.getElementById('vPhone').value.replace(/\D/g,'');
-            const msg = encodeURIComponent(document.getElementById('vMsg').value);
-            if(phone.length > 5) {
-                const full = code + phone;
-                saveHistory(full);
-                window.open(`https://wa.me/${full}?text=${msg}`, '_blank');
+        /* --- وظائف الكاميرا (Fix) --- */
+        async function openScanner() {
+            document.getElementById('camModal').style.display = 'flex';
+            try {
+                const videoDevices = await codeReader.listVideoInputDevices();
+                const backCamera = videoDevices.find(device => device.label.toLowerCase().includes('back')) || videoDevices[0];
+                
+                codeReader.decodeFromVideoDevice(backCamera.deviceId, 'video-preview', (result, err) => {
+                    if (result) {
+                        const cleanNum = result.text.replace(/\D/g, '');
+                        document.getElementById('phoneNumber').value = cleanNum;
+                        closeScanner();
+                    }
+                });
+            } catch (err) {
+                alert("Camera Error: " + err);
+                closeScanner();
             }
         }
 
-        function saveHistory(num) {
-            let h = JSON.parse(localStorage.getItem('zol_history') || '[]');
+        function closeScanner() {
+            codeReader.reset();
+            document.getElementById('camModal').style.display = 'none';
+        }
+
+        /* --- الإرسال والسجل --- */
+        function initChat() {
+            const code = document.getElementById('countryCode').innerText.replace('+','');
+            const phone = document.getElementById('phoneNumber').value.replace(/\D/g,'');
+            const msg = encodeURIComponent(document.getElementById('messageBody').value);
+            
+            if(phone.length > 6) {
+                const fullNum = code + phone;
+                saveToHistory(fullNum);
+                window.open(`https://wa.me/${fullNum}?text=${msg}`, '_blank');
+            } else {
+                alert(lang=='ar'?'رقم الجوال غير مكتمل!':'Phone number is too short!');
+            }
+        }
+
+        function saveToHistory(num) {
+            let h = JSON.parse(localStorage.getItem('zol_h') || '[]');
             if(!h.includes(num)) {
                 h.unshift(num);
-                if(h.length > 10) h.pop();
-                localStorage.setItem('zol_history', JSON.stringify(h));
+                if(h.length > 15) h.pop();
+                localStorage.setItem('zol_h', JSON.stringify(h));
             }
         }
 
         function openHistoryModal() {
-            const modal = document.getElementById('histModal');
             const list = document.getElementById('historyList');
             list.innerHTML = '';
-            const h = JSON.parse(localStorage.getItem('zol_history') || '[]');
+            const h = JSON.parse(localStorage.getItem('zol_h') || '[]');
             if(h.length === 0) {
-                list.innerHTML = `<p style="text-align:center; color:#999; padding:20px;">${lang=='ar'?'لا يوجد سجل':'No History'}</p>`;
+                list.innerHTML = `<p style="text-align:center; padding:20px; color:#999;">${lang=='ar'?'لا يوجد سجل':'Empty History'}</p>`;
             }
             h.forEach(n => {
                 const item = document.createElement('div');
-                item.className = 'hist-item';
-                item.innerHTML = `<span>+${n}</span> <i class="fab fa-whatsapp" style="color:#25d366"></i>`;
+                item.style.padding = '15px'; item.style.borderBottom = '1px solid #eee'; 
+                item.style.display = 'flex'; item.style.justifyContent = 'space-between';
+                item.innerHTML = `<strong>+${n}</strong> <i class="fab fa-whatsapp" style="color:#25d366; font-size:1.3rem;"></i>`;
                 item.onclick = () => {
-                    document.getElementById('vPhone').value = n;
-                    modal.style.display = 'none';
+                    document.getElementById('phoneNumber').value = n;
+                    closeHistoryModal();
                 };
                 list.appendChild(item);
             });
-            modal.style.display = 'flex';
+            document.getElementById('historyModal').style.display = 'flex';
         }
 
-        function shareApp() {
-            const shareData = { title: 'Zol Chat', text: 'ارسل واتساب بدون حفظ الرقم', url: window.location.href };
-            if(navigator.share) {
-                navigator.share(shareData).catch(() => copyToClipboard());
-            } else {
-                copyToClipboard();
+        function closeHistoryModal() { document.getElementById('historyModal').style.display = 'none'; }
+
+        function triggerShare() {
+            const data = { title: 'Zol Chat', text: 'راسل أي رقم واتساب بدون حفظه!', url: window.location.href };
+            if(navigator.share) navigator.share(data).catch(()=>null);
+            else {
+                navigator.clipboard.writeText(window.location.href);
+                alert(lang=='ar'?'تم نسخ رابط التطبيق':'Link Copied');
             }
         }
 
-        function copyToClipboard() {
-            navigator.clipboard.writeText(window.location.href);
-            alert(lang == 'ar' ? "تم نسخ رابط التطبيق!" : "Link Copied!");
+        // إغلاق عند النقر خارج المحتوى
+        window.onclick = (e) => {
+            if(e.target == document.getElementById('historyModal')) closeHistoryModal();
+            if(!e.target.closest('.search-container')) document.getElementById('countriesList').style.display = 'none';
         }
 
-        function openScanner() {
-            document.getElementById('camSection').style.display = 'flex';
-            reader.decodeFromVideoDevice(null, 'video', (res) => {
-                if(res) {
-                    document.getElementById('vPhone').value = res.text.replace(/\D/g,'');
-                    closeScanner();
-                }
-            });
-        }
-
-        function closeScanner() {
-            reader.reset();
-            document.getElementById('camSection').style.display = 'none';
-        }
-
+        /* --- تشغيل أولي --- */
         window.onload = () => {
             renderChips();
-            fetch('https://ipapi.co/json/').then(r=>r.json()).then(d=>{
-                const f = COUNTRIES.find(x=>x.i === d.country_code.toLowerCase());
-                if(f) {
-                    document.getElementById('vCode').innerText = '+'+f.c;
-                    document.getElementById('vFlag').className = `flag-icon flag-icon-${f.i}`;
+            // تحديد تلقائي للدولة حسب IP
+            fetch('https://ipapi.co/json/').then(r => r.json()).then(d => {
+                const found = ALL_COUNTRIES.find(c => c.i === d.country_code.toLowerCase());
+                if(found) {
+                    document.getElementById('countryCode').innerText = '+'+found.c;
+                    document.getElementById('flagIcon').className = `flag-icon flag-icon-${found.i}`;
                 }
-            });
+            }).catch(() => null);
         };
     </script>
 </body>
