@@ -1,69 +1,73 @@
-// ... (يبقى ثابت بنفس بيانات COUNTRY_DATA الموجودة في ملفك الأصلي) ...
-// تأكد من نسخ مصفوفة COUNTRY_DATA كاملة هنا من ملفك الأصلي
+// بيانات الدول (مختصرة - أكملها من ملفك الأصلي)
+const COUNTRY_DATA = [
+    { name: 'السودان', code: '249', iso: 'sd' },
+    { name: 'السعودية', code: '966', iso: 'sa' },
+    { name: 'مصر', code: '20', iso: 'eg' }
+];
 
-const APP_LINK = 'https://abdul3ziz95.github.io/zol/';
-const SHARE_MESSAGE = 'جربوا مراسل الواتساب الفوري! أسرع طريقة لبدء محادثة دون حفظ الرقم. الرابط: ' + APP_LINK;
+let history = JSON.parse(localStorage.getItem('chat_history')) || [];
 
-const codeMap = {};
-COUNTRY_DATA.forEach(country => codeMap[country.code] = country);
+function updateClock() {
+    const now = new Date();
+    document.getElementById('clock').innerText = now.getHours() + ":" + String(now.getMinutes()).padStart(2, '0');
+}
+setInterval(updateClock, 1000);
 
-const codeInput = document.getElementById('codeInput'); 
-const phoneInput = document.getElementById('phoneInput'); 
-const countryInput = document.getElementById('countryInput');
-const currentFlagSpan = document.getElementById('currentFlag');
+function handleCountryChange(val) {
+    const country = COUNTRY_DATA.find(c => `${c.name} (+${c.code})` === val);
+    if (country) {
+        document.getElementById('countryCode').value = `+${country.code}`;
+        document.getElementById('flagIcon').className = `flag-icon flag-icon-${country.iso}`;
+    }
+}
 
-// وظيفة فتح واتساب المحسنة
-function openWhatsApp() {
-    const code = codeInput.value.replace('+', '').trim(); 
-    const localNumber = phoneInput.value.trim().replace(/[\s+-]/g, '');
+function processChat() {
+    const code = document.getElementById('countryCode').value.replace('+', '');
+    const num = document.getElementById('phoneNumber').value.trim();
     
-    if (!code || localNumber.length < 6) {
-        alert('يرجى التأكد من رقم الهاتف ورمز الدولة');
-        return;
+    if (num.length < 5) return alert("الرقم غير صحيح");
+
+    const fullNumber = code + num;
+    
+    // حفظ في السجل
+    if (!history.includes(fullNumber)) {
+        history.unshift(fullNumber);
+        if (history.length > 5) history.pop();
+        localStorage.setItem('chat_history', JSON.stringify(history));
+        renderHistory();
     }
 
-    const whatsappLink = `https://wa.me/${code}${localNumber}?text=${encodeURIComponent("السلام عليكم")}`;
-    window.open(whatsappLink, '_blank');
+    window.open(`https://wa.me/${fullNumber}`, '_blank');
 }
 
-// التحديد التلقائي للدولة
-async function setCountryAuto() {
-    try {
-        const response = await fetch('https://ipinfo.io/json?token=YOUR_FREE_TOKEN_OPTIONAL'); 
-        const data = await response.json();
-        const countryInfo = COUNTRY_DATA.find(c => c.iso.toLowerCase() === data.country.toLowerCase());
-        if (countryInfo) updateFlag(countryInfo.code);
-    } catch (e) {
-        updateFlag('249'); // افتراضي: السودان
-    }
+function renderHistory() {
+    const container = document.getElementById('historyList');
+    container.innerHTML = history.map(num => `
+        <div class="history-item" onclick="directChat('${num}')">
+            <span><i class="fab fa-whatsapp" style="color:#25D366"></i> +${num}</span>
+            <i class="fas fa-chevron-left" style="font-size: 0.8rem; opacity: 0.5;"></i>
+        </div>
+    `).join('');
 }
 
-function updateFlag(code) {
-    const info = codeMap[code];
-    if (info) {
-        currentFlagSpan.className = `flag-icon flag-icon-${info.iso.toLowerCase()}`;
-        countryInput.value = `${info.name} (+${code})`;
-        codeInput.value = `+${code}`;
-    }
+function directChat(num) {
+    window.open(`https://wa.me/${num}`, '_blank');
 }
 
-// تهيئة عند التشغيل
-window.addEventListener('load', () => {
-    // تعبئة الداتا ليست
-    const list = document.getElementById('country-options');
+function clearHistory() {
+    localStorage.removeItem('chat_history');
+    history = [];
+    renderHistory();
+}
+
+window.onload = () => {
+    updateClock();
+    renderHistory();
+    // تعبئة القائمة
+    const dl = document.getElementById('countries');
     COUNTRY_DATA.forEach(c => {
-        const opt = document.createElement('option');
+        let opt = document.createElement('option');
         opt.value = `${c.name} (+${c.code})`;
-        list.appendChild(opt);
+        dl.appendChild(opt);
     });
-    setCountryAuto();
-});
-
-// وظائف المشاركة
-function shareApp(platform) {
-    let url = '';
-    const msg = encodeURIComponent(SHARE_MESSAGE);
-    if(platform === 'whatsapp') url = `https://wa.me/?text=${msg}`;
-    if(platform === 'facebook') url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(APP_LINK)}`;
-    window.open(url, '_blank');
-}
+};
