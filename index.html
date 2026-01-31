@@ -3,88 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>دردشة مباشرة  </title>
+    <title>دردشة فورية | تواصل بذكاء</title>
     
-    <link rel="stylesheet" href="style.css?v=20251227">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=2026">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
-    <link rel="manifest" href="manifest.json?v=20251227">
+    <link rel="manifest" href="manifest.json?v=2026">
     <link rel="shortcut icon" href="whatsapp-icon.png" type="image/png">
 </head>
 <body>
     
-    <div class="page-wrapper" id="pageWrapper"> 
-        
-        <h1 class="app-heading">دردشة مباشرة</h1>
-        <p class="description">أسرع وأذكى طريقة للتواصل مباشرة عبر واتساب.</p>
+    <div class="app-container" id="pageWrapper"> 
+        <header class="app-header">
+            <div class="logo-area">
+                <img src="whatsapp-icon.png" alt="Logo" class="main-logo">
+            </div>
+            <h1 class="app-title">دردشة مباشرة</h1>
+            <p class="app-subtitle">راسل أي رقم على واتساب دون عناء حفظه</p>
+        </header>
 
-        <button id="installButton" class="install-prompt-button" style="display: none;">
-            📲 تثبيت التطبيق
+        <button id="installButton" class="btn-install" style="display: none;">
+            <i class="fas fa-download"></i> تثبيت التطبيق على جهازك
         </button>
         
-        <div class="main-form">
-            
-            <div class="input-group">
-                <label for="countryInput">اختر الدولة أو ابحث عنها:</label>
+        <main class="card">
+            <div class="input-field">
+                <label for="countryInput"><i class="fas fa-globe-africa"></i> اختر الدولة</label>
                 <input 
                     list="country-options" 
                     id="countryInput" 
-                    name="country-input" 
-                    placeholder="ابحث عن الدولة (مثال: السودان (+249))" 
+                    placeholder="ابحث عن دولتك..." 
                     value="السودان (+249)"
                     onchange="updateCodeFromCountry(this.value)"
                     onclick="this.value = '';"
                     onblur="restoreCountryValue()"
                 >
-                
-                <datalist id="country-options">
-                    </datalist>
+                <datalist id="country-options"></datalist>
             </div>
 
-            <div class="phone-input-container">
-                <div class="country-code-wrapper">
+            <div class="phone-row">
+                <div class="code-box">
                     <span id="currentFlag" class="flag-icon flag-icon-sd"></span>
-                    <input 
-                        type="tel" 
-                        id="codeInput" 
-                        value="+249" 
-                        inputmode="numeric" 
-                        oninput="updateCountryFromCode(this.value)"
-                        placeholder="رمز الدولة"
-                    >
+                    <input type="tel" id="codeInput" value="+249" oninput="updateCountryFromCode(this.value)">
                 </div>
-                <input type="tel" id="phoneInput" placeholder="أدخل الرقم المحلي (بدون الرمز)" inputmode="numeric">
+                <div class="number-box">
+                    <input type="tel" id="phoneInput" placeholder="أدخل رقم الهاتف" inputmode="numeric">
+                </div>
             </div>
 
-        </div>
+            <button id="whatsappButton" class="btn-primary" onclick="openWhatsApp()">
+                <span>بدء المحادثة</span>
+                <i class="fab fa-whatsapp"></i>
+            </button>
+        </main>
 
-        <button id="whatsappButton" onclick="openWhatsApp()">
-            <img src="whatsapp-icon.png" alt="WhatsApp Icon" class="icon"> بدء المحادثة الآن
-        </button>
-        
-
-        <div class="share-section">
-            <p class="share-title">شارك التطبيق مع أصدقائك:</p>
-            <div class="share-icons">
-                <button class="share-btn facebook" onclick="shareApp('facebook')"><i class="fab fa-facebook-f"></i></button>
-                <button class="share-btn share-messenger" onclick="shareContentInSamePage()">
-    <i class="fas fa-share-alt"></i>
-</button>
-
-                <button class="share-btn whatsapp-share" onclick="shareApp('whatsapp')"><i class="fab fa-whatsapp"></i></button>
+        <section class="social-share">
+            <p>انشر الفائدة مع أصدقائك</p>
+            <div class="share-grid">
+                <button class="s-btn fb" onclick="shareApp('facebook')"><i class="fab fa-facebook-f"></i></button>
+                <button class="s-btn ms" onclick="shareContentInSamePage()"><i class="fas fa-share-nodes"></i></button>
+                <button class="s-btn wa" onclick="shareApp('whatsapp')"><i class="fab fa-whatsapp"></i></button>
             </div>
-        </div>
+        </section>
         
         <footer class="app-footer">
-            <a href="https://linktr.ee/abdul3ziz95" target="_blank" class="contact-link bold-link">📞 اتصل بي</a>
-            <p class="copyright-text">جميع الحقوق محفوظة © 2025. <span class="owner-name">Abdul3ziz95</span></p>
+            <a href="https://linktr.ee/abdul3ziz95" target="_blank" class="dev-link">المطور: Abdulaziz Khalifa</a>
+            <p class="copy">© 2026 جميع الحقوق محفوظة</p>
         </footer>
-        
     </div>
     
-    <script src="script.js?v=20251227"></script>
-    
+    <script src="script.js?v=2026"></script>
 </body>
 </html>
