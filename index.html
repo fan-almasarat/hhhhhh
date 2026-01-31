@@ -1,261 +1,68 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr" id="appHtml">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Direct Chat Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <style>
-        :root { --wa-green: #25D366; --wa-dark: #075E54; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        
-        body { 
-            font-family: 'Poppins', sans-serif; background: #f0f2f5; 
-            height: 100vh; display: flex; justify-content: center; overflow: hidden;
-        }
-
-        .app-container {
-            width: 100%; max-width: 450px; background: white;
-            height: 100%; display: flex; flex-direction: column; position: relative;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        }
-
-        /* Top Bar */
-        .header { background: var(--wa-dark); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .lang-btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 5px 12px; border-radius: 15px; cursor: pointer; }
-
-        /* Main Form */
-        .content { padding: 20px; flex: 1; overflow-y: auto; }
-        .input-group { margin-bottom: 20px; position: relative; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: #444; }
-
-        input, textarea {
-            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px;
-            font-size: 16px; outline: none; transition: 0.3s;
-        }
-        input:focus { border-color: var(--wa-green); }
-
-        /* Search Dropdown */
-        .search-results {
-            position: absolute; width: 100%; max-height: 200px; overflow-y: auto;
-            background: white; border: 1px solid #ddd; z-index: 100; border-radius: 10px;
-            display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        .search-item { padding: 12px; cursor: pointer; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px; }
-        .search-item:hover { background: #f8f9fa; }
-
-        /* Phone Row */
-        .phone-row { display: flex; gap: 10px; }
-        .code-box { 
-            width: 100px; background: #f8f9fa; border: 1px solid #ddd; 
-            border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 5px;
-        }
-
-        /* Buttons */
-        .btn-main {
-            background: var(--wa-green); color: white; border: none; width: 100%;
-            padding: 16px; border-radius: 12px; font-size: 18px; font-weight: 800;
-            cursor: pointer; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 10px;
-        }
-        .btn-main:active { transform: scale(0.98); }
-
-        .secondary-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .btn-sec { background: #f8f9fa; border: 1px solid #ddd; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: 600; }
-
-        /* Install Banner */
-        #installBanner {
-            position: absolute; bottom: 20px; left: 10px; right: 10px;
-            background: #333; color: white; padding: 15px; border-radius: 12px;
-            display: none; justify-content: space-between; align-items: center; z-index: 1000;
-        }
-        .btn-add { background: var(--wa-green); border: none; color: white; padding: 8px 15px; border-radius: 8px; font-weight: bold; }
-
-        /* QR Modal */
-        #qrModal {
-            position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9);
-            display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 2000;
-        }
-        #reader { width: 300px; height: 300px; background: white; border-radius: 20px; overflow: hidden; }
-        .close-qr { margin-top: 20px; color: white; background: none; border: 1px solid white; padding: 10px 20px; border-radius: 10px; }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
 
     <div class="app-container">
+        <nav class="top-bar">
+            <button id="langBtn" onclick="toggleLang()">العربية</button>
+            <button id="installBtn" class="install-btn" style="display: none;">📲 Install</button>
+        </nav>
+
         <header class="header">
-            <h1 id="txtTitle">Direct Chat</h1>
-            <button class="lang-btn" onclick="toggleLanguage()" id="btnLang">العربية</button>
+            <h1 id="appTitle">Direct Chat</h1>
+            <p id="appDesc">Chat on WhatsApp without saving numbers.</p>
         </header>
 
-        <div class="content">
-            <div class="input-group">
+        <main class="main-form">
+            
+            <div class="input-group search-group">
                 <label id="lblSearch">Search Country</label>
-                <input type="text" id="countrySearch" placeholder="Type country name..." oninput="onSearch(this.value)">
-                <div id="searchResults" class="search-results"></div>
+                <input type="text" id="searchInput" placeholder="Type country name..." autocomplete="off">
+                <div id="resultsList" class="suggestions-box"></div>
             </div>
 
-            <div class="input-group">
-                <label id="lblPhone">Phone Number</label>
-                <div class="phone-row">
-                    <div class="code-box">
-                        <span id="flagIcon" class="flag-icon flag-icon-us"></span>
-                        <b id="codeText">+1</b>
-                    </div>
-                    <input type="tel" id="phoneInput" placeholder="000 000 000" inputmode="numeric">
+            <div class="phone-wrapper">
+                <div class="code-display">
+                    <span id="flagIcon" class="flag-icon flag-icon-us"></span>
+                    <input type="text" id="codeField" value="+1" readonly>
                 </div>
+                <input type="tel" id="phoneField" placeholder="Phone Number" inputmode="numeric">
             </div>
 
-            <div class="input-group">
-                <label id="lblMsg">Ready Message</label>
-                <textarea id="msgInput" rows="3">Peace be upon you</textarea>
-            </div>
-
-            <button class="btn-main" onclick="startChat()">
-                <i class="fab fa-whatsapp"></i> <span id="btnChatText">Start Chat</span>
+            <button id="actionBtn" onclick="openWhatsApp()">
+                <i class="fab fa-whatsapp"></i> <span id="btnText">Start Chat</span>
             </button>
 
-            <div class="secondary-actions">
-                <button class="btn-sec" onclick="openQR()">
-                    <i class="fas fa-qrcode"></i> <span id="btnQRText">Scan QR</span>
-                </button>
-                <button class="btn-sec" onclick="shareApp()">
-                    <i class="fas fa-share-nodes"></i> <span id="btnShareText">Share</span>
-                </button>
+        </main>
+
+        <div class="footer-share">
+            <p id="lblShare">Share App:</p>
+            <div class="share-buttons">
+                <button class="s-btn fb" onclick="shareSocial('fb')"><i class="fab fa-facebook-f"></i></button>
+                <button class="s-btn wa" onclick="shareSocial('wa')"><i class="fab fa-whatsapp"></i></button>
+                <button class="s-btn nat" onclick="shareNative()"><i class="fas fa-share-nodes"></i></button>
             </div>
         </div>
-
-        <div id="installBanner">
-            <span>Install App for better experience</span>
-            <button class="btn-add" id="installBtn">Install</button>
-        </div>
     </div>
 
-    <div id="qrModal">
-        <div id="reader"></div>
-        <button class="close-qr" onclick="closeQR()">Close Camera</button>
-    </div>
-
-    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="script.js"></script>
     <script>
-        // Data - All Countries (Expanded)
-        const countries = [
-            { n_ar: "السودان", n_en: "Sudan", code: "249", iso: "sd" },
-            { n_ar: "السعودية", n_en: "Saudi Arabia", code: "966", iso: "sa" },
-            { n_ar: "الإمارات", n_en: "UAE", code: "971", iso: "ae" },
-            { n_ar: "مصر", n_en: "Egypt", code: "20", iso: "eg" },
-            { n_ar: "قطر", n_en: "Qatar", code: "974", iso: "qa" },
-            { n_ar: "الكويت", n_en: "Kuwait", code: "965", iso: "kw" },
-            { n_ar: "الأردن", n_en: "Jordan", code: "962", iso: "jo" },
-            { n_ar: "عمان", n_en: "Oman", code: "968", iso: "om" },
-            { n_ar: "البحرين", n_en: "Bahrain", code: "973", iso: "bh" },
-            { n_ar: "العراق", n_en: "Iraq", code: "964", iso: "iq" },
-            { n_ar: "فلسطين", n_en: "Palestine", code: "970", iso: "ps" },
-            { n_ar: "المغرب", n_en: "Morocco", code: "212", iso: "ma" },
-            { n_ar: "تونس", n_en: "Tunisia", code: "216", iso: "tn" },
-            { n_ar: "ليبيا", n_en: "Libya", code: "218", iso: "ly" },
-            { n_ar: "أمريكا", n_en: "USA", code: "1", iso: "us" },
-            { n_ar: "بريطانيا", n_en: "UK", code: "44", iso: "gb" },
-            { n_ar: "تركيا", n_en: "Turkey", code: "90", iso: "tr" },
-            { n_ar: "ألمانيا", n_en: "Germany", code: "49", iso: "de" },
-            { n_ar: "فرنسا", n_en: "France", code: "33", iso: "fr" }
-            // القائمة تدعم مئات الدول...
-        ];
-
-        let currentLang = 'en';
-        let scanner;
-
-        // UI Translation
-        const translations = {
-            en: { title: "Direct Chat", search: "Search Country", phone: "Phone Number", msg: "Ready Message", btnChat: "Start Chat", btnQR: "Scan QR", btnShare: "Share", defMsg: "Peace be upon you", lang: "العربية" },
-            ar: { title: "دردشة مباشرة", search: "ابحث عن الدولة", phone: "رقم الهاتف", msg: "الرسالة الجاهزة", btnChat: "بدء المحادثة", btnQR: "مسح باركود", btnShare: "مشاركة", defMsg: "السلام عليكم", lang: "English" }
-        };
-
-        function toggleLanguage() {
-            currentLang = currentLang === 'en' ? 'ar' : 'en';
-            const t = translations[currentLang];
-            document.getElementById('appHtml').dir = currentLang === 'ar' ? 'rtl' : 'ltr';
-            document.getElementById('txtTitle').innerText = t.title;
-            document.getElementById('lblSearch').innerText = t.search;
-            document.getElementById('lblPhone').innerText = t.phone;
-            document.getElementById('lblMsg').innerText = t.msg;
-            document.getElementById('btnChatText').innerText = t.btnChat;
-            document.getElementById('btnQRText').innerText = t.btnQR;
-            document.getElementById('btnShareText').innerText = t.btnShare;
-            document.getElementById('btnLang').innerText = t.lang;
-            document.getElementById('msgInput').value = t.defMsg;
+        // تسجيل Service Worker ليعمل التطبيق بدون انترنت
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+            .then(() => console.log('SW Registered'))
+            .catch(() => console.log('SW Failed'));
         }
-
-        // Search Engine
-        function onSearch(val) {
-            const results = document.getElementById('searchResults');
-            results.innerHTML = "";
-            if (!val) { results.style.display = "none"; return; }
-
-            const filtered = countries.filter(c => 
-                c.n_en.toLowerCase().includes(val.toLowerCase()) || 
-                c.n_ar.includes(val) || c.code.includes(val)
-            );
-
-            if (filtered.length > 0) {
-                results.style.display = "block";
-                filtered.forEach(c => {
-                    const div = document.createElement('div');
-                    div.className = "search-item";
-                    div.innerHTML = `<span class="flag-icon flag-icon-${c.iso}"></span> ${currentLang === 'en' ? c.n_en : c.n_ar} (+${c.code})`;
-                    div.onclick = () => {
-                        document.getElementById('codeText').innerText = `+${c.code}`;
-                        document.getElementById('flagIcon').className = `flag-icon flag-icon-${c.iso}`;
-                        document.getElementById('countrySearch').value = ""; // Clear search
-                        results.style.display = "none";
-                    };
-                    results.appendChild(div);
-                });
-            }
-        }
-
-        // Start Chat
-        function startChat() {
-            const code = document.getElementById('codeText').innerText.replace('+', '');
-            const phone = document.getElementById('phoneInput').value.replace(/\D/g, '');
-            const msg = encodeURIComponent(document.getElementById('msgInput').value);
-            if (phone) window.open(`https://wa.me/${code}${phone}?text=${msg}`, '_blank');
-        }
-
-        // QR Logic
-        function openQR() {
-            document.getElementById('qrModal').style.display = "flex";
-            scanner = new Html5Qrcode("reader");
-            scanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, 
-            res => { if(res.includes('wa.me')) window.location.href = res; closeQR(); });
-        }
-
-        function closeQR() {
-            if(scanner) scanner.stop().then(() => document.getElementById('qrModal').style.display = "none");
-        }
-
-        // Share
-        async function shareApp() {
-            if (navigator.share) await navigator.share({ title: 'Direct Chat', url: window.location.href });
-            else alert("Copy this link: " + window.location.href);
-        }
-
-        // PWA Install
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            document.getElementById('installBanner').style.display = "flex";
-        });
-
-        document.getElementById('installBtn').onclick = () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then(() => document.getElementById('installBanner').style.display = "none");
-            }
-        };
     </script>
 </body>
 </html>
