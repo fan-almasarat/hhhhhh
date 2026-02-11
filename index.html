@@ -161,7 +161,7 @@
                     </div>
                     ${item.sizes ? `<div class="sizes-panel grid grid-cols-2 gap-3" onclick="event.stopPropagation()">
                             ${Object.entries(item.sizes)
-                                .filter(([s]) => isNeighbor ? s !== 'local' : true) // الفلترة هنا: إخفاء المحلي عند تفعيل حي بدر
+                                .filter(([s]) => isNeighbor ? s !== 'local' : true)
                                 .map(([s, p]) => `<div class="bg-blue-50/50 p-3 rounded-2xl border border-blue-100 flex justify-between items-center">
                                     <div class="text-xs font-black text-blue-900">${getSizeName(s)}<br><span class="price-tag text-sm">${p}﷼</span></div>
                                     <div class="flex items-center gap-2">
@@ -203,7 +203,9 @@
                     <div class="flex justify-between items-center mb-6"><h2 class="text-2xl font-black">مراجعة طلبي</h2><button onclick="saveAsFavorite()" class="bg-red-50 text-red-600 px-4 py-2 rounded-2xl font-bold text-xs">❤️ مفضل</button></div>
                     <div class="space-y-4 mb-8">${cart.map(i => `<div class="flex justify-between items-center bg-slate-50 p-4 rounded-3xl"><div><h4 class="font-black">${i.name}</h4><p class="text-xs text-blue-600">${i.price * i.qty}﷼</p></div><div class="flex items-center gap-3"><button onclick="updateQty(${i.id}, -1, '', 0, '${i.size}')" class="w-9 h-9 bg-white text-red-500 rounded-xl shadow-sm font-black">-</button><span class="font-black">${i.qty}</span><button onclick="updateQty(${i.id}, 1, '', 0, '${i.size}')" class="w-9 h-9 bg-blue-700 text-white rounded-xl shadow-sm font-black">+</button></div></div>`).join('')}</div>
                     <div class="bg-blue-50/50 p-6 rounded-[35px] space-y-4 mb-6">
-                        ${isNeighbor ? `<input type="text" id="custName" placeholder="الاسم الكامل" value="${localStorage.getItem('u_name')||''}" class="w-full p-4 rounded-2xl bg-white shadow-sm outline-none font-bold transition-all"><input type="text" id="custLoc" placeholder="وصف المنزل (مثال: مقابل المسجد)" value="${localStorage.getItem('u_loc')||''}" class="w-full p-4 rounded-2xl bg-white shadow-sm outline-none font-bold transition-all">` : ''}
+                        ${isNeighbor ? `
+                        <input type="text" id="custName" oninput="localStorage.setItem('u_name', this.value)" placeholder="الاسم الكامل" value="${localStorage.getItem('u_name')||''}" class="w-full p-4 rounded-2xl bg-white shadow-sm outline-none font-bold transition-all">
+                        <input type="text" id="custLoc" oninput="localStorage.setItem('u_loc', this.value)" placeholder="وصف المنزل (مثال: مقابل المسجد)" value="${localStorage.getItem('u_loc')||''}" class="w-full p-4 rounded-2xl bg-white shadow-sm outline-none font-bold transition-all">` : ''}
                         <div class="grid grid-cols-2 gap-2">
                             ${!isNeighbor ? `<select id="oType" class="p-4 rounded-2xl bg-white shadow-sm outline-none font-bold"><option value="سفري 🥡">🥡 سفري</option><option value="محلي 🍽️">🍽️ محلي</option></select>` : ''}
                             <select id="payWay" class="${isNeighbor?'col-span-2':'col-span-1'} p-4 rounded-2xl bg-white shadow-sm outline-none font-bold"><option value="كاش 💵">كاش 💵</option><option value="شبكة 💳">شبكة 💳</option></select>
@@ -232,6 +234,7 @@
                 localStorage.setItem('u_loc', locInp.value);
             }
 
+            const isFirstOrder = !localStorage.getItem('hasOrderedBefore');
             saveToHistory(orderType, payMethod);
             const logs = JSON.parse(localStorage.getItem('m_logs'));
             const lastLog = logs[0];
@@ -242,6 +245,11 @@
             cart.forEach(i => msg += `• ${i.name} [${i.qty}] = ${i.price * i.qty}﷼%0A`);
             msg += `--------------------------%0A💰 *الإجمالي: ${cart.reduce((s,i)=>s+(i.price*i.qty),0)}﷼*`;
             
+            if(isFirstOrder && isNeighbor) {
+                msg += `%0A%0A📍 *ملاحظة: بما أن هذا طلبي الأول، سأرسل لكم موقعي الحالي الآن*`;
+                localStorage.setItem('hasOrderedBefore', 'true');
+            }
+
             window.location.href = `https://wa.me/966530195433?text=${msg}`;
             cart = []; updateCartDisplay(); closeModal(); renderItems();
         }
@@ -299,7 +307,8 @@
         }
 
         function verifyNbr() { 
-            if(document.getElementById('nbrInput').value === "حي بدر") { 
+            const inputVal = document.getElementById('nbrInput').value.trim(); // استخدام trim لإزالة المسافات
+            if(inputVal === "حي بدر") { 
                 if(!isNeighbor) {
                     isNeighbor = true; 
                     localStorage.setItem('isNbr', 'true'); 
