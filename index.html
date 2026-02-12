@@ -34,7 +34,7 @@
             z-index: 10000; left: 50%; bottom: 50px; transform: translateX(-50%);
             box-shadow: 0 10px 30px rgba(0,0,0,0.3); font-weight: bold; opacity: 0; transition: opacity 0.3s;
         }
-        #customToast.show { visibility: visible; opacity: 1; bottom: 100px; }
+        #customToast.show { visibility: visible; opacity: 1; bottom: 120px; }
         .note-badge { font-size: 10px; background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 10px; margin-top: 4px; display: inline-block; font-weight: bold; }
         @media print { body * { visibility: hidden; } #printArea, #printArea * { visibility: visible; } #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; } }
     </style>
@@ -96,6 +96,19 @@
         <span id="floatingTotal" class="text-2xl font-black text-blue-400">0﷼</span>
     </div>
 
+    <nav class="fixed bottom-0 left-0 right-0 h-20 bg-white/95 backdrop-blur-md flex justify-around items-center z-[1100] px-6 border-t border-slate-100 shadow-[0_-10px_25px_rgba(0,0,0,0.05)]">
+        <a href="https://maps.app.goo.gl/zQ8211ok2b5PBSSZ8" target="_blank" class="flex flex-col items-center gap-1 text-slate-400 transition-colors active:text-blue-600">
+            <i class="fa-solid fa-map-location-dot text-xl"></i><span class="text-[9px] font-black">موقعنا</span>
+        </a>
+        <button id="pwaInstallBtn" onclick="handleInstall()" class="w-16 h-16 bg-blue-700 text-white rounded-full -mt-10 border-[5px] border-white shadow-2xl flex flex-col items-center justify-center transform active:scale-90 transition">
+            <i class="fa-solid fa-cloud-arrow-down text-xl"></i>
+            <span class="text-[7px] font-black mt-1">تثبيت</span>
+        </button>
+        <a href="tel:0530195433" class="flex flex-col items-center gap-1 text-slate-400 transition-colors active:text-emerald-600">
+            <i class="fa-solid fa-headset text-xl"></i><span class="text-[9px] font-black">اتصال</span>
+        </a>
+    </nav>
+
     <div id="printArea"></div>
 
     <div id="mainModal" class="fixed inset-0 z-[2000] hidden modal-blur items-end sm:items-center justify-center p-0">
@@ -122,12 +135,20 @@
         let isNeighbor = localStorage.getItem('isNbr') === 'true';
         let currentCategory = "الوجبات";
         let activeItemId = null;
+        let deferredPrompt;
 
         window.onload = () => {
             renderTabs(); renderItems(); updateCartDisplay(); if(isNeighbor) setNeighborUI();
             if(!sessionStorage.getItem('welcomed')) document.getElementById('welcomeModal').style.display = 'flex';
             else document.getElementById('welcomeModal').style.display = 'none';
+            
+            window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
         };
+
+        async function handleInstall() {
+            if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') deferredPrompt = null; }
+            else { showToast("التطبيق مثبت مسبقاً ✅"); }
+        }
 
         function closeWelcome() {
             document.getElementById('welcomeModal').style.opacity = '0';
