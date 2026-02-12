@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>فوال مروه - التطبيق الرسمي</title>
     
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon.png">
+    <meta name="theme-color" content="#1e40af">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -16,6 +23,8 @@
         .modal-blur { backdrop-filter: blur(12px); background: rgba(15, 23, 42, 0.7); }
         .slide-up { animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .item-card.active .sizes-panel { max-height: 500px; opacity: 1; margin-top: 15px; }
+        .sizes-panel { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.4s ease-in-out; }
         .meal-title { font-size: 1.25rem; font-weight: 900; color: #1e3a8a; }
         #customToast {
             visibility: hidden; min-width: 250px; background-color: #1e293b; color: #fff;
@@ -24,8 +33,9 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.3); font-weight: bold; opacity: 0; transition: 0.3s;
         }
         #customToast.show { visibility: visible; opacity: 1; }
-        .input-error { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; animation: shake 0.3s; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        /* التنبيه البصري الأحمر */
+        .input-error { border: 2.5px solid #ef4444 !important; background-color: #fef2f2 !important; animation: shake 0.4s ease-in-out; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
     </style>
 </head>
 <body class="pb-40">
@@ -73,7 +83,7 @@
     </div>
 
     <script>
-        // --- البيانات الكاملة من ملفك المرفق ---
+        // --- البيانات الكاملة المستخرجة من ملفك المرفق ---
         const DB = {
             "الوجبات": [
                 {id:1, name:"فول سادة", sizes:{s:3, m:4, l:5, local:6}},
@@ -137,74 +147,67 @@
         let activeItemId = null;
         let deferredPrompt;
 
-        // --- نظام زر الرجوع الذكي (Popstate) ---
+        // --- نظام زر الرجوع العصري ---
         history.pushState({page: 'home'}, '', '');
-
-        window.onpopstate = function(event) {
+        window.onpopstate = function() {
             if (document.getElementById('mainModal').style.display === 'flex') {
                 closeModal();
                 history.pushState({page: 'home'}, '', '');
             } else {
-                confirmExit();
+                showExitConfirm();
             }
         };
 
-        function confirmExit() {
+        function showExitConfirm() {
             openModalLogic(`
                 <div class="text-center py-4">
                     <div class="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
                         <i class="fa-solid fa-door-open"></i>
                     </div>
-                    <h2 class="text-2xl font-black mb-2">مغادرة الموقع؟</h2>
+                    <h2 class="text-2xl font-black mb-2 text-slate-800">مغادرة الموقع؟</h2>
                     <p class="text-slate-500 font-bold mb-8">هل أنت متأكد أنك تريد الخروج من التطبيق؟</p>
                     <div class="grid grid-cols-2 gap-4">
-                        <button onclick="closeModal()" class="py-4 bg-slate-100 rounded-2xl font-black text-slate-600">إلغاء</button>
-                        <button onclick="window.close(); window.history.back();" class="py-4 bg-blue-600 rounded-2xl font-black text-white">تأكيد الخروج</button>
+                        <button onclick="closeModal()" class="py-4 bg-slate-100 rounded-2xl font-black text-slate-600 transition active:scale-95">إلغاء</button>
+                        <button onclick="window.history.back()" class="py-4 bg-blue-600 rounded-2xl font-black text-white shadow-lg shadow-blue-200 transition active:scale-95">تأكيد الخروج</button>
                     </div>
                 </div>
             `);
         }
 
         // --- نظام التثبيت (آيفون وأندرويد) ---
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-        });
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
 
         function handleInstallClick() {
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
             if (isIOS) {
                 openModalLogic(`
                     <div class="text-center">
-                        <div class="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                        <div class="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl">
                             <i class="fa-solid fa-mobile-screen-button text-3xl"></i>
                         </div>
-                        <h2 class="text-2xl font-black mb-4">تثبيت التطبيق على الآيفون</h2>
-                        <div class="space-y-6 text-right bg-slate-50 p-6 rounded-[30px] border border-slate-100">
+                        <h2 class="text-2xl font-black mb-4">تثبيت على الآيفون</h2>
+                        <div class="space-y-6 text-right bg-slate-50 p-6 rounded-[35px] border border-slate-100">
                             <div class="flex items-center gap-4">
                                 <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-blue-600"><i class="fa-solid fa-arrow-up-from-bracket"></i></div>
                                 <p class="font-bold text-sm">1. اضغط على زر "المشاركة" في المتصفح بالأسفل</p>
                             </div>
                             <div class="flex items-center gap-4">
                                 <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-blue-600"><i class="fa-solid fa-square-plus"></i></div>
-                                <p class="font-bold text-sm">2. اختر "إضافة إلى الصفحة الرئيسية" أو "Add to Home Screen"</p>
+                                <p class="font-bold text-sm">2. اختر "إضافة إلى الصفحة الرئيسية"</p>
                             </div>
                         </div>
-                        <button onclick="closeModal()" class="w-full mt-8 py-4 bg-blue-700 text-white rounded-2xl font-black shadow-lg">حسناً، فهمت</button>
+                        <button onclick="closeModal()" class="w-full mt-8 py-4 bg-blue-700 text-white rounded-2xl font-black shadow-lg transition active:scale-95">حسناً</button>
                     </div>
                 `);
             } else if (deferredPrompt) {
                 deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') showToast("جاري التثبيت... ✅");
-                    deferredPrompt = null;
-                });
+                deferredPrompt.userChoice.then((choice) => { if (choice.outcome === 'accepted') showToast("جاري التثبيت... ✅"); deferredPrompt = null; });
             } else {
-                showToast("التطبيق مثبت بالفعل أو المتصفح لا يدعم ⚠️");
+                showToast("التطبيق مثبت بالفعل أو المتصفح غير مدعوم ⚠️");
             }
         }
 
-        // --- منطق السلة والطلبات ---
+        // --- إدارة القائمة والسلة ---
         window.onload = () => {
             renderTabs(); renderItems(); updateCartDisplay(); if(isNeighbor) setNeighborUI();
         };
@@ -235,7 +238,7 @@
                     ${item.sizes ? `<div class="sizes-panel grid grid-cols-2 gap-3" onclick="event.stopPropagation()">
                             ${Object.entries(item.sizes).filter(([s]) => isNeighbor ? s !== 'local' : true).map(([s, p]) => `
                                 <div class="bg-blue-50/50 p-3 rounded-2xl flex justify-between items-center border border-blue-100">
-                                    <div class="text-xs font-black text-blue-900">${getSizeName(s)}<br>${p}﷼</div>
+                                    <div class="text-[11px] font-black text-blue-900">${getSizeName(s)}<br>${p}﷼</div>
                                     <div class="flex items-center gap-2">
                                         <button onclick="updateQty(${item.id}, -1, '${item.name}', ${p}, '${s}')" class="w-7 h-7 bg-white text-red-500 rounded-lg shadow-sm">-</button>
                                         <span class="font-bold">${getQty(item.id, s)}</span>
@@ -273,7 +276,7 @@
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
             document.getElementById('modalContent').innerHTML = `
                 <div id="cartRefCheck">
-                    <h2 class="text-2xl font-black mb-6">مراجعة طلبي</h2>
+                    <h2 class="text-2xl font-black mb-6 text-slate-800">مراجعة الطلب</h2>
                     <div class="space-y-4 mb-8">
                         ${cart.map((i, index) => `
                             <div class="bg-slate-50 p-4 rounded-3xl border border-slate-100">
@@ -285,10 +288,10 @@
                                         <button onclick="updateQty(${i.id}, 1, '', 0, '${i.size}')" class="w-8 h-8 bg-blue-700 text-white rounded-lg shadow-sm font-black">+</button>
                                     </div>
                                 </div>
-                                <input type="text" maxlength="20" oninput="cart[${index}].note = this.value" placeholder="توصية (مثلاً: بدون شطة)" value="${i.note}" class="w-full p-3 rounded-xl bg-white border border-slate-200 text-xs font-bold outline-none">
+                                <input type="text" maxlength="20" oninput="cart[${index}].note = this.value" placeholder="توصية (مثلاً: بدون شطة)" value="${i.note}" class="w-full p-3 rounded-xl bg-white border border-slate-200 text-[11px] font-bold outline-none focus:border-blue-300">
                             </div>`).join('')}
                     </div>
-                    <div class="bg-blue-50/50 p-6 rounded-[35px] space-y-4 mb-6">
+                    <div class="bg-blue-50/50 p-6 rounded-[35px] space-y-4 mb-6 border border-blue-100">
                         ${isNeighbor ? `
                         <input type="text" id="custName" placeholder="اكتب اسمك" value="${localStorage.getItem('u_name')||''}" oninput="localStorage.setItem('u_name', this.value); this.classList.remove('input-error')" class="w-full p-4 rounded-2xl bg-white shadow-sm outline-none font-bold transition-all border-2 border-transparent">
                         <input type="text" id="custLoc" placeholder="وصف المنزل" value="${localStorage.getItem('u_loc')||''}" oninput="localStorage.setItem('u_loc', this.value); this.classList.remove('input-error')" class="w-full p-4 rounded-2xl bg-white shadow-sm outline-none font-bold transition-all border-2 border-transparent">` : ''}
@@ -297,19 +300,19 @@
                             <select id="payWay" class="${isNeighbor?'col-span-2':'col-span-1'} p-4 rounded-2xl bg-white shadow-sm outline-none font-bold"><option value="كاش 💵">كاش 💵</option><option value="شبكة 💳">شبكة 💳</option></select>
                         </div>
                     </div>
-                    <button onclick="saveAsFavorite()" class="w-full mb-4 bg-red-50 text-red-600 py-3 rounded-2xl font-black text-xs">❤️ حفظ في الطلبات المفضلة</button>
+                    <button onclick="saveAsFavorite()" class="w-full mb-4 bg-red-50 text-red-600 py-3 rounded-2xl font-black text-xs transition active:scale-95">❤️ حفظ في الطلبات المفضلة</button>
                     <div class="flex justify-between items-center mb-6 px-4"><span class="text-slate-400 font-bold">الإجمالي:</span><span class="text-3xl font-black text-blue-800">${total}﷼</span></div>
-                    <button onclick="confirmAndSend()" class="w-full bg-green-600 text-white py-5 rounded-[25px] font-black text-xl flex items-center justify-center gap-3 active:scale-95 transition">إرسال للواتساب <i class="fa-brands fa-whatsapp"></i></button>
+                    <button onclick="confirmAndSend()" class="w-full bg-green-600 text-white py-5 rounded-[25px] font-black text-xl flex items-center justify-center gap-3 shadow-xl shadow-green-100 transition active:scale-95">إرسال للواتساب <i class="fa-brands fa-whatsapp"></i></button>
                 </div>`;
         }
 
         function confirmAndSend() {
             let valid = true;
             if (isNeighbor) {
-                const name = document.getElementById('custName');
-                const loc = document.getElementById('custLoc');
-                if (!name.value.trim()) { name.classList.add('input-error'); valid = false; }
-                if (!loc.value.trim()) { loc.classList.add('input-error'); valid = false; }
+                const nameInput = document.getElementById('custName');
+                const locInput = document.getElementById('custLoc');
+                if (!nameInput.value.trim()) { nameInput.classList.add('input-error'); valid = false; }
+                if (!locInput.value.trim()) { locInput.classList.add('input-error'); valid = false; }
             }
             if (!valid) { showToast("يرجى إكمال البيانات المطلوبة ⚠️"); return; }
 
@@ -317,7 +320,8 @@
             const orderType = isNeighbor ? "توصيل حي بدر 🏠" : (document.getElementById('oType')?.value || "سفري 🥡");
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
             
-            let firstTimeKey = 'm_ordered_neighbor_v2';
+            // نظام رسالة الموقع الأول
+            let firstTimeKey = 'm_ordered_v3_flag';
             let neighborExtra = "";
             if (isNeighbor && !localStorage.getItem(firstTimeKey)) {
                 neighborExtra = "%0A%0A📍 *ملاحظة: بما أن هذا طلبي الأول، سأرسل لكم موقعي الحالي الآن*";
@@ -338,38 +342,39 @@
             cart = []; updateCartDisplay(); closeModal(); renderItems();
         }
 
+        // --- المفضلات والأكواد ---
         function saveAsFavorite() {
             if(cart.length === 0) return;
-            let favs = JSON.parse(localStorage.getItem('m_favs_3') || '[]');
+            let favs = JSON.parse(localStorage.getItem('m_favs_v3') || '[]');
             favs.unshift({ items: JSON.parse(JSON.stringify(cart)), total: cart.reduce((s,i)=>s+(i.price*i.qty),0) });
-            localStorage.setItem('m_favs_3', JSON.stringify(favs.slice(0, 3)));
+            localStorage.setItem('m_favs_v3', JSON.stringify(favs.slice(0, 5)));
             showToast("تم الحفظ في المفضلة ❤️");
         }
 
         function showFavoriteList() {
-            const favs = JSON.parse(localStorage.getItem('m_favs_3') || '[]');
+            const favs = JSON.parse(localStorage.getItem('m_favs_v3') || '[]');
             let content = `<h2 class="text-2xl font-black mb-6 text-red-600">وجباتي المفضلة</h2><div class="space-y-4">`;
             favs.forEach((f, i) => { content += `<div onclick="previewFav(${i})" class="p-5 bg-red-50 rounded-[30px] border border-red-100 flex justify-between items-center cursor-pointer"><div><p class="text-[10px] text-red-400 font-bold">المفضلة #${i+1}</p><p class="text-sm font-black text-slate-700 truncate w-40">${f.items.map(it=>it.name).join(', ')}</p></div><span class="text-red-600 font-black">${f.total}﷼</span></div>`; });
-            content += favs.length ? '' : '<p class="text-center opacity-30">لا توجد مفضلات</p>';
+            content += favs.length ? '' : '<p class="text-center opacity-30 py-10">لا توجد مفضلات حالياً</p>';
             openModalLogic(content + '</div>');
         }
 
         function previewFav(index) {
-            const f = JSON.parse(localStorage.getItem('m_favs_3'))[index];
+            const f = JSON.parse(localStorage.getItem('m_favs_v3'))[index];
             let content = `<h2 class="text-xl font-black mb-4">محتوى المفضلة</h2><div class="bg-slate-50 p-4 rounded-2xl mb-6">`;
             f.items.forEach(it => content += `<p class="text-sm font-bold mb-1">• ${it.name} [${it.qty}]</p>`);
-            content += `</div><button onclick="applyFav(${index})" class="w-full bg-red-600 text-white py-4 rounded-2xl font-black">إضافة الطلب للسلة</button>`;
+            content += `</div><button onclick="applyFav(${index})" class="w-full bg-red-600 text-white py-4 rounded-2xl font-black shadow-lg shadow-red-100">إضافة الطلب للسلة</button>`;
             document.getElementById('modalContent').innerHTML = content;
         }
 
         function applyFav(index) {
-            const f = JSON.parse(localStorage.getItem('m_favs_3'))[index];
+            const f = JSON.parse(localStorage.getItem('m_favs_v3'))[index];
             cart = JSON.parse(JSON.stringify(f.items));
             updateCartDisplay(); renderItems(); closeModal(); showToast("تم الاسترجاع بنجاح ✅");
         }
 
         function openNbrModal() {
-            openModalLogic(`<div class="text-center"><h2 class="text-2xl font-black mb-4">كود حي بدر</h2><input type="text" id="nbrInput" placeholder="أدخل الكود هنا" class="w-full p-4 bg-slate-50 rounded-2xl border-2 text-center font-black text-xl mb-4"><button onclick="verifyNbr()" class="w-full bg-blue-800 text-white py-4 rounded-2xl font-black">${isNeighbor ? 'إلغاء التفعيل' : 'تفعيل التوصيل المجاني'}</button></div>`);
+            openModalLogic(`<div class="text-center"><h2 class="text-2xl font-black mb-4">كود حي بدر</h2><input type="text" id="nbrInput" placeholder="أدخل الكود هنا" class="w-full p-4 bg-slate-50 rounded-2xl border-2 text-center font-black text-xl mb-4 outline-none focus:border-blue-400"><button onclick="verifyNbr()" class="w-full bg-blue-800 text-white py-4 rounded-2xl font-black shadow-lg shadow-blue-100">${isNeighbor ? 'إلغاء التفعيل' : 'تفعيل التوصيل المجاني'}</button></div>`);
         }
 
         function verifyNbr() {
@@ -382,13 +387,13 @@
 
         function setNeighborUI() {
             const btn = document.getElementById('nbrBtn');
-            btn.className = isNeighbor ? "bg-emerald-600 p-6 rounded-[35px] text-white flex justify-between items-center shadow-lg" : "bg-blue-800 p-6 rounded-[35px] text-white flex justify-between items-center shadow-lg";
+            btn.className = isNeighbor ? "bg-emerald-600 p-6 rounded-[35px] text-white flex justify-between items-center shadow-lg transition active:scale-95" : "bg-blue-800 p-6 rounded-[35px] text-white flex justify-between items-center shadow-lg transition active:scale-95";
             document.getElementById('nbrLabel').innerText = isNeighbor ? "توصيل حي بدر مفعل ✅" : "أدخل الكود للتوصيل المجاني";
             document.getElementById('nbrIcon').className = isNeighbor ? "fa-solid fa-unlock-keyhole" : "fa-solid fa-lock opacity-30";
         }
 
         function openAuthModal() {
-            openModalLogic(`<div class="text-center"><h2 class="text-2xl font-black mb-4">سجل الإدارة</h2><input type="password" id="authInput" placeholder="••••" class="w-full p-4 bg-slate-50 rounded-2xl border-2 text-center text-2xl mb-4 font-black outline-none"><button onclick="verifyAuth()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-black">دخول</button></div>`);
+            openModalLogic(`<div class="text-center"><h2 class="text-2xl font-black mb-4 text-slate-800">سجل الإدارة</h2><input type="password" id="authInput" placeholder="••••" class="w-full p-4 bg-slate-50 rounded-2xl border-2 text-center text-2xl mb-4 font-black outline-none focus:border-slate-400"><button onclick="verifyAuth()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-black">دخول</button></div>`);
         }
         function verifyAuth() { if(document.getElementById('authInput').value === "123456Aa") showToast("قريباً..."); else showToast("الرمز خاطئ!"); }
     </script>
