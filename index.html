@@ -16,8 +16,6 @@
         .modal-blur { backdrop-filter: blur(12px); background: rgba(15, 23, 42, 0.7); }
         .slide-up { animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .item-card.active .sizes-panel { max-height: 500px; opacity: 1; margin-top: 15px; }
-        .sizes-panel { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.4s ease-in-out; }
         .meal-title { font-size: 1.25rem; font-weight: 900; color: #1e3a8a; }
         #customToast {
             visibility: hidden; min-width: 250px; background-color: #1e293b; color: #fff;
@@ -62,43 +60,157 @@
     </div>
 
     <nav class="fixed bottom-0 left-0 right-0 h-20 bg-white/95 backdrop-blur-md flex justify-around items-center z-[1100] border-t border-slate-100 px-6">
-        <a href="https://maps.app.goo.gl/zQ8211ok2b5PBSSZ8" target="_blank" class="flex flex-col items-center text-slate-400"><i class="fa-solid fa-map-location-dot text-xl"></i><span class="text-[9px] font-black">موقعنا</span></a>
-        <button id="installBtn" class="w-16 h-16 bg-blue-700 text-white rounded-full -mt-10 border-[5px] border-white shadow-2xl flex items-center justify-center"><i class="fa-solid fa-cloud-arrow-down text-xl"></i></button>
+        <a href="https://maps.google.com/?q=مطعم+فوال+مروه" target="_blank" class="flex flex-col items-center text-slate-400"><i class="fa-solid fa-map-location-dot text-xl"></i><span class="text-[9px] font-black">موقعنا</span></a>
+        <button onclick="handleInstallClick()" class="w-16 h-16 bg-blue-700 text-white rounded-full -mt-10 border-[5px] border-white shadow-2xl flex items-center justify-center active:scale-90 transition-all"><i class="fa-solid fa-cloud-arrow-down text-xl"></i></button>
         <a href="tel:0530195433" class="flex flex-col items-center text-slate-400"><i class="fa-solid fa-headset text-xl"></i><span class="text-[9px] font-black">اتصال</span></a>
     </nav>
 
     <div id="mainModal" class="fixed inset-0 z-[2000] hidden modal-blur items-end sm:items-center justify-center p-0">
-        <div class="bg-white w-full max-w-lg rounded-t-[50px] p-8 slide-up overflow-y-auto max-h-[92vh] relative">
+        <div class="bg-white w-full max-w-lg rounded-t-[50px] p-8 slide-up overflow-y-auto max-h-[92vh] relative shadow-2xl">
             <button onclick="closeModal()" class="absolute top-6 left-6 w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 font-bold">✕</button>
             <div id="modalContent"></div>
         </div>
     </div>
 
     <script>
+        // --- البيانات الكاملة من ملفك المرفق ---
         const DB = {
-            "الوجبات": [{id:1, name:"فول سادة", sizes:{s:3, m:4, l:5, local:6}}, {id:2, name:"فول مشكل", sizes:{s:4, m:5, l:6, local:7}}, {id:3, name:"فول قلابة طاوه", sizes:{s:4, m:5, l:6, local:7}}, {id:4, name:"فول طاوه بالبيض", sizes:{s:5, m:6, l:7, local:8}}, {id:5, name:"عدس سادة", sizes:{s:3, m:4, l:5, local:6}}, {id:6, name:"عدس مشكل", sizes:{s:4, m:5, l:6, local:7}}, {id:7, name:"عدس طاوه بيض", sizes:{s:5, m:6, l:7, local:8}}, {id:8, name:"فاصوليه", sizes:{s:6, m:8, l:12, local:7}}, {id:9, name:"فاصوليه بالبيض", sizes:{s:7, m:8, l:13, local:8}}, {id:10, name:"فاصوليه بالتونة", sizes:{s:10, m:12, l:13, local:11}}, {id:11, name:"بازليا", sizes:{s:6, m:7, l:12, local:7}}, {id:12, name:"بازليا تونة", sizes:{s:10, m:11, l:12, local:11}}, {id:13, name:"تونة", sizes:{s:10, m:11, l:12, local:10}}, {id:14, name:"شكشوكة", sizes:{s:6, m:7, l:8, local:7}}, {id:15, name:"شكشوكة جبن", sizes:{s:8, m:9, l:10, local:9}}, {id:16, name:"شكشوكة افغاني", sizes:{s:7, m:8, l:10, local:8}}, {id:17, name:"بيض مقلي", sizes:{s:6, m:8, l:9, local:7}}, {id:18, name:"بيض عيون", sizes:{s:6, m:8, l:9, local:7}}, {id:19, name:"لحسة", sizes:{s:9, m:10, l:12, local:10}}, {id:20, name:"شكشوكة عدني", sizes:{s:7, m:8, l:10, local:8}}, {id:21, name:"فلافل 4 حبة", price:1}, {id:22, name:"كمونية", sizes:{s:10, m:12, l:15, local:11}}],
-            "المطبق": [{id:23, name:"مطبق خضار", price:5}, {id:24, name:"مطبق مالح", price:5}, {id:25, name:"مطبق موز", price:5}, {id:26, name:"مطبق حلو جبن", price:5}, {id:27, name:"مشكل حلو", price:10}, {id:28, name:"مشكل خضار", price:8}, {id:29, name:"تونة", price:8}, {id:30, name:"جبنة سائل", price:6}, {id:31, name:"جبنة شيدر", price:6}, {id:32, name:"جبنتين", price:8}, {id:33, name:"نوتيلا", price:7}],
-            "العريكة والفتة": [{id:34, name:"قشطة عسل", price:12}, {id:35, name:"جبنة ديلوكس", price:14}, {id:36, name:"مكلي", price:16}, {id:37, name:"عريكة عرائسي", price:18}, {id:38, name:"عريكة مروة", price:18}, {id:39, name:"عريكة دبل قشطة", price:18}, {id:40, name:"فتة سمن عسل", price:10}],
-            "المعصوب": [{id:41, name:"قشطة عسل", price:12}, {id:42, name:"جنبية ديلوكس", price:14}, {id:43, name:"ملكي", price:16}, {id:44, name:"معصوب عرائسي", price:18}, {id:45, name:"معصوب مروة", price:18}, {id:46, name:"معصوب دبل قشطة", price:18}, {id:47, name:"مرسي", price:10}],
-            "السندوتشات": [{id:48, name:"كبدة", sizes:{samoli:4, fatira:5}}, {id:49, name:"كبدة جبنة", sizes:{samoli:5, fatira:6}}, {id:50, name:"مقلقل", sizes:{samoli:4, fatira:5}}, {id:51, name:"مقلقل جبن", sizes:{samoli:5, fatira:6}}, {id:52, name:"بيض مقلي", sizes:{samoli:3, fatira:4}}, {id:53, name:"بيض مقلي جبن", sizes:{samoli:4, fatira:5}}, {id:54, name:"شكشوكة", sizes:{samoli:3, fatira:4}}, {id:55, name:"شكشوكة جبن", sizes:{samoli:4, fatira:5}}],
-            "التميس": [{id:56, name:"تميس عادي", price:1}, {id:57, name:"تميس سكر", price:3}, {id:58, name:"تميس بر", price:2}, {id:59, name:"تميس جبن", price:5}, {id:60, name:"تميس جبن سكر", price:6}, {id:61, name:"تميس بر جبن", price:7}, {id:62, name:"تميس جبن دبل", price:9}, {id:63, name:"تميس سمن", price:2}, {id:64, name:"تميس سمن سكر", price:3}, {id:65, name:"تميس سمن جبن سكر", price:8}, {id:66, name:"تميس بسكوت", price:3}, {id:67, name:"تميس بسكوت سكر", price:4}, {id:68, name:"تميس بسكوت جبن", price:8}, {id:69, name:"تميس زعتر", price:4}, {id:70, name:"تميس بر زعتر", price:5}],
-            "المشروبات": [{id:71, name:"ماء", price:1}, {id:72, name:"مشروب غازي", price:3}, {id:73, name:"شاي سادة", price:1}, {id:74, name:"شاي بالحليب", price:2}]
+            "الوجبات": [
+                {id:1, name:"فول سادة", sizes:{s:3, m:4, l:5, local:6}},
+                {id:2, name:"فول مشكل", sizes:{s:4, m:5, l:6, local:7}},
+                {id:3, name:"فول قلابة طاوه", sizes:{s:4, m:5, l:6, local:7}},
+                {id:4, name:"فول طاوه بالبيض", sizes:{s:5, m:6, l:7, local:8}},
+                {id:5, name:"عدس سادة", sizes:{s:3, m:4, l:5, local:6}},
+                {id:6, name:"عدس مشكل", sizes:{s:4, m:5, l:6, local:7}},
+                {id:7, name:"عدس طاوه بيض", sizes:{s:5, m:6, l:7, local:8}},
+                {id:8, name:"فاصوليه", sizes:{s:6, m:8, l:12, local:7}},
+                {id:9, name:"فاصوليه بالبيض", sizes:{s:7, m:8, l:13, local:8}},
+                {id:10, name:"فاصوليه بالتونة", sizes:{s:10, m:12, l:13, local:11}},
+                {id:11, name:"بازليا", sizes:{s:6, m:7, l:12, local:7}},
+                {id:12, name:"بازليا تونة", sizes:{s:10, m:11, l:12, local:11}},
+                {id:13, name:"تونة", sizes:{s:10, m:11, l:12, local:10}},
+                {id:14, name:"شكشوكة", sizes:{s:6, m:7, l:8, local:7}},
+                {id:15, name:"شكشوكة جبن", sizes:{s:8, m:9, l:10, local:9}},
+                {id:16, name:"شكشوكة افغاني", sizes:{s:7, m:8, l:10, local:8}},
+                {id:17, name:"بيض مقلي", sizes:{s:6, m:8, l:9, local:7}},
+                {id:18, name:"بيض عيون", sizes:{s:6, m:8, l:9, local:7}},
+                {id:19, name:"لحسة", sizes:{s:9, m:10, l:12, local:10}},
+                {id:20, name:"شكشوكة عدني", sizes:{s:7, m:8, l:10, local:8}},
+                {id:21, name:"فلافل 4 حبة", price:1},
+                {id:22, name:"كمونية", sizes:{s:10, m:12, l:15, local:11}}
+            ],
+            "المطبق": [
+                {id:23, name:"مطبق خضار", price:5}, {id:24, name:"مطبق مالح", price:5}, {id:25, name:"مطبق موز", price:5},
+                {id:26, name:"مطبق حلو جبن", price:5}, {id:27, name:"مشكل حلو", price:10}, {id:28, name:"مشكل خضار", price:8},
+                {id:29, name:"تونة", price:8}, {id:30, name:"جبنة سائل", price:6}, {id:31, name:"جبنة شيدر", price:6},
+                {id:32, name:"جبنتين", price:8}, {id:33, name:"نوتيلا", price:7}
+            ],
+            "العريكة والفتة": [
+                {id:34, name:"عريكة قشطة عسل", price:12}, {id:35, name:"عريكة جبنة ديلوكس", price:14}, {id:36, name:"عريكة ملكي", price:16},
+                {id:37, name:"عريكة عرائسي", price:18}, {id:38, name:"عريكة مروة", price:18}, {id:39, name:"عريكة دبل قشطة", price:18}, {id:40, name:"فتة سمن عسل", price:10}
+            ],
+            "المعصوب": [
+                {id:41, name:"معصوب قشطة عسل", price:12}, {id:42, name:"معصوب جنبية ديلوكس", price:14}, {id:43, name:"معصوب ملكي", price:16},
+                {id:44, name:"معصوب عرائسي", price:18}, {id:45, name:"معصوب مروة", price:18}, {id:46, name:"معصوب دبل قشطة", price:18}, {id:47, name:"مرسي", price:10}
+            ],
+            "السندوتشات": [
+                {id:48, name:"سندوتش كبدة", sizes:{samoli:4, fatira:5}}, {id:49, name:"سندوتش كبدة جبنة", sizes:{samoli:5, fatira:6}},
+                {id:50, name:"سندوتش مقلقل", sizes:{samoli:4, fatira:5}}, {id:51, name:"سندوتش مقلقل جبن", sizes:{samoli:5, fatira:6}},
+                {id:52, name:"سندوتش بيض مقلي", sizes:{samoli:3, fatira:4}}, {id:53, name:"سندوتش بيض مقلي جبن", sizes:{samoli:4, fatira:5}},
+                {id:54, name:"سندوتش شكشوكة", sizes:{samoli:3, fatira:4}}, {id:55, name:"سندوتش شكشوكة جبن", sizes:{samoli:4, fatira:5}}
+            ],
+            "التميس": [
+                {id:56, name:"تميس عادي", price:1}, {id:57, name:"تميس سكر", price:3}, {id:58, name:"تميس بر", price:2},
+                {id:59, name:"تميس جبن", price:5}, {id:60, name:"تميس جبن سكر", price:6}, {id:61, name:"تميس بر جبن", price:7},
+                {id:62, name:"تميس جبن دبل", price:9}, {id:63, name:"تميس سمن", price:2}, {id:64, name:"تميس سمن سكر", price:3},
+                {id:65, name:"تميس سمن جبن سكر", price:8}, {id:66, name:"تميس بسكوت", price:3}, {id:67, name:"تميس بسكوت سكر", price:4},
+                {id:68, name:"تميس بسكوت جبن", price:8}, {id:69, name:"تميس زعتر", price:4}, {id:70, name:"تميس بر زعتر", price:5}
+            ],
+            "المشروبات": [
+                {id:71, name:"ماء", price:1}, {id:72, name:"مشروب غازي", price:3}, {id:73, name:"شاي سادة", price:1}, {id:74, name:"شاي بالحليب", price:2}
+            ]
         };
 
         let cart = [];
         let isNeighbor = localStorage.getItem('isNbr') === 'true';
         let currentCategory = "الوجبات";
         let activeItemId = null;
+        let deferredPrompt;
 
-        // نظام زر الرجوع للهاتف
-        window.addEventListener('popstate', function() { if (document.getElementById('mainModal').style.display === 'flex') closeModal(); });
+        // --- نظام زر الرجوع الذكي (Popstate) ---
+        history.pushState({page: 'home'}, '', '');
 
+        window.onpopstate = function(event) {
+            if (document.getElementById('mainModal').style.display === 'flex') {
+                closeModal();
+                history.pushState({page: 'home'}, '', '');
+            } else {
+                confirmExit();
+            }
+        };
+
+        function confirmExit() {
+            openModalLogic(`
+                <div class="text-center py-4">
+                    <div class="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
+                        <i class="fa-solid fa-door-open"></i>
+                    </div>
+                    <h2 class="text-2xl font-black mb-2">مغادرة الموقع؟</h2>
+                    <p class="text-slate-500 font-bold mb-8">هل أنت متأكد أنك تريد الخروج من التطبيق؟</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button onclick="closeModal()" class="py-4 bg-slate-100 rounded-2xl font-black text-slate-600">إلغاء</button>
+                        <button onclick="window.close(); window.history.back();" class="py-4 bg-blue-600 rounded-2xl font-black text-white">تأكيد الخروج</button>
+                    </div>
+                </div>
+            `);
+        }
+
+        // --- نظام التثبيت (آيفون وأندرويد) ---
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+        });
+
+        function handleInstallClick() {
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            if (isIOS) {
+                openModalLogic(`
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                            <i class="fa-solid fa-mobile-screen-button text-3xl"></i>
+                        </div>
+                        <h2 class="text-2xl font-black mb-4">تثبيت التطبيق على الآيفون</h2>
+                        <div class="space-y-6 text-right bg-slate-50 p-6 rounded-[30px] border border-slate-100">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-blue-600"><i class="fa-solid fa-arrow-up-from-bracket"></i></div>
+                                <p class="font-bold text-sm">1. اضغط على زر "المشاركة" في المتصفح بالأسفل</p>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-blue-600"><i class="fa-solid fa-square-plus"></i></div>
+                                <p class="font-bold text-sm">2. اختر "إضافة إلى الصفحة الرئيسية" أو "Add to Home Screen"</p>
+                            </div>
+                        </div>
+                        <button onclick="closeModal()" class="w-full mt-8 py-4 bg-blue-700 text-white rounded-2xl font-black shadow-lg">حسناً، فهمت</button>
+                    </div>
+                `);
+            } else if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') showToast("جاري التثبيت... ✅");
+                    deferredPrompt = null;
+                });
+            } else {
+                showToast("التطبيق مثبت بالفعل أو المتصفح لا يدعم ⚠️");
+            }
+        }
+
+        // --- منطق السلة والطلبات ---
         window.onload = () => {
             renderTabs(); renderItems(); updateCartDisplay(); if(isNeighbor) setNeighborUI();
         };
 
         function closeModal() { document.getElementById('mainModal').style.display = 'none'; }
-        function openModalLogic(content) { document.getElementById('modalContent').innerHTML = content; document.getElementById('mainModal').style.display = 'flex'; history.pushState({modal: true}, null, ""); }
+        function openModalLogic(content) { document.getElementById('modalContent').innerHTML = content; document.getElementById('mainModal').style.display = 'flex'; }
         function showToast(text) { const toast = document.getElementById("customToast"); toast.innerText = text; toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 2000); }
 
         function renderTabs() {
@@ -155,7 +267,7 @@
             document.getElementById('floatingTotal').innerText = total + "﷼";
         }
 
-        function openCartModal() { renderCartInModal(); document.getElementById('mainModal').style.display = 'flex'; history.pushState({modal: true}, null, ""); }
+        function openCartModal() { renderCartInModal(); document.getElementById('mainModal').style.display = 'flex'; }
 
         function renderCartInModal() {
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
@@ -178,8 +290,8 @@
                     </div>
                     <div class="bg-blue-50/50 p-6 rounded-[35px] space-y-4 mb-6">
                         ${isNeighbor ? `
-                        <input type="text" id="custName" placeholder="اكتب اسمك" value="${localStorage.getItem('u_name')||''}" oninput="localStorage.setItem('u_name', this.value); this.classList.remove('input-error')" class="w-full p-4 rounded-2xl bg-white shadow-sm outline-none font-bold transition-all">
-                        <input type="text" id="custLoc" placeholder="وصف المنزل" value="${localStorage.getItem('u_loc')||''}" oninput="localStorage.setItem('u_loc', this.value); this.classList.remove('input-error')" class="w-full p-4 rounded-2xl bg-white shadow-sm outline-none font-bold transition-all">` : ''}
+                        <input type="text" id="custName" placeholder="اكتب اسمك" value="${localStorage.getItem('u_name')||''}" oninput="localStorage.setItem('u_name', this.value); this.classList.remove('input-error')" class="w-full p-4 rounded-2xl bg-white shadow-sm outline-none font-bold transition-all border-2 border-transparent">
+                        <input type="text" id="custLoc" placeholder="وصف المنزل" value="${localStorage.getItem('u_loc')||''}" oninput="localStorage.setItem('u_loc', this.value); this.classList.remove('input-error')" class="w-full p-4 rounded-2xl bg-white shadow-sm outline-none font-bold transition-all border-2 border-transparent">` : ''}
                         <div class="grid grid-cols-2 gap-2">
                             ${!isNeighbor ? `<select id="oType" class="p-4 rounded-2xl bg-white shadow-sm outline-none font-bold"><option value="سفري 🥡">🥡 سفري</option><option value="محلي 🍽️">🍽️ محلي</option></select>` : ''}
                             <select id="payWay" class="${isNeighbor?'col-span-2':'col-span-1'} p-4 rounded-2xl bg-white shadow-sm outline-none font-bold"><option value="كاش 💵">كاش 💵</option><option value="شبكة 💳">شبكة 💳</option></select>
@@ -187,7 +299,7 @@
                     </div>
                     <button onclick="saveAsFavorite()" class="w-full mb-4 bg-red-50 text-red-600 py-3 rounded-2xl font-black text-xs">❤️ حفظ في الطلبات المفضلة</button>
                     <div class="flex justify-between items-center mb-6 px-4"><span class="text-slate-400 font-bold">الإجمالي:</span><span class="text-3xl font-black text-blue-800">${total}﷼</span></div>
-                    <button onclick="confirmAndSend()" class="w-full bg-green-600 text-white py-5 rounded-[25px] font-black text-xl flex items-center justify-center gap-3">إرسال للواتساب <i class="fa-brands fa-whatsapp"></i></button>
+                    <button onclick="confirmAndSend()" class="w-full bg-green-600 text-white py-5 rounded-[25px] font-black text-xl flex items-center justify-center gap-3 active:scale-95 transition">إرسال للواتساب <i class="fa-brands fa-whatsapp"></i></button>
                 </div>`;
         }
 
@@ -205,7 +317,6 @@
             const orderType = isNeighbor ? "توصيل حي بدر 🏠" : (document.getElementById('oType')?.value || "سفري 🥡");
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
             
-            // نظام رسالة الموقع الأول
             let firstTimeKey = 'm_ordered_neighbor_v2';
             let neighborExtra = "";
             if (isNeighbor && !localStorage.getItem(firstTimeKey)) {
@@ -213,9 +324,7 @@
                 localStorage.setItem(firstTimeKey, 'true');
             }
 
-            saveToHistory(orderType, payMethod);
             const orderID = Math.floor(100000 + Math.random() * 900000);
-            
             let msg = `*طلب جديد - فوال مروه*%0A🆔 *ID:* ${orderID}%0A📢 *النوع:* ${orderType}%0A💰 *الدفع:* ${payMethod}%0A`;
             if(isNeighbor) msg += `👤 *العميل:* ${document.getElementById('custName').value}%0A🏠 *المنزل:* ${document.getElementById('custLoc').value}%0A`;
             msg += `--------------------------%0A`;
@@ -227,12 +336,6 @@
             
             window.location.href = `https://wa.me/966530195433?text=${msg}`;
             cart = []; updateCartDisplay(); closeModal(); renderItems();
-        }
-
-        function saveToHistory(type, payment) {
-            let logs = JSON.parse(localStorage.getItem('m_logs') || '[]');
-            logs.unshift({ id: Math.floor(100000 + Math.random() * 900000), date: new Date().toLocaleString('ar-SA'), items: JSON.parse(JSON.stringify(cart)), total: cart.reduce((s,i)=>s+(i.price*i.qty),0), type, payment });
-            localStorage.setItem('m_logs', JSON.stringify(logs.slice(0, 30)));
         }
 
         function saveAsFavorite() {
@@ -265,29 +368,6 @@
             updateCartDisplay(); renderItems(); closeModal(); showToast("تم الاسترجاع بنجاح ✅");
         }
 
-        function openAuthModal() {
-            openModalLogic(`<div class="text-center"><h2 class="text-2xl font-black mb-4">سجل الطلبات</h2><input type="password" id="authInput" placeholder="••••" class="w-full p-4 bg-slate-50 rounded-2xl border-2 text-center text-2xl mb-4 font-black"><button onclick="verifyAuth()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-black">دخول</button></div>`);
-        }
-        function verifyAuth() { if(document.getElementById('authInput').value === "123456Aa") showHistory(); else showToast("الرمز خاطئ!"); }
-
-        function showHistory() {
-            const logs = JSON.parse(localStorage.getItem('m_logs') || '[]');
-            let content = `<h2 class="text-2xl font-black mb-6">الطلبات السابقة</h2><div class="space-y-4">`;
-            logs.forEach((l, index) => {
-                content += `<div onclick="showLogDetail(${index})" class="p-5 bg-slate-50 rounded-[30px] border flex justify-between items-center cursor-pointer">
-                    <div><p class="text-[10px] text-slate-400 font-bold">${l.date}</p><p class="text-sm font-black">ID: ${l.id}</p></div>
-                    <span class="text-blue-700 font-black">${l.total}﷼</span>
-                </div>`;
-            });
-            openModalLogic(content + '</div>');
-        }
-
-        function showLogDetail(index) {
-            const log = JSON.parse(localStorage.getItem('m_logs'))[index];
-            const content = `<div id="receiptToCapture" class="bg-white p-6 rounded-3xl text-right border"><h3 class="font-black text-xl text-center">فوال مروه</h3><p class="text-center text-xs text-slate-400 mb-4">${log.date}</p>${log.items.map(i => `<div class="flex justify-between text-sm font-bold mb-1"><span>${i.name} × ${i.qty}</span><span>${i.price*i.qty}﷼</span></div>`).join('')}<div class="border-t border-dashed mt-4 pt-4 flex justify-between font-black text-xl"><span>الإجمالي</span><span>${log.total}﷼</span></div></div>`;
-            document.getElementById('modalContent').innerHTML = content;
-        }
-
         function openNbrModal() {
             openModalLogic(`<div class="text-center"><h2 class="text-2xl font-black mb-4">كود حي بدر</h2><input type="text" id="nbrInput" placeholder="أدخل الكود هنا" class="w-full p-4 bg-slate-50 rounded-2xl border-2 text-center font-black text-xl mb-4"><button onclick="verifyNbr()" class="w-full bg-blue-800 text-white py-4 rounded-2xl font-black">${isNeighbor ? 'إلغاء التفعيل' : 'تفعيل التوصيل المجاني'}</button></div>`);
         }
@@ -302,10 +382,15 @@
 
         function setNeighborUI() {
             const btn = document.getElementById('nbrBtn');
-            btn.className = isNeighbor ? "bg-emerald-600 p-6 rounded-[35px] text-white flex justify-between items-center" : "bg-blue-800 p-6 rounded-[35px] text-white flex justify-between items-center";
+            btn.className = isNeighbor ? "bg-emerald-600 p-6 rounded-[35px] text-white flex justify-between items-center shadow-lg" : "bg-blue-800 p-6 rounded-[35px] text-white flex justify-between items-center shadow-lg";
             document.getElementById('nbrLabel').innerText = isNeighbor ? "توصيل حي بدر مفعل ✅" : "أدخل الكود للتوصيل المجاني";
             document.getElementById('nbrIcon').className = isNeighbor ? "fa-solid fa-unlock-keyhole" : "fa-solid fa-lock opacity-30";
         }
+
+        function openAuthModal() {
+            openModalLogic(`<div class="text-center"><h2 class="text-2xl font-black mb-4">سجل الإدارة</h2><input type="password" id="authInput" placeholder="••••" class="w-full p-4 bg-slate-50 rounded-2xl border-2 text-center text-2xl mb-4 font-black outline-none"><button onclick="verifyAuth()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-black">دخول</button></div>`);
+        }
+        function verifyAuth() { if(document.getElementById('authInput').value === "123456Aa") showToast("قريباً..."); else showToast("الرمز خاطئ!"); }
     </script>
 </body>
 </html>
