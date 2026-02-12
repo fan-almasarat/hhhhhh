@@ -78,7 +78,7 @@
     </div>
 
     <nav class="fixed bottom-0 left-0 right-0 h-20 bg-white/90 backdrop-blur-md flex justify-around items-center z-[1100] px-6 border-t border-slate-100">
-        <a href="https://maps.app.goo.gl/0" class="flex flex-col items-center gap-1 text-slate-400">
+        <a href="http://googleusercontent.com/maps.google.com/4" class="flex flex-col items-center gap-1 text-slate-400">
             <i class="fa-solid fa-map-pin text-xl"></i><span class="text-[9px] font-black">موقعنا</span>
         </a>
         <button id="pwaInstallBtn" onclick="handleInstall()" class="w-16 h-16 bg-blue-700 text-white rounded-full -mt-10 border-[5px] border-white shadow-2xl flex flex-col items-center justify-center transform active:scale-90 transition">
@@ -100,6 +100,19 @@
     </div>
 
     <script>
+        // التلميحات المخصصة لكل قسم
+        const CATEGORY_NOTES = {
+            "الوجبات": "مثل: بدون بصل، زيادة شطة",
+            "المطبق": "مثل: محمص زيادة، حار",
+            "العريكة والفتة": "مثل: عسل خفيف، زيادة قشطة",
+            "المعصوب": "مثل: بدون جبن، موز مستوي",
+            "السندوتشات": "مثل: خبز بر، بدون مايونيز",
+            "التميس": "مثل: مقمر (محمص)، سكر خفيف",
+            "المشروبات": "توصية إضافية: (مثل: بدون ثلج، سكر زيادة)"
+        };
+
+        const SODA_OPTIONS = ["بيبسي", "سفن آب", "ديو", "حمضيات", "شاني", "ميرندا برتقال"];
+
         const DB = {
             "الوجبات": [{id:1, name:"فول سادة", sizes:{s:3, m:4, l:5, local:6}}, {id:2, name:"فول مشكل", sizes:{s:4, m:5, l:6, local:7}}, {id:3, name:"فول قلابة طاوه", sizes:{s:4, m:5, l:6, local:7}}, {id:4, name:"فول طاوه بالبيض", sizes:{s:5, m:6, l:7, local:8}}, {id:5, name:"عدس سادة", sizes:{s:3, m:4, l:5, local:6}}, {id:6, name:"عدس مشكل", sizes:{s:4, m:5, l:6, local:7}}, {id:7, name:"عدس طاوه بيض", sizes:{s:5, m:6, l:7, local:8}}, {id:8, name:"فاصوليه", sizes:{s:6, m:8, l:12, local:7}}, {id:9, name:"فاصوليه بالبيض", sizes:{s:7, m:8, l:13, local:8}}, {id:10, name:"فاصوليه بالتونة", sizes:{s:10, m:12, l:13, local:11}}, {id:11, name:"بازليا", sizes:{s:6, m:7, l:12, local:7}}, {id:12, name:"بازليا تونة", sizes:{s:10, m:11, l:12, local:11}}, {id:13, name:"تونة", sizes:{s:10, m:11, l:12, local:10}}, {id:14, name:"شكشوكة", sizes:{s:6, m:7, l:8, local:7}}, {id:15, name:"شكشوكة جبن", sizes:{s:8, m:9, l:10, local:9}}, {id:16, name:"شكشوكة افغاني", sizes:{s:7, m:8, l:10, local:8}}, {id:17, name:"بيض مقلي", sizes:{s:6, m:8, l:9, local:7}}, {id:18, name:"بيض عيون", sizes:{s:6, m:8, l:9, local:7}}, {id:19, name:"لحسة", sizes:{s:9, m:10, l:12, local:10}}, {id:20, name:"شكشوكة عدني", sizes:{s:7, m:8, l:10, local:8}}, {id:21, name:"فلافل 4 حبة", price:1}, {id:22, name:"كمونية", sizes:{s:10, m:12, l:15, local:11}}],
             "المطبق": [{id:23, name:"مطبق خضار", price:5}, {id:24, name:"مطبق مالح", price:5}, {id:25, name:"مطبق موز", price:5}, {id:26, name:"مطبق حلو جبن", price:5}, {id:27, name:"مشكل حلو", price:10}, {id:28, name:"مشكل خضار", price:8}, {id:29, name:"تونة", price:8}, {id:30, name:"جبنة سائل", price:6}, {id:31, name:"جبنة شيدر", price:6}, {id:32, name:"جبنتين", price:8}, {id:33, name:"نوتيلا", price:7}],
@@ -126,13 +139,9 @@
             renderTabs(); renderItems(); updateCartDisplay(); if(isNeighbor) setNeighborUI();
             window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
             
-            // التعامل مع زر الرجوع
             window.addEventListener('popstate', (e) => {
                 const modal = document.getElementById('mainModal');
-                if (modal.style.display === 'flex') {
-                    // إذا المودال مفتوح، أغلقه ولا تخرج من الصفحة
-                    modal.style.display = 'none';
-                }
+                if (modal.style.display === 'flex') { modal.style.display = 'none'; }
             });
         };
 
@@ -187,12 +196,15 @@
         function updateQty(id, delta, name, price, size = 'default') {
             const key = `${id}-${size}`; const idx = cart.findIndex(i => i.key === key);
             if (idx > -1) { cart[idx].qty += delta; if (cart[idx].qty <= 0) cart.splice(idx, 1); }
-            else if (delta > 0) { cart.push({ id, key, name: size !== 'default' ? `${name} (${getSizeName(size)})` : name, price, qty: 1, size, note: '' }); }
-            updateCartDisplay(); 
-            if(document.getElementById('mainModal').style.display === 'flex' && document.getElementById('cartRefCheck')) { 
-                // تحديث محتوى السلة المفتوحة بدون إضافة حالة جديدة للتاريخ
-                renderCartInModal(); 
+            else if (delta > 0) { 
+                let catOfItem = Object.keys(DB).find(c => DB[c].some(it => it.id === id));
+                cart.push({ 
+                    id, key, name: size !== 'default' ? `${name} (${getSizeName(size)})` : name, 
+                    price, qty: 1, size, note: '', category: catOfItem, sodaType: '' 
+                }); 
             }
+            updateCartDisplay(); 
+            if(document.getElementById('mainModal').style.display === 'flex' && document.getElementById('cartRefCheck')) { renderCartInModal(); }
             renderItems();
         }
 
@@ -209,7 +221,6 @@
         function openModalLogic(content) {
             document.getElementById('modalContent').innerHTML = content;
             document.getElementById('mainModal').style.display = 'flex';
-            // إضافة حالة للتاريخ ليتمكن زر الرجوع من الإغلاق
             window.history.pushState({modalOpen: true}, '');
         }
 
@@ -217,10 +228,7 @@
             const modal = document.getElementById('mainModal');
             if (modal.style.display === 'flex') {
                 modal.style.display = 'none';
-                // إذا تم الإغلاق يدوياً، نرجع بالتاريخ خطوة
-                if(window.history.state && window.history.state.modalOpen) {
-                    window.history.back();
-                }
+                if(window.history.state && window.history.state.modalOpen) { window.history.back(); }
             }
         }
 
@@ -236,29 +244,44 @@
                 <div id="cartRefCheck">
                     <div class="flex justify-between items-center mb-6"><h2 class="text-2xl font-black">مراجعة طلبي</h2><button onclick="saveAsFavorite()" class="bg-red-50 text-red-600 px-4 py-2 rounded-2xl font-bold text-xs">❤️ مفضل</button></div>
                     <div class="space-y-4 mb-8">
-                        ${cart.map((i, index) => `
-                        <div class="bg-slate-50 p-4 rounded-3xl border border-slate-100">
-                            <div class="flex justify-between items-center mb-2">
-                                <div>
-                                    <h4 class="font-black">${i.name}</h4>
-                                    <p class="text-xs text-blue-600 font-bold">${i.price * i.qty}﷼</p>
+                        ${cart.map((i, index) => {
+                            const placeholder = CATEGORY_NOTES[i.category] || "إضافة ملاحظة...";
+                            const isSoda = i.name.includes("مشروب غازي");
+                            return `
+                            <div class="bg-slate-50 p-4 rounded-3xl border border-slate-100">
+                                <div class="flex justify-between items-center mb-2">
+                                    <div>
+                                        <h4 class="font-black">${i.name}</h4>
+                                        <p class="text-xs text-blue-600 font-bold">${i.price * i.qty}﷼</p>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <button onclick="updateQty(${i.id}, -1, '', 0, '${i.size}')" class="w-9 h-9 bg-white text-red-500 rounded-xl shadow-sm font-black">-</button>
+                                        <span class="font-black">${i.qty}</span>
+                                        <button onclick="updateQty(${i.id}, 1, '', 0, '${i.size}')" class="w-9 h-9 bg-blue-700 text-white rounded-xl shadow-sm font-black">+</button>
+                                    </div>
                                 </div>
-                                <div class="flex items-center gap-3">
-                                    <button onclick="updateQty(${i.id}, -1, '', 0, '${i.size}')" class="w-9 h-9 bg-white text-red-500 rounded-xl shadow-sm font-black">-</button>
-                                    <span class="font-black">${i.qty}</span>
-                                    <button onclick="updateQty(${i.id}, 1, '', 0, '${i.size}')" class="w-9 h-9 bg-blue-700 text-white rounded-xl shadow-sm font-black">+</button>
+                                <div class="mt-3 space-y-2">
+                                    ${isSoda ? `
+                                    <div class="bg-blue-100/50 p-2 rounded-xl">
+                                        <label class="text-[10px] font-bold text-blue-800 block mb-1">اختر نوع المشروب:</label>
+                                        <select onchange="saveSodaType(${index}, this.value)" class="w-full p-2 rounded-lg bg-white border border-blue-200 text-sm font-bold outline-none">
+                                            <option value="">-- النوع --</option>
+                                            ${SODA_OPTIONS.map(opt => `<option value="${opt}" ${i.sodaType === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+                                        </select>
+                                    </div>` : ''}
+                                    
+                                    <button onclick="toggleNoteInput(${index})" class="text-xs font-bold text-slate-500 flex items-center gap-1">
+                                        <i class="fa-solid fa-pen-to-square"></i> ${i.note ? 'تعديل التوصية' : 'إضافة توصية خاصة'}
+                                    </button>
+                                    <div id="noteBox-${index}" class="${i.note ? 'block' : 'hidden'}">
+                                        <input type="text" value="${i.note}" onchange="saveNote(${index}, this.value)" 
+                                            placeholder='(${placeholder})' 
+                                            class="w-full p-3 rounded-xl bg-white border border-slate-200 text-sm outline-none focus:border-blue-400 font-bold">
+                                    </div>
+                                    ${i.note ? `<div class="note-badge">توصية: ${i.note}</div>` : ''}
                                 </div>
-                            </div>
-                            <div class="mt-2">
-                                <button onclick="toggleNoteInput(${index})" class="text-xs font-bold text-slate-500 flex items-center gap-1">
-                                    <i class="fa-solid fa-pen-to-square"></i> ${i.note ? 'تعديل الملاحظة' : 'إضافة ملاحظة أو توصية'}
-                                </button>
-                                <div id="noteBox-${index}" class="${i.note ? 'block' : 'hidden'} mt-2">
-                                    <input type="text" value="${i.note}" onchange="saveNote(${index}, this.value)" placeholder='(مثل: "بدون بصل" أو "الخبز محمص")' class="w-full p-3 rounded-xl bg-white border border-slate-200 text-sm outline-none focus:border-blue-400 font-bold">
-                                </div>
-                                ${i.note ? `<div class="note-badge mt-1">توصية: ${i.note}</div>` : ''}
-                            </div>
-                        </div>`).join('')}
+                            </div>`;
+                        }).join('')}
                     </div>
                     <div class="bg-blue-50/50 p-6 rounded-[35px] space-y-4 mb-6">
                         ${isNeighbor ? `
@@ -274,20 +297,22 @@
                 </div>`;
         }
 
-        function toggleNoteInput(index) {
-            const box = document.getElementById(`noteBox-${index}`);
-            box.classList.toggle('hidden');
-        }
-
-        function saveNote(index, value) {
-            cart[index].note = value.trim();
-            renderCartInModal(); 
-        }
+        function saveSodaType(index, value) { cart[index].sodaType = value; }
+        function toggleNoteInput(index) { document.getElementById(`noteBox-${index}`).classList.toggle('hidden'); }
+        function saveNote(index, value) { cart[index].note = value.trim(); renderCartInModal(); }
 
         function confirmAndSend() {
             const payMethod = document.getElementById('payWay').value;
             const orderType = isNeighbor ? "توصيل حي بدر 🏠" : document.getElementById('oType').value;
             
+            // تحقق من اختيار نوع المشروب الغازي
+            for (let i of cart) {
+                if (i.name.includes("مشروب غازي") && !i.sodaType) {
+                    showToast("يرجى اختيار نوع المشروب الغازي 🥤");
+                    return;
+                }
+            }
+
             if(isNeighbor){
                 const nameInp = document.getElementById('custName');
                 const locInp = document.getElementById('custLoc');
@@ -299,7 +324,6 @@
                 }
             }
 
-            const isFirstOrder = !localStorage.getItem('hasOrderedBefore');
             saveToHistory(orderType, payMethod);
             const logs = JSON.parse(localStorage.getItem('m_logs'));
             const lastLog = logs[0];
@@ -309,24 +333,20 @@
             msg += `--------------------------%0A`;
             
             cart.forEach(i => {
-                msg += `• ${i.name} [${i.qty}] = ${i.price * i.qty}﷼%0A`;
+                let itemName = i.sodaType ? `${i.name} (${i.sodaType})` : i.name;
+                msg += `• ${itemName} [${i.qty}] = ${i.price * i.qty}﷼%0A`;
                 if(i.note) msg += `   *ملاحظة:* _${i.note}_%0A`;
             });
             
             msg += `--------------------------%0A💰 *الإجمالي: ${cart.reduce((s,i)=>s+(i.price*i.qty),0)}﷼*`;
             
-            if(isFirstOrder && isNeighbor) {
-                msg += `%0A%0A📍 *ملاحظة: بما أن هذا طلبي الأول، سأرسل لكم موقعي الحالي الآن*`;
-                localStorage.setItem('hasOrderedBefore', 'true');
-            }
-
             window.location.href = `https://wa.me/966530195433?text=${msg}`;
             cart = []; updateCartDisplay(); closeModal(); renderItems();
         }
 
         function saveToHistory(type, payment) {
             let logs = JSON.parse(localStorage.getItem('m_logs') || '[]');
-            logs.unshift({ id: Math.floor(100000 + Math.random() * 900000), date: new Date().toLocaleString('ar-SA'), items: [...cart], total: cart.reduce((s,i)=>s+(i.price*i.qty),0), type, payment });
+            logs.unshift({ id: Math.floor(100000 + Math.random() * 900000), date: new Date().toLocaleString('ar-SA'), items: JSON.parse(JSON.stringify(cart)), total: cart.reduce((s,i)=>s+(i.price*i.qty),0), type, payment });
             localStorage.setItem('m_logs', JSON.stringify(logs.slice(0, 30)));
         }
 
@@ -342,7 +362,7 @@
                     </div>
                     ${log.items.map(i => `
                         <div class="mb-2">
-                            <div class="flex justify-between text-sm font-bold"><span>${i.name} × ${i.qty}</span><span>${i.price * i.qty}﷼</span></div>
+                            <div class="flex justify-between text-sm font-bold"><span>${i.sodaType?`${i.name} (${i.sodaType})`:i.name} × ${i.qty}</span><span>${i.price * i.qty}﷼</span></div>
                             ${i.note ? `<p class="text-[10px] text-slate-500 font-bold pr-2">ملاحظة: ${i.note}</p>` : ''}
                         </div>`).join('')}
                     <div class="border-t border-dashed pt-4 flex justify-between font-black text-xl"><span>الإجمالي</span><span>${log.total}﷼</span></div>
