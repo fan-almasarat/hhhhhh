@@ -9,6 +9,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="فوال مروه">
     <link rel="apple-touch-icon" href="icon.png">
     <meta name="theme-color" content="#1e40af">
 
@@ -71,8 +72,8 @@
     </div>
 
     <nav class="fixed bottom-0 left-0 right-0 h-20 bg-white/95 backdrop-blur-md flex justify-around items-center z-[1100] border-t border-slate-100 px-6">
-        <a href="https://maps.app.goo.gl/JK4dXTqpoXdHsosm9" target="_blank" class="flex flex-col items-center text-slate-400"><i class="fa-solid fa-map-location-dot text-xl"></i><span class="text-[9px] font-black">موقعنا</span></a>
-        <button onclick="handleInstallClick()" class="w-16 h-16 bg-blue-700 text-white rounded-full -mt-10 border-[5px] border-white shadow-2xl flex items-center justify-center active:scale-90 transition-all"><i class="fa-solid fa-cloud-arrow-down text-xl"></i></button>
+        <a href="https://maps.google.com" target="_blank" class="flex flex-col items-center text-slate-400"><i class="fa-solid fa-map-location-dot text-xl"></i><span class="text-[9px] font-black">موقعنا</span></a>
+        <button id="installBtn" onclick="handleInstallClick()" class="w-16 h-16 bg-blue-700 text-white rounded-full -mt-10 border-[5px] border-white shadow-2xl flex items-center justify-center active:scale-90 transition-all"><i class="fa-solid fa-cloud-arrow-down text-xl"></i></button>
         <a href="tel:0530195433" class="flex flex-col items-center text-slate-400"><i class="fa-solid fa-headset text-xl"></i><span class="text-[9px] font-black">اتصال</span></a>
     </nav>
 
@@ -147,8 +148,22 @@
         let activeItemId = null;
         let deferredPrompt;
 
+        // دعم زر الرجوع للهاتف
+        window.addEventListener('popstate', function(event) {
+            if (document.getElementById('mainModal').style.display === 'flex') {
+                closeModal(true);
+            }
+        });
+
         window.onload = () => {
             renderTabs(); renderItems(); updateCartDisplay(); if(isNeighbor) setNeighborUI();
+            
+            // تهيئة تثبيت التطبيق
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+            });
+
             if(!localStorage.getItem('welcome_v7')) {
                 setTimeout(() => {
                     openModalLogic(`
@@ -171,27 +186,32 @@
                 openModalLogic(`
                     <div class="text-center py-6">
                         <div class="w-20 h-20 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 text-4xl"><i class="fa-brands fa-apple"></i></div>
-                        <h2 class="text-2xl font-black mb-6 text-blue-900">تثبيت على iPhone</h2>
-                        <div class="space-y-4 text-right bg-slate-50 p-6 rounded-[35px]">
+                        <h2 class="text-2xl font-black mb-6 text-blue-900 font-bold">تثبيت على iPhone</h2>
+                        <div class="space-y-4 text-right bg-slate-50 p-6 rounded-[35px] border border-blue-100">
                             <div class="flex items-center gap-4">
                                 <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm text-blue-600"><i class="fa-solid fa-arrow-up-from-bracket"></i></div>
-                                <p class="font-bold text-sm">1. اضغط زر "مشاركة" بالأسفل</p>
+                                <p class="font-bold text-sm text-slate-700">1. اضغط على زر "مشاركة" في متصفح سفاري</p>
                             </div>
                             <div class="flex items-center gap-4">
                                 <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm text-blue-600"><i class="fa-solid fa-square-plus"></i></div>
-                                <p class="font-bold text-sm">2. اختر "إضافة إلى الصفحة الرئيسية"</p>
+                                <p class="font-bold text-sm text-slate-700">2. اختر "إضافة إلى الصفحة الرئيسية" من القائمة</p>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm text-blue-600"><i class="fa-solid fa-check"></i></div>
+                                <p class="font-bold text-sm text-slate-700">3. اضغط "إضافة" في الزاوية العلوية</p>
                             </div>
                         </div>
-                        <button onclick="closeModal()" class="w-full mt-8 py-5 bg-blue-700 text-white rounded-[25px] font-black">فهمت</button>
+                        <button onclick="closeModal()" class="w-full mt-8 py-5 bg-blue-700 text-white rounded-[25px] font-black shadow-lg">فهمت، شكراً</button>
                     </div>
                 `);
             } else if (deferredPrompt) {
                 deferredPrompt.prompt();
                 deferredPrompt.userChoice.then((choice) => { if (choice.outcome === 'accepted') showToast("جاري التثبيت... ✅"); deferredPrompt = null; });
-            } else { showToast("استخدم قائمة المتصفح للتثبيت ✅"); }
+            } else { 
+                showToast("استخدم قائمة المتصفح > التثبيت على الهاتف ✅"); 
+            }
         }
 
-        // دالة المودال الثابتة مع منع الخروج المفاجئ
         function openModalLogic(content, backFn = null) {
             const modal = document.getElementById('mainModal');
             const navBtn = document.getElementById('modalNavBtn');
@@ -202,10 +222,21 @@
                 e.preventDefault();
                 if (backFn) backFn(); else closeModal();
             };
+            
             modal.style.display = 'flex';
+            // إضافة حالة للتاريخ لدعم زر الرجوع
+            window.history.pushState({modalOpen: true}, '');
         }
 
-        function closeModal() { document.getElementById('mainModal').style.display = 'none'; }
+        function closeModal(isPopState = false) { 
+            document.getElementById('mainModal').style.display = 'none'; 
+            if (!isPopState) {
+                // إذا أُغلق يدوياً وليس بزر الرجوع، نعود خطوة للخلف في التاريخ
+                if (window.history.state && window.history.state.modalOpen) {
+                    window.history.back();
+                }
+            }
+        }
 
         function renderTabs() {
             const tabs = document.getElementById('categoryTabs');
@@ -329,7 +360,6 @@
             cart = []; updateCartDisplay(); closeModal(); renderItems();
         }
 
-        // المفضلات
         function showFavoriteList() {
             const favs = JSON.parse(localStorage.getItem('m_favs_v7') || '[]');
             let content = `<h2 class="text-2xl font-black mb-6 text-red-600 text-center">وجباتي المفضلة (${favs.length}/3)</h2><div class="space-y-4">`;
