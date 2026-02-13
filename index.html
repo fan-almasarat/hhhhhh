@@ -32,7 +32,9 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.3); font-weight: bold; opacity: 0; transition: 0.3s;
         }
         #customToast.show { visibility: visible; opacity: 1; }
-        #printArea { display: none; width: 80mm; padding: 10px; background: white; color: black; }
+        .error-shake { animation: shake 0.4s; border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        #printArea { display: none; }
         @media print { body * { visibility: hidden; } #printArea, #printArea * { visibility: visible; } #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; } }
     </style>
 </head>
@@ -53,7 +55,7 @@
     </header>
 
     <main class="max-w-md mx-auto p-4 space-y-5">
-        <div id="nbrBtn" onclick="openNbrModal()" class="bg-gradient-to-r from-blue-700 to-indigo-800 p-6 rounded-[35px] text-white flex justify-between items-center shadow-xl cursor-pointer">
+        <div id="nbrBtn" onclick="openNbrModal()" class="bg-gradient-to-r from-blue-700 to-indigo-800 p-6 rounded-[35px] text-white flex justify-between items-center shadow-xl cursor-pointer transform active:scale-95 transition">
             <div class="flex items-center gap-4">
                 <div class="w-14 h-14 bg-white/20 rounded-3xl flex items-center justify-center text-3xl"><i class="fa-solid fa-house-user"></i></div>
                 <div><h3 class="font-black text-xl">أهل حي بدر</h3><p id="nbrLabel" class="text-xs opacity-80">أدخل الكود للتوصيل المجاني</p></div>
@@ -64,12 +66,12 @@
     </main>
 
     <div id="floatingCart" onclick="openCartModal()" class="fixed bottom-24 left-6 right-6 bg-slate-900 text-white p-5 rounded-[30px] shadow-2xl z-[1000] hidden justify-between items-center border border-white/10 slide-up">
-        <div class="flex items-center gap-4"><div class="bg-blue-600 w-9 h-9 rounded-full flex items-center justify-center font-black">0</div><span class="font-black">مراجعة الطلبات</span></div>
+        <div class="flex items-center gap-4"><div class="bg-blue-600 w-9 h-9 rounded-full flex items-center justify-center font-black text-xs">0</div><span class="font-black">مراجعة الطلبات</span></div>
         <span id="floatingTotal" class="text-2xl font-black text-blue-400">0﷼</span>
     </div>
 
     <nav class="fixed bottom-0 left-0 right-0 h-20 bg-white/95 backdrop-blur-md flex justify-around items-center z-[1100] border-t border-slate-100 px-6">
-        <a href="https://maps.app.goo.gl/tEYAfPAv9CmiXkEX6" target="_blank" class="flex flex-col items-center text-slate-400"><i class="fa-solid fa-map-location-dot text-xl"></i><span class="text-[9px] font-black">موقعنا</span></a>
+        <a href="https://maps.app.goo.gl/YourMapLink" target="_blank" class="flex flex-col items-center text-slate-400"><i class="fa-solid fa-map-location-dot text-xl"></i><span class="text-[9px] font-black">موقعنا</span></a>
         <button onclick="handleInstallClick()" class="w-16 h-16 bg-blue-700 text-white rounded-full -mt-10 border-[5px] border-white shadow-2xl flex items-center justify-center active:scale-90 transition-all"><i class="fa-solid fa-cloud-arrow-down text-xl"></i></button>
         <a href="tel:0530195433" class="flex flex-col items-center text-slate-400"><i class="fa-solid fa-headset text-xl"></i><span class="text-[9px] font-black">اتصال</span></a>
     </nav>
@@ -143,36 +145,59 @@
         let isNeighbor = localStorage.getItem('isNbr') === 'true';
         let currentCategory = "الوجبات";
         let activeItemId = null;
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
 
         window.onload = () => {
             renderTabs(); renderItems(); updateCartDisplay(); if(isNeighbor) setNeighborUI();
-            if(!localStorage.getItem('welcome_v3')) {
+            if(!localStorage.getItem('welcome_v4')) {
                 setTimeout(() => {
                     openModalLogic(`
                         <div class="text-center py-6">
                             <div class="w-24 h-24 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl">🥘</div>
                             <h2 class="text-2xl font-black mb-4 text-blue-900">أهلاً بكم في فوال مروه</h2>
-                            <p class="text-slate-600 font-bold mb-6 leading-relaxed">
-                                تفضلوا بزيارتنا للاستمتاع بالطلب <span class="text-blue-700">داخل المطعم</span>، أو اطلبوا عبر التطبيق.<br><br>
-                                🚚 <span class="text-emerald-600">توصيل مجاني خاص لأهل حي بدر!</span><br>
-                                تواصلوا معنا للحصول على الكود الخاص بكم.
-                            </p>
-                            <button onclick="closeModal(); localStorage.setItem('welcome_v3','true')" class="w-full bg-blue-700 text-white py-5 rounded-3xl font-black shadow-xl">ابدأ الاستكشاف</button>
+                            <p class="text-slate-600 font-bold mb-6 leading-relaxed">تفضلوا بزيارتنا للاستمتاع بالطلب <span class="text-blue-700">داخل المطعم</span>، أو اطلبوا عبر التطبيق.<br><br>🚚 <span class="text-emerald-600">توصيل مجاني خاص لأهل حي بدر!</span></p>
+                            <button onclick="closeModal(); localStorage.setItem('welcome_v4','true')" class="w-full bg-blue-700 text-white py-5 rounded-3xl font-black shadow-xl">ابدأ الاستكشاف</button>
                         </div>
                     `);
                 }, 800);
             }
         };
 
-        function showToast(text) { const toast = document.getElementById("customToast"); toast.innerText = text; toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 2000); }
+        function showToast(text) { const toast = document.getElementById("customToast"); toast.innerText = text; toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 2500); }
+
+        function handleInstallClick() {
+            const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            if (isIos) {
+                openModalLogic(`
+                    <div class="text-center py-6">
+                        <div class="w-20 h-20 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 text-4xl"><i class="fa-brands fa-apple"></i></div>
+                        <h2 class="text-2xl font-black mb-6 text-blue-900">تثبيت على iPhone</h2>
+                        <div class="space-y-4 text-right bg-slate-50 p-6 rounded-[35px]">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm text-blue-600"><i class="fa-solid fa-arrow-up-from-bracket"></i></div>
+                                <p class="font-bold text-sm">1. اضغط زر "مشاركة" بالأسفل</p>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm text-blue-600"><i class="fa-solid fa-square-plus"></i></div>
+                                <p class="font-bold text-sm">2. اختر "إضافة إلى الصفحة الرئيسية"</p>
+                            </div>
+                        </div>
+                        <button onclick="closeModal()" class="w-full mt-8 py-5 bg-blue-700 text-white rounded-[25px] font-black">فهمت</button>
+                    </div>
+                `);
+            } else if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choice) => { if (choice.outcome === 'accepted') showToast("جاري التثبيت... ✅"); deferredPrompt = null; });
+            } else { showToast("استخدم قائمة المتصفح للتثبيت ✅"); }
+        }
 
         function openModalLogic(content) {
             document.getElementById('modalContent').innerHTML = content;
             document.getElementById('mainModal').style.display = 'flex';
-            history.pushState({modal:true}, "");
         }
         function closeModal() { document.getElementById('mainModal').style.display = 'none'; }
-        window.onpopstate = () => closeModal();
 
         function renderTabs() {
             const tabs = document.getElementById('categoryTabs');
@@ -189,19 +214,19 @@
                         <div class="text-lg font-black text-blue-900">${item.name}</div>
                         ${item.price ? `<div class="flex items-center gap-3 bg-slate-50 p-2 rounded-2xl">
                                 <button onclick="event.stopPropagation(); updateQty(${item.id}, -1, '${item.name}', ${item.price})" class="w-10 h-10 bg-white text-red-500 rounded-xl shadow-md font-black">-</button>
-                                <span class="font-black">${getQty(item.id, 'default')}</span>
+                                <span class="font-black text-sm">${getQty(item.id, 'default')}</span>
                                 <button onclick="event.stopPropagation(); updateQty(${item.id}, 1, '${item.name}', ${item.price})" class="w-10 h-10 bg-blue-700 text-white rounded-xl shadow-md font-black">+</button>
-                                <div class="text-blue-700 font-black mr-2">${item.price}﷼</div>
+                                <div class="text-blue-700 font-black mr-2 text-sm">${item.price}﷼</div>
                             </div>` : `<i class="fa-solid fa-plus-circle text-blue-200 text-2xl"></i>`}
                     </div>
                     ${item.sizes ? `<div class="sizes-panel grid grid-cols-2 gap-3" onclick="event.stopPropagation()">
                             ${Object.entries(item.sizes).filter(([s]) => isNeighbor ? s !== 'local' : true).map(([s, p]) => `
                                 <div class="bg-blue-50/50 p-3 rounded-2xl flex justify-between items-center border border-blue-100">
-                                    <div class="text-[11px] font-black text-blue-900">${getSizeName(s)}<br>${p}﷼</div>
+                                    <div class="text-[10px] font-black text-blue-900">${getSizeName(s)}<br>${p}﷼</div>
                                     <div class="flex items-center gap-2">
-                                        <button onclick="updateQty(${item.id}, -1, '${item.name}', ${p}, '${s}')" class="w-7 h-7 bg-white text-red-500 rounded-lg shadow-sm">-</button>
-                                        <span class="font-bold">${getQty(item.id, s)}</span>
-                                        <button onclick="updateQty(${item.id}, 1, '${item.name}', ${p}, '${s}')" class="w-7 h-7 bg-blue-700 text-white rounded-lg shadow-sm">+</button>
+                                        <button onclick="updateQty(${item.id}, -1, '${item.name}', ${p}, '${s}')" class="w-7 h-7 bg-white text-red-500 rounded-lg shadow-sm font-black">-</button>
+                                        <span class="font-bold text-xs">${getQty(item.id, s)}</span>
+                                        <button onclick="updateQty(${item.id}, 1, '${item.name}', ${p}, '${s}')" class="w-7 h-7 bg-blue-700 text-white rounded-lg shadow-sm font-black">+</button>
                                     </div>
                                 </div>`).join('')}
                         </div>` : ''}
@@ -233,6 +258,8 @@
 
         function renderCartInModal() {
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+            const sName = localStorage.getItem('u_name') || '';
+            const sLoc = localStorage.getItem('u_loc') || '';
             document.getElementById('modalContent').innerHTML = `
                 <div id="cartRefCheck">
                     <h2 class="text-2xl font-black mb-6">مراجعة طلبي</h2>
@@ -247,13 +274,13 @@
                                         <button onclick="updateQty(${i.id}, 1, '', 0, '${i.size}')" class="w-8 h-8 bg-blue-700 text-white rounded-xl shadow-sm font-black">+</button>
                                     </div>
                                 </div>
-                                <input type="text" maxlength="30" oninput="cart[${index}].note = this.value" placeholder="توصية" value="${i.note}" class="w-full p-3 rounded-xl bg-white border border-slate-200 text-xs font-bold outline-none focus:border-blue-400">
+                                <input type="text" oninput="cart[${index}].note = this.value" placeholder="توصية" value="${i.note}" class="w-full p-3 rounded-xl bg-white border border-slate-200 text-xs font-bold outline-none">
                             </div>`).join('')}
                     </div>
                     <div class="bg-blue-50/50 p-6 rounded-[35px] space-y-4 mb-6">
                         ${isNeighbor ? `
-                        <input type="text" id="custName" placeholder="اكتب اسمك" value="${localStorage.getItem('u_name')||''}" oninput="localStorage.setItem('u_name', this.value)" class="w-full p-4 rounded-2xl bg-white shadow-sm outline-none font-bold">
-                        <input type="text" id="custLoc" placeholder="وصف المنزل" value="${localStorage.getItem('u_loc')||''}" oninput="localStorage.setItem('u_loc', this.value)" class="w-full p-4 rounded-2xl bg-white shadow-sm outline-none font-bold">` : 
+                        <input type="text" id="custName" placeholder="اكتب اسمك" value="${sName}" class="w-full p-4 rounded-2xl bg-white shadow-sm outline-none font-bold transition-all border-2 border-transparent">
+                        <input type="text" id="custLoc" placeholder="وصف المنزل" value="${sLoc}" class="w-full p-4 rounded-2xl bg-white shadow-sm outline-none font-bold transition-all border-2 border-transparent">` : 
                         `<select id="oType" class="w-full p-4 rounded-2xl bg-white shadow-sm outline-none font-bold"><option value="سفري 🥡">سفري 🥡</option><option value="محلي 🍽️">محلي 🍽️</option></select>`}
                         <select id="payWay" class="w-full p-4 rounded-2xl bg-white shadow-sm outline-none font-bold"><option value="كاش 💵">كاش 💵</option><option value="شبكة 💳">شبكة 💳</option></select>
                     </div>
@@ -263,72 +290,16 @@
                 </div>`;
         }
 
-        // --- المفضلات الجاهزة ---
-        function showNamingOptions() {
-            if(cart.length === 0) return;
-            openModalLogic(`
-                <h2 class="text-2xl font-black mb-6 text-center">اختر اسماً للحفظ</h2>
-                <div class="grid grid-cols-1 gap-3">
-                    <button onclick="saveFav('فطوري ❤️')" class="py-5 bg-blue-50 text-blue-700 rounded-3xl font-black">فطوري ❤️</button>
-                    <button onclick="saveFav('فطوري المتأخر 🥐')" class="py-5 bg-amber-50 text-amber-700 rounded-3xl font-black">فطوري المتأخر 🥐</button>
-                    <button onclick="saveFav('عشائي ✨')" class="py-5 bg-indigo-50 text-indigo-700 rounded-3xl font-black">عشائي ✨</button>
-                </div>
-            `);
-        }
-
-        function saveFav(name) {
-            let favs = JSON.parse(localStorage.getItem('m_favs_v3') || '[]');
-            favs.push({ name, items: JSON.parse(JSON.stringify(cart)), total: cart.reduce((s,i)=>s+(i.price*i.qty),0) });
-            localStorage.setItem('m_favs_v3', JSON.stringify(favs));
-            showToast(`تم الحفظ بنجاح ✅`);
-            openCartModal();
-        }
-
-        function showFavoriteList() {
-            const favs = JSON.parse(localStorage.getItem('m_favs_v3') || '[]');
-            let content = `<h2 class="text-2xl font-black mb-6 text-red-600 text-center">وجباتي المفضلة</h2><div class="space-y-4">`;
-            favs.forEach((f, i) => { 
-                content += `
-                <div onclick="previewFav(${i})" class="p-5 bg-red-50 rounded-[30px] border border-red-100 flex justify-between items-center shadow-sm">
-                    <span class="font-black text-slate-800">${f.name}</span>
-                    <div class="flex items-center gap-3">
-                        <span class="font-bold text-sm text-slate-400">${f.total}﷼</span>
-                        <button onclick="event.stopPropagation(); deleteFav(${i})" class="text-slate-300"><i class="fa-solid fa-trash text-xs"></i></button>
-                    </div>
-                </div>`; 
-            });
-            openModalLogic(content + (favs.length ? '' : '<p class="text-center py-10 opacity-30 font-bold">المفضلات فارغة</p>') + '</div>');
-        }
-
-        function previewFav(index) {
-            const f = JSON.parse(localStorage.getItem('m_favs_v3'))[index];
-            openModalLogic(`
-                <h2 class="text-2xl font-black mb-6 text-red-600 text-center">${f.name}</h2>
-                <div class="bg-white p-6 rounded-[35px] border border-slate-100 mb-6 shadow-inner">
-                    ${f.items.map(it => `<div class="flex justify-between font-bold mb-2 text-sm"><span>• ${it.name} [${it.qty}]</span><span>${it.price * it.qty}﷼</span></div>`).join('')}
-                    <div class="border-t mt-4 pt-4 flex justify-between font-black text-xl text-red-600"><span>الإجمالي:</span><span>${f.total}﷼</span></div>
-                </div>
-                <button onclick="applyFav(${index})" class="w-full bg-red-600 text-white py-5 rounded-3xl font-black text-lg shadow-lg">استعادة للسلة 🛒</button>
-            `);
-        }
-
-        function applyFav(index) {
-            const f = JSON.parse(localStorage.getItem('m_favs_v3'))[index];
-            cart = JSON.parse(JSON.stringify(f.items));
-            updateCartDisplay(); renderItems(); closeModal(); showToast("تم الاستعادة ✅");
-        }
-
-        function deleteFav(i) {
-            let favs = JSON.parse(localStorage.getItem('m_favs_v3'));
-            favs.splice(i, 1);
-            localStorage.setItem('m_favs_v3', JSON.stringify(favs));
-            showFavoriteList();
-        }
-
-        // --- الواتساب والسجل ---
         function confirmAndSend() {
-            if (isNeighbor && (!document.getElementById('custName').value.trim() || !document.getElementById('custLoc').value.trim())) {
-                showToast("يرجى إكمال البيانات ⚠️"); return;
+            if (isNeighbor) {
+                const nInput = document.getElementById('custName');
+                const lInput = document.getElementById('custLoc');
+                let err = false;
+                if(!nInput.value.trim()){ nInput.classList.add('error-shake'); err=true; } else nInput.classList.remove('error-shake');
+                if(!lInput.value.trim()){ lInput.classList.add('error-shake'); err=true; } else lInput.classList.remove('error-shake');
+                if(err){ showToast("يرجى ملء البيانات المطلوبة ⚠️"); return; }
+                localStorage.setItem('u_name', nInput.value.trim());
+                localStorage.setItem('u_loc', lInput.value.trim());
             }
             const orderID = Math.floor(100000 + Math.random() * 900000);
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
@@ -336,12 +307,12 @@
             const orderType = isNeighbor ? "توصيل حي بدر 🏠" : document.getElementById('oType').value;
             const date = new Date().toLocaleString('ar-SA');
             
-            let logs = JSON.parse(localStorage.getItem('m_logs_v3') || '[]');
+            let logs = JSON.parse(localStorage.getItem('m_logs_v4') || '[]');
             logs.unshift({ id: orderID, date, items: [...cart], total, type: orderType, payment: payMethod });
-            localStorage.setItem('m_logs_v3', JSON.stringify(logs.slice(0, 50)));
+            localStorage.setItem('m_logs_v4', JSON.stringify(logs.slice(0, 50)));
 
             let msg = `*طلب جديد - فوال مروه*%0A🆔 *ID:* ${orderID}%0A📢 *النوع:* ${orderType}%0A💰 *الدفع:* ${payMethod}%0A`;
-            if(isNeighbor) msg += `👤 *العميل:* ${document.getElementById('custName').value}%0A🏠 *المنزل:* ${document.getElementById('custLoc').value}%0A`;
+            if(isNeighbor) msg += `👤 *العميل:* ${localStorage.getItem('u_name')}%0A🏠 *المنزل:* ${localStorage.getItem('u_loc')}%0A`;
             msg += `--------------------------%0A`;
             cart.forEach(i => {
                 msg += `• ${i.name} [${i.qty}] = ${i.price * i.qty}﷼%0A`;
@@ -352,27 +323,76 @@
             cart = []; updateCartDisplay(); closeModal(); renderItems();
         }
 
+        function showFavoriteList() {
+            const favs = JSON.parse(localStorage.getItem('m_favs_v4') || '[]');
+            let content = `<h2 class="text-2xl font-black mb-6 text-red-600 text-center">وجباتي المفضلة</h2><div class="space-y-4">`;
+            favs.forEach((f, i) => { 
+                content += `<div onclick="previewFav(${i})" class="p-5 bg-red-50 rounded-[30px] border flex justify-between items-center shadow-sm">
+                    <span class="font-black">${f.name}</span>
+                    <div class="flex items-center gap-3"><span class="font-bold text-sm text-slate-400">${f.total}﷼</span><button onclick="event.stopPropagation(); deleteFav(${i})" class="text-slate-300"><i class="fa-solid fa-trash text-xs"></i></button></div>
+                </div>`; 
+            });
+            openModalLogic(content + (favs.length ? '' : '<p class="text-center py-10 opacity-30 font-bold">المفضلات فارغة</p>') + '</div>');
+        }
+
+        function previewFav(index) {
+            const f = JSON.parse(localStorage.getItem('m_favs_v4'))[index];
+            openModalLogic(`
+                <h2 class="text-2xl font-black mb-6 text-red-600 text-center">${f.name}</h2>
+                <div class="bg-white p-6 rounded-[35px] border mb-6">
+                    ${f.items.map(it => `<div class="flex justify-between font-bold mb-2 text-sm"><span>• ${it.name} [${it.qty}]</span><span>${it.price * it.qty}﷼</span></div>`).join('')}
+                    <div class="border-t mt-4 pt-4 flex justify-between font-black text-xl text-red-600"><span>الإجمالي:</span><span>${f.total}﷼</span></div>
+                </div>
+                <button onclick="applyFav(${index})" class="w-full bg-red-600 text-white py-5 rounded-3xl font-black text-lg">استعادة للسلة 🛒</button>
+            `);
+        }
+
+        function applyFav(index) {
+            const f = JSON.parse(localStorage.getItem('m_favs_v4'))[index];
+            cart = JSON.parse(JSON.stringify(f.items));
+            updateCartDisplay(); renderItems(); closeModal(); showToast("تم الاستعادة ✅");
+        }
+
+        function saveFav(name) {
+            let favs = JSON.parse(localStorage.getItem('m_favs_v4') || '[]');
+            favs.push({ name, items: JSON.parse(JSON.stringify(cart)), total: cart.reduce((s,i)=>s+(i.price*i.qty),0) });
+            localStorage.setItem('m_favs_v4', JSON.stringify(favs));
+            showToast(`تم الحفظ بنجاح ✅`);
+            openCartModal();
+        }
+
+        function showNamingOptions() {
+            if(cart.length === 0) return;
+            openModalLogic(`<h2 class="text-2xl font-black mb-6 text-center">اختر اسماً للحفظ</h2><div class="grid grid-cols-1 gap-3">
+                <button onclick="saveFav('فطوري ❤️')" class="py-5 bg-blue-50 text-blue-700 rounded-3xl font-black">فطوري ❤️</button>
+                <button onclick="saveFav('فطوري المتأخر 🥐')" class="py-5 bg-amber-50 text-amber-700 rounded-3xl font-black">فطوري المتأخر 🥐</button>
+                <button onclick="saveFav('عشائي ✨')" class="py-5 bg-indigo-50 text-indigo-700 rounded-3xl font-black">عشائي ✨</button>
+            </div>`);
+        }
+
+        function deleteFav(i) {
+            let favs = JSON.parse(localStorage.getItem('m_favs_v4'));
+            favs.splice(i, 1);
+            localStorage.setItem('m_favs_v4', JSON.stringify(favs));
+            showFavoriteList();
+        }
+
         function openAuthModal() {
             openModalLogic(`<div class="text-center"><h2 class="text-2xl font-black mb-4">دخول السجل</h2><input type="password" id="authInput" placeholder="••••" class="w-full p-4 bg-slate-50 rounded-2xl border-2 text-center text-2xl mb-4 outline-none"><button onclick="verifyAuth()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-black">دخول</button></div>`);
         }
         function verifyAuth() { if(document.getElementById('authInput').value === "123456Aa") showHistory(); else showToast("الرمز خاطئ!"); }
 
         function showHistory() {
-            const logs = JSON.parse(localStorage.getItem('m_logs_v3') || '[]');
-            openModalLogic(`
-                <h2 class="text-2xl font-black mb-6 text-center text-blue-900">سجل المبيعات</h2>
-                <div class="space-y-4">
-                    ${logs.map((l, index) => `
-                        <div onclick="showLogDetail(${index})" class="p-5 bg-slate-50 rounded-[30px] border shadow-sm flex justify-between items-center cursor-pointer">
-                            <div><p class="text-[10px] text-slate-400 font-bold">${l.date}</p><p class="text-sm font-black text-slate-700">طلب: ${l.id}</p></div>
-                            <span class="text-blue-700 font-black">${l.total}﷼</span>
-                        </div>`).join(logs.length ? '' : '<p class="text-center py-10 opacity-30">السجل فارغ</p>')}
-                </div>
-            `);
+            const logs = JSON.parse(localStorage.getItem('m_logs_v4') || '[]');
+            openModalLogic(`<h2 class="text-2xl font-black mb-6 text-center text-blue-900">سجل المبيعات</h2><div class="space-y-4">${logs.map((l, index) => `
+                <div onclick="showLogDetail(${index})" class="p-5 bg-slate-50 rounded-[30px] border flex justify-between items-center cursor-pointer">
+                    <div><p class="text-[10px] text-slate-400 font-bold">${l.date}</p><p class="text-sm font-black text-slate-700">طلب: ${l.id}</p></div>
+                    <span class="text-blue-700 font-black">${l.total}﷼</span>
+                </div>`).join(logs.length ? '' : '<p class="text-center py-10 opacity-30 font-bold">السجل فارغ</p>')}</div>`);
         }
 
         function showLogDetail(index) {
-            const log = JSON.parse(localStorage.getItem('m_logs_v3'))[index];
+            const log = JSON.parse(localStorage.getItem('m_logs_v4'))[index];
             document.getElementById('modalContent').innerHTML = `
                 <div id="receiptCapture" class="bg-white p-6 rounded-3xl border">
                     <div class="text-center border-b-2 border-dashed pb-4 mb-4">
@@ -382,20 +402,14 @@
                         <p class="text-xs font-bold text-slate-600">${log.type} | الدفع: ${log.payment}</p>
                     </div>
                     <div class="space-y-2 mb-4">
-                        ${log.items.map(i => `
-                            <div>
-                                <div class="flex justify-between text-sm font-bold"><span>${i.name} × ${i.qty}</span><span>${i.price * i.qty}﷼</span></div>
-                                ${i.note ? `<p class="text-[10px] text-red-500 mr-2">* توصية: ${i.note}</p>` : ''}
-                            </div>
-                        `).join('')}
+                        ${log.items.map(i => `<div class="flex justify-between text-sm font-bold"><span>${i.name} × ${i.qty}</span><span>${i.price * i.qty}﷼</span></div>`).join('')}
                     </div>
                     <div class="border-t-2 border-dashed pt-4 flex justify-between font-black text-xl text-blue-900"><span>الإجمالي</span><span>${log.total}﷼</span></div>
                 </div>
                 <div class="grid grid-cols-2 gap-3 mt-6">
                     <button onclick="window.print()" class="bg-slate-800 text-white py-4 rounded-2xl font-black">طباعة</button>
-                    <button onclick="saveLogAsImage()" class="bg-blue-600 text-white py-4 rounded-2xl font-black">حفظ صورة</button>
-                </div>
-            `;
+                    <button onclick="saveLogAsImage()" class="bg-blue-600 text-white py-4 rounded-2xl font-black text-sm">حفظ صورة</button>
+                </div>`;
             document.getElementById('printArea').innerHTML = document.getElementById('receiptCapture').innerHTML;
         }
 
@@ -406,39 +420,24 @@
             });
         }
 
-        // --- تفعيل حي بدر ---
         function openNbrModal() {
-            openModalLogic(`<div class="text-center"><h2 class="text-2xl font-black mb-4">كود حي بدر</h2><input type="text" id="nbrInput" placeholder="أدخل الكود" class="w-full p-4 bg-slate-50 rounded-2xl border-2 text-center font-black mb-4 outline-none"><button onclick="verifyNbr()" class="w-full bg-blue-800 text-white py-4 rounded-2xl font-black">${isNeighbor ? 'إلغاء التفعيل' : 'تفعيل'}</button></div>`);
+            openModalLogic(`<div class="text-center"><h2 class="text-2xl font-black mb-4">كود حي بدر</h2><input type="text" id="nbrInput" placeholder="أدخل الكود" class="w-full p-4 bg-slate-50 rounded-2xl border-2 text-center font-black mb-4 outline-none"><button onclick="verifyNbr()" class="w-full bg-blue-800 text-white py-4 rounded-2xl font-black">${isNeighbor ? 'إلغاء التفعيل' : 'تفعيل الكود'}</button></div>`);
         }
 
         function verifyNbr() {
             if(document.getElementById('nbrInput').value.trim() === "حي بدر") {
                 isNeighbor = !isNeighbor; localStorage.setItem('isNbr', isNeighbor);
-                setNeighborUI(); closeModal();
-                if(isNeighbor) {
-                    setTimeout(() => {
-                        openModalLogic(`
-                            <div class="text-center py-6">
-                                <div class="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl">🏘️</div>
-                                <h2 class="text-3xl font-black text-emerald-700 mb-2">يا هلا بأهلنا!</h2>
-                                <p class="text-slate-600 font-bold mb-6">تم تفعيل التوصيل المجاني لحي بدر بنجاح ✅</p>
-                                <button onclick="closeModal()" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black shadow-lg">شكراً لكم</button>
-                            </div>
-                        `);
-                    }, 500);
-                } else { showToast("تم العودة لنظام المطعم"); renderItems(); }
+                setNeighborUI(); closeModal(); renderItems();
+                if(isNeighbor) showToast("تم تفعيل ميزات حي بدر ✅");
             } else { showToast("الكود غير صحيح!"); }
         }
 
         function setNeighborUI() {
             const btn = document.getElementById('nbrBtn');
-            btn.className = isNeighbor ? "bg-emerald-600 p-6 rounded-[35px] text-white flex justify-between items-center shadow-lg" : "bg-blue-800 p-6 rounded-[35px] text-white flex justify-between items-center shadow-lg";
+            btn.className = isNeighbor ? "bg-emerald-600 p-6 rounded-[35px] text-white flex justify-between items-center shadow-lg transform active:scale-95 transition cursor-pointer" : "bg-blue-800 p-6 rounded-[35px] text-white flex justify-between items-center shadow-lg transform active:scale-95 transition cursor-pointer";
             document.getElementById('nbrLabel').innerText = isNeighbor ? "توصيل مجاني مفعل ✅" : "أدخل الكود للتوصيل المجاني";
             document.getElementById('nbrIcon').className = isNeighbor ? "fa-solid fa-unlock-keyhole" : "fa-solid fa-lock opacity-30";
-            renderItems();
         }
-
-        function handleInstallClick() { showToast("استخدم 'إضافة للشاشة الرئيسية' من المتصفح 📱"); }
     </script>
 </body>
 </html>
