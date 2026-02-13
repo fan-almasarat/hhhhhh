@@ -15,7 +15,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
         body { font-family: 'Tajawal', sans-serif; background-color: #f8fafc; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -25,7 +24,6 @@
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .item-card.active .sizes-panel { max-height: 500px; opacity: 1; margin-top: 15px; }
         .sizes-panel { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.4s ease-in-out; }
-        .meal-title { font-size: 1.25rem; font-weight: 900; color: #1e3a8a; }
         #customToast {
             visibility: hidden; min-width: 250px; background-color: #1e293b; color: #fff;
             text-align: center; border-radius: 20px; padding: 16px; position: fixed;
@@ -33,11 +31,19 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.3); font-weight: bold; opacity: 0; transition: 0.3s;
         }
         #customToast.show { visibility: visible; opacity: 1; }
-        .input-error { border: 2.5px solid #ef4444 !important; background-color: #fef2f2 !important; animation: shake 0.4s; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+        #installBanner { display: none; animation: fadeInDown 0.5s ease; }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="pb-40">
+
+    <div id="installBanner" class="bg-blue-900 text-white p-3 px-6 flex justify-between items-center sticky top-0 z-[2000] shadow-xl border-b border-white/10">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-xl">📱</div>
+            <div class="text-[11px] font-bold">لتجربة أسرع وأفضل، ثبت التطبيق على هاتفك</div>
+        </div>
+        <button onclick="handleInstallClick(); hideInstallBanner()" class="bg-white text-blue-900 px-4 py-2 rounded-xl text-xs font-black shadow-lg">تثبيت الآن</button>
+    </div>
 
     <div id="customToast"></div>
 
@@ -82,61 +88,18 @@
     </div>
 
     <script>
+        // --- تهيئة البيانات وقواعد العمل ---
         const DB = {
             "الوجبات": [
                 {id:1, name:"فول سادة", sizes:{s:3, m:4, l:5, local:6}},
                 {id:2, name:"فول مشكل", sizes:{s:4, m:5, l:6, local:7}},
-                {id:3, name:"فول قلابة طاوه", sizes:{s:4, m:5, l:6, local:7}},
-                {id:4, name:"فول طاوه بالبيض", sizes:{s:5, m:6, l:7, local:8}},
                 {id:5, name:"عدس سادة", sizes:{s:3, m:4, l:5, local:6}},
-                {id:6, name:"عدس مشكل", sizes:{s:4, m:5, l:6, local:7}},
-                {id:7, name:"عدس طاوه بيض", sizes:{s:5, m:6, l:7, local:8}},
-                {id:8, name:"فاصوليه", sizes:{s:6, m:8, l:12, local:7}},
-                {id:9, name:"فاصوليه بالبيض", sizes:{s:7, m:8, l:13, local:8}},
-                {id:10, name:"فاصوليه بالتونة", sizes:{s:10, m:12, l:13, local:11}},
-                {id:11, name:"بازليا", sizes:{s:6, m:7, l:12, local:7}},
-                {id:12, name:"بازليا تونة", sizes:{s:10, m:11, l:12, local:11}},
-                {id:13, name:"تونة", sizes:{s:10, m:11, l:12, local:10}},
                 {id:14, name:"شكشوكة", sizes:{s:6, m:7, l:8, local:7}},
-                {id:15, name:"شكشوكة جبن", sizes:{s:8, m:9, l:10, local:9}},
-                {id:16, name:"شكشوكة افغاني", sizes:{s:7, m:8, l:10, local:8}},
-                {id:17, name:"بيض مقلي", sizes:{s:6, m:8, l:9, local:7}},
-                {id:18, name:"بيض عيون", sizes:{s:6, m:8, l:9, local:7}},
-                {id:19, name:"لحسة", sizes:{s:9, m:10, l:12, local:10}},
-                {id:20, name:"شكشوكة عدني", sizes:{s:7, m:8, l:10, local:8}},
-                {id:21, name:"فلافل 4 حبة", price:1},
-                {id:22, name:"كمونية", sizes:{s:10, m:12, l:15, local:11}}
+                {id:21, name:"فلافل 4 حبة", price:1}
             ],
-            "المطبق": [
-                {id:23, name:"مطبق خضار", price:5}, {id:24, name:"مطبق مالح", price:5}, {id:25, name:"مطبق موز", price:5},
-                {id:26, name:"مطبق حلو جبن", price:5}, {id:27, name:"مشكل حلو", price:10}, {id:28, name:"مشكل خضار", price:8},
-                {id:29, name:"تونة", price:8}, {id:30, name:"جبنة سائل", price:6}, {id:31, name:"جبنة شيدر", price:6},
-                {id:32, name:"جبنتين", price:8}, {id:33, name:"نوتيلا", price:7}
-            ],
-            "العريكة والفتة": [
-                {id:34, name:"عريكة قشطة عسل", price:12}, {id:35, name:"عريكة جبنة ديلوكس", price:14}, {id:36, name:"عريكة ملكي", price:16},
-                {id:37, name:"عريكة عرائسي", price:18}, {id:38, name:"عريكة مروة", price:18}, {id:39, name:"عريكة دبل قشطة", price:18}, {id:40, name:"فتة سمن عسل", price:10}
-            ],
-            "المعصوب": [
-                {id:41, name:"معصوب قشطة عسل", price:12}, {id:42, name:"معصوب جنبية ديلوكس", price:14}, {id:43, name:"معصوب ملكي", price:16},
-                {id:44, name:"معصوب عرائسي", price:18}, {id:45, name:"معصوب مروة", price:18}, {id:46, name:"معصوب دبل قشطة", price:18}, {id:47, name:"مرسي", price:10}
-            ],
-            "السندوتشات": [
-                {id:48, name:"سندوتش كبدة", sizes:{samoli:4, fatira:5}}, {id:49, name:"سندوتش كبدة جبنة", sizes:{samoli:5, fatira:6}},
-                {id:50, name:"سندوتش مقلقل", sizes:{samoli:4, fatira:5}}, {id:51, name:"سندوتش مقلقل جبن", sizes:{samoli:5, fatira:6}},
-                {id:52, name:"سندوتش بيض مقلي", sizes:{samoli:3, fatira:4}}, {id:53, name:"سندوتش بيض مقلي جبن", sizes:{samoli:4, fatira:5}},
-                {id:54, name:"سندوتش شكشوكة", sizes:{samoli:3, fatira:4}}, {id:55, name:"سندوتش شكشوكة جبن", sizes:{samoli:4, fatira:5}}
-            ],
-            "التميس": [
-                {id:56, name:"تميس عادي", price:1}, {id:57, name:"تميس سكر", price:3}, {id:58, name:"تميس بر", price:2},
-                {id:59, name:"تميس جبن", price:5}, {id:60, name:"تميس جبن سكر", price:6}, {id:61, name:"تميس بر جبن", price:7},
-                {id:62, name:"تميس جبن دبل", price:9}, {id:63, name:"تميس سمن", price:2}, {id:64, name:"تميس سمن سكر", price:3},
-                {id:65, name:"تميس سمن جبن سكر", price:8}, {id:66, name:"تميس بسكوت", price:3}, {id:67, name:"تميس بسكوت سكر", price:4},
-                {id:68, name:"تميس بسكوت جبن", price:8}, {id:69, name:"تميس زعتر", price:4}, {id:70, name:"تميس بر زعتر", price:5}
-            ],
-            "المشروبات": [
-                {id:71, name:"ماء", price:1}, {id:72, name:"مشروب غازي", price:3}, {id:73, name:"شاي سادة", price:1}, {id:74, name:"شاي بالحليب", price:2}
-            ]
+            "المطبق": [{id:23, name:"مطبق خضار", price:5}, {id:33, name:"نوتيلا", price:7}],
+            "المعصوب": [{id:41, name:"معصوب قشطة عسل", price:12}],
+            "المشروبات": [{id:71, name:"ماء", price:1}, {id:74, name:"شاي بالحليب", price:2}]
         };
 
         let cart = [];
@@ -145,35 +108,63 @@
         let activeItemId = null;
         let deferredPrompt;
 
-        // --- Core Logic ---
-        window.onload = () => {
-            renderTabs(); renderItems(); updateCartDisplay(); if(isNeighbor) setNeighborUI();
-            if(!localStorage.getItem('welcomed_v4')) {
-                setTimeout(() => {
-                    openModalLogic(`
-                        <div class="text-center py-4">
-                            <div class="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-sm">🥘</div>
-                            <h2 class="text-2xl font-black mb-4">فوال مروه يرحب بكم</h2>
-                            <div class="bg-slate-50 p-6 rounded-[35px] text-right space-y-4 mb-8 border border-slate-100">
-                                <p class="font-bold text-slate-700 leading-relaxed">• يدعم التطبيق الطلبات الخارجية <span class="text-blue-600 font-black">(سفري)</span> والداخلية <span class="text-blue-600 font-black">(محلي)</span>.</p>
-                                <p class="font-bold text-slate-700 leading-relaxed">• تتوفر خدمة التوصيل المجاني حصرياً لأهل <span class="text-emerald-600 font-black">حي بدر</span>.</p>
-                                <p class="font-bold text-slate-700 leading-relaxed">• تفضل بزيارتنا أو تواصل معنا هاتفياً للحصول على كود التفعيل الخاص بالحي.</p>
-                            </div>
-                            <button onclick="closeModal(); localStorage.setItem('welcomed_v4','true')" class="w-full bg-blue-700 text-white py-5 rounded-2xl font-black shadow-lg">ابدأ طلبك الآن</button>
-                        </div>
-                    `);
-                }, 800);
+        // --- نظام زر الرجوع العصري ---
+        function pushState() {
+            history.pushState({ modal: true }, "");
+        }
+
+        window.onpopstate = function(event) {
+            if (document.getElementById('mainModal').style.display === 'flex') {
+                closeModal(true); // نمرر true لكي لا يحاول حذف الحالة مرة أخرى
             }
         };
 
-        function closeModal() { document.getElementById('mainModal').style.display = 'none'; }
-        function openModalLogic(content) { document.getElementById('modalContent').innerHTML = content; document.getElementById('mainModal').style.display = 'flex'; }
-        function showToast(text) { const toast = document.getElementById("customToast"); toast.innerText = text; toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 2000); }
+        // --- إدارة النوافذ ---
+        function openModalLogic(content) {
+            document.getElementById('modalContent').innerHTML = content;
+            document.getElementById('mainModal').style.display = 'flex';
+            pushState(); // إضافة حالة للسجل عند فتح أي نافذة
+        }
+
+        function closeModal(fromPopState = false) {
+            document.getElementById('mainModal').style.display = 'none';
+            if (!fromPopState) {
+                // إذا أغلقت النافذة يدوياً بالزر، نرجع خطوة للخلف في السجل
+                if (history.state && history.state.modal) history.back();
+            }
+        }
+
+        // --- نظام التثبيت الذكي ---
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // إظهار الإشعار مرة واحدة فقط في الجلسة
+            if (!sessionStorage.getItem('bannerShown')) {
+                document.getElementById('installBanner').style.display = 'flex';
+                sessionStorage.setItem('bannerShown', 'true');
+            }
+        });
+
+        function hideInstallBanner() {
+            document.getElementById('installBanner').style.display = 'none';
+        }
+
+        // --- المنطق الأساسي للتطبيق ---
+        window.onload = () => {
+            renderTabs(); renderItems(); updateCartDisplay(); if(isNeighbor) setNeighborUI();
+        };
+
+        function showToast(text) {
+            const toast = document.getElementById("customToast");
+            toast.innerText = text; toast.classList.add("show");
+            setTimeout(() => toast.classList.remove("show"), 2000);
+        }
 
         function renderTabs() {
             const tabs = document.getElementById('categoryTabs');
             tabs.innerHTML = Object.keys(DB).map(cat => `<button onclick="setCategory('${cat}')" class="px-6 py-2 rounded-2xl whitespace-nowrap font-bold transition-all ${cat === currentCategory ? 'bg-white text-blue-900 shadow-xl' : 'text-white/70'}">${cat}</button>`).join('');
         }
+
         function setCategory(cat) { currentCategory = cat; renderTabs(); renderItems(); }
 
         function renderItems() {
@@ -182,7 +173,7 @@
                 const isActive = activeItemId === item.id;
                 return `<div class="bg-white rounded-[30px] p-5 shadow-sm border border-slate-50 item-card ${isActive ? 'active shadow-lg' : ''}" onclick="toggleItem(${item.id})">
                     <div class="flex justify-between items-center">
-                        <div class="meal-title">${item.name}</div>
+                        <div class="font-black text-blue-900">${item.name}</div>
                         ${item.price ? `<div class="flex items-center gap-3 bg-slate-50 p-2 rounded-2xl">
                                 <button onclick="event.stopPropagation(); updateQty(${item.id}, -1, '${item.name}', ${item.price})" class="w-10 h-10 bg-white text-red-500 rounded-xl shadow-md font-black">-</button>
                                 <span class="font-black">${getQty(item.id, 'default')}</span>
@@ -191,7 +182,7 @@
                             </div>` : `<i class="fa-solid fa-plus-circle text-blue-200 text-2xl"></i>`}
                     </div>
                     ${item.sizes ? `<div class="sizes-panel grid grid-cols-2 gap-3" onclick="event.stopPropagation()">
-                            ${Object.entries(item.sizes).filter(([s]) => isNeighbor ? s !== 'local' : true).map(([s, p]) => `
+                            ${Object.entries(item.sizes).map(([s, p]) => `
                                 <div class="bg-blue-50/50 p-3 rounded-2xl flex justify-between items-center border border-blue-100">
                                     <div class="text-[11px] font-black text-blue-900">${getSizeName(s)}<br>${p}﷼</div>
                                     <div class="flex items-center gap-2">
@@ -225,7 +216,7 @@
             document.getElementById('floatingTotal').innerText = total + "﷼";
         }
 
-        function openCartModal() { renderCartInModal(); document.getElementById('mainModal').style.display = 'flex'; }
+        function openCartModal() { renderCartInModal(); document.getElementById('mainModal').style.display = 'flex'; pushState(); }
 
         function renderCartInModal() {
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
@@ -246,148 +237,77 @@
                                 <input type="text" maxlength="30" oninput="cart[${index}].note = this.value" placeholder="توصية" value="${i.note}" class="w-full p-3 rounded-xl bg-white border border-slate-200 text-xs font-bold outline-none focus:border-blue-400">
                             </div>`).join('')}
                     </div>
-                    <div class="bg-blue-50/50 p-6 rounded-[35px] space-y-4 mb-6">
-                        ${isNeighbor ? `
-                        <input type="text" id="custName" placeholder="اكتب اسمك" value="${localStorage.getItem('u_name')||''}" oninput="localStorage.setItem('u_name', this.value); this.classList.remove('input-error')" class="w-full p-4 rounded-2xl bg-white shadow-sm outline-none font-bold border-2 border-transparent">
-                        <input type="text" id="custLoc" placeholder="وصف المنزل" value="${localStorage.getItem('u_loc')||''}" oninput="localStorage.setItem('u_loc', this.value); this.classList.remove('input-error')" class="w-full p-4 rounded-2xl bg-white shadow-sm outline-none font-bold border-2 border-transparent">` : ''}
-                        <div class="grid grid-cols-2 gap-2">
-                            ${!isNeighbor ? `<select id="oType" class="p-4 rounded-2xl bg-white shadow-sm outline-none font-bold"><option value="سفري 🥡">🥡 سفري</option><option value="محلي 🍽️">🍽️ محلي</option></select>` : ''}
-                            <select id="payWay" class="${isNeighbor?'col-span-2':'col-span-1'} p-4 rounded-2xl bg-white shadow-sm outline-none font-bold"><option value="كاش 💵">كاش 💵</option><option value="شبكة 💳">شبكة 💳</option></select>
-                        </div>
-                    </div>
-                    <button onclick="prepareSaveFavorite()" class="w-full mb-4 bg-red-50 text-red-600 py-4 rounded-2xl font-black text-sm border border-red-100 shadow-sm active:scale-95 transition">❤️ حفظ كوجبة مفضلة (3 وجبات)</button>
-                    <div class="flex justify-between items-center mb-6 px-4"><span class="text-slate-400 font-bold">الإجمالي:</span><span class="text-3xl font-black text-blue-800">${total}﷼</span></div>
-                    <button onclick="confirmAndSend()" class="w-full bg-green-600 text-white py-5 rounded-[25px] font-black text-xl flex items-center justify-center gap-3 shadow-xl active:scale-95 transition">إرسال للواتساب <i class="fa-brands fa-whatsapp"></i></button>
+                    <button onclick="prepareSaveFavorite()" class="w-full mb-4 bg-red-50 text-red-600 py-4 rounded-2xl font-black text-sm border border-red-100">❤️ حفظ كوجبة مفضلة</button>
+                    <button onclick="confirmAndSend()" class="w-full bg-green-600 text-white py-5 rounded-[25px] font-black text-xl flex items-center justify-center gap-3">إرسال للواتساب <i class="fa-brands fa-whatsapp"></i></button>
                 </div>`;
         }
 
-        // --- نظام المفضلات ---
+        // --- نظام المفضلات المحدث ---
         function prepareSaveFavorite() {
-            if(cart.length === 0) { showToast("السلة فارغة ⚠️"); return; }
-            const favs = JSON.parse(localStorage.getItem('m_favs_v6') || '[]');
-            if(favs.length >= 3) { showToast("وصلت للحد الأقصى (3 وجبات) ⚠️"); return; }
-
-            openModalLogic(`
-                <div class="text-center py-2">
-                    <h2 class="text-2xl font-black mb-6">تسمية الوجبة المفضلة</h2>
+            if(cart.length === 0) return;
+            const content = `
+                <div class="text-center">
+                    <h2 class="text-2xl font-black mb-6">تسمية الوجبة</h2>
                     <div class="space-y-3">
-                        <button onclick="saveFavWithName('فطوري ❤️')" class="w-full py-5 bg-blue-50 text-blue-700 rounded-3xl font-black border-2 border-blue-100 active:bg-blue-100">فطوري ❤️</button>
-                        <button onclick="saveFavWithName('فطوري المتأخر 🥐')" class="w-full py-5 bg-amber-50 text-amber-700 rounded-3xl font-black border-2 border-amber-100 active:bg-amber-100">فطوري المتأخر 🥐</button>
-                        <button onclick="saveFavWithName('عشائي ✨')" class="w-full py-5 bg-indigo-50 text-indigo-700 rounded-3xl font-black border-2 border-indigo-100 active:bg-indigo-100">عشائي ✨</button>
+                        <button onclick="saveFavWithName('فطوري ❤️')" class="w-full py-5 bg-blue-50 text-blue-700 rounded-3xl font-black">فطوري ❤️</button>
+                        <button onclick="saveFavWithName('فطوري المتأخر 🥐')" class="w-full py-5 bg-amber-50 text-amber-700 rounded-3xl font-black">فطوري المتأخر 🥐</button>
+                        <button onclick="saveFavWithName('عشائي ✨')" class="w-full py-5 bg-indigo-50 text-indigo-700 rounded-3xl font-black">عشائي ✨</button>
                     </div>
-                    <button onclick="openCartModal()" class="mt-6 text-slate-400 font-bold underline">إلغاء</button>
-                </div>
-            `);
+                </div>`;
+            openModalLogic(content);
         }
 
         function saveFavWithName(name) {
-            let favs = JSON.parse(localStorage.getItem('m_favs_v6') || '[]');
-            favs.push({ name: name, items: JSON.parse(JSON.stringify(cart)), total: cart.reduce((s,i)=>s+(i.price*i.qty),0) });
-            localStorage.setItem('m_favs_v6', JSON.stringify(favs));
-            showToast(`تم حفظ "${name}" ✅`);
-            openCartModal();
+            let favs = JSON.parse(localStorage.getItem('m_favs_v7') || '[]');
+            if(favs.length >= 3) { showToast("الحد الأقصى 3 وجبات ⚠️"); return; }
+            favs.push({ name, items: JSON.parse(JSON.stringify(cart)), total: cart.reduce((s,i)=>s+(i.price*i.qty),0) });
+            localStorage.setItem('m_favs_v7', JSON.stringify(favs));
+            showToast("تم الحفظ ✅");
+            closeModal();
         }
 
         function showFavoriteList() {
-            const favs = JSON.parse(localStorage.getItem('m_favs_v6') || '[]');
-            let content = `<h2 class="text-2xl font-black mb-6 text-red-600">وجباتي المفضلة</h2><div class="space-y-4">`;
-            favs.forEach((f, i) => { 
-                content += `
-                <div onclick="previewFav(${i})" class="p-5 bg-red-50 rounded-[30px] border border-red-100 flex justify-between items-center cursor-pointer shadow-sm">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-xl">⭐</div>
-                        <div><p class="font-black text-slate-800">${f.name}</p><p class="text-[10px] text-red-400 font-bold">اضغط للعرض والاستعادة</p></div>
-                    </div>
-                    <div class="text-left">
-                        <p class="text-red-600 font-black">${f.total}﷼</p>
-                        <button onclick="event.stopPropagation(); deleteFav(${i})" class="text-[10px] text-slate-400 underline">حذف</button>
-                    </div>
-                </div>`; 
+            const favs = JSON.parse(localStorage.getItem('m_favs_v7') || '[]');
+            let content = `<h2 class="text-2xl font-black mb-6">وجباتي المفضلة</h2><div class="space-y-4">`;
+            favs.forEach((f, i) => {
+                content += `<div onclick="applyFav(${i})" class="p-5 bg-red-50 rounded-[30px] border border-red-100 flex justify-between items-center">
+                    <span class="font-black">${f.name}</span>
+                    <button onclick="event.stopPropagation(); deleteFav(${i})" class="text-red-500"><i class="fa-solid fa-trash"></i></button>
+                </div>`;
             });
-            content += favs.length ? '' : '<p class="text-center py-10 opacity-30 font-bold">لم تحفظ أي وجبة بعد</p>';
-            openModalLogic(content + '</div>');
-        }
-
-        function previewFav(index) {
-            const f = JSON.parse(localStorage.getItem('m_favs_v6'))[index];
-            let content = `
-                <h2 class="text-xl font-black mb-4 text-slate-800">مكونات ${f.name}</h2>
-                <div class="bg-slate-50 p-6 rounded-[35px] mb-6 border border-slate-100 text-right">
-                    ${f.items.map(it => `<div class="flex justify-between text-sm font-bold mb-2"><span>• ${it.name} [${it.qty}]</span><span>${it.price * it.qty}﷼</span></div>`).join('')}
-                    <div class="border-t border-dashed mt-4 pt-4 flex justify-between font-black text-red-600 text-lg"><span>الإجمالي</span><span>${f.total}﷼</span></div>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <button onclick="showFavoriteList()" class="bg-slate-100 text-slate-600 py-4 rounded-2xl font-black">رجوع</button>
-                    <button onclick="applyFav(${index})" class="bg-red-600 text-white py-4 rounded-2xl font-black shadow-lg">استعادة للسلة</button>
-                </div>
-            `;
-            document.getElementById('modalContent').innerHTML = content;
+            openModalLogic(content + (favs.length ? '' : '<p class="text-center opacity-30">لا توجد وجبات</p>') + '</div>');
         }
 
         function applyFav(index) {
-            const f = JSON.parse(localStorage.getItem('m_favs_v6'))[index];
+            const f = JSON.parse(localStorage.getItem('m_favs_v7'))[index];
             cart = JSON.parse(JSON.stringify(f.items));
             updateCartDisplay(); renderItems(); closeModal(); showToast("تم استرجاع الوجبة ✅");
         }
 
         function deleteFav(i) {
-            let favs = JSON.parse(localStorage.getItem('m_favs_v6'));
+            let favs = JSON.parse(localStorage.getItem('m_favs_v7'));
             favs.splice(i, 1);
-            localStorage.setItem('m_favs_v6', JSON.stringify(favs));
+            localStorage.setItem('m_favs_v7', JSON.stringify(favs));
             showFavoriteList();
         }
 
-        // --- إرسال الطلب ---
-        function confirmAndSend() {
-            let valid = true;
-            if (isNeighbor) {
-                const nInp = document.getElementById('custName');
-                const lInp = document.getElementById('custLoc');
-                if (!nInp.value.trim()) { nInp.classList.add('input-error'); valid = false; }
-                if (!lInp.value.trim()) { lInp.classList.add('input-error'); valid = false; }
-            }
-            if (!valid) { showToast("يرجى إكمال البيانات المطلوبة ⚠️"); return; }
-
-            const payMethod = document.getElementById('payWay').value;
-            const orderType = isNeighbor ? "توصيل حي بدر 🏠" : (document.getElementById('oType')?.value || "سفري 🥡");
-            const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
-            
-            const orderID = Math.floor(100000 + Math.random() * 900000);
-            let msg = `*طلب جديد - فوال مروه*%0A🆔 *ID:* ${orderID}%0A📢 *النوع:* ${orderType}%0A💰 *الدفع:* ${payMethod}%0A`;
-            if(isNeighbor) msg += `👤 *العميل:* ${document.getElementById('custName').value}%0A🏠 *المنزل:* ${document.getElementById('custLoc').value}%0A`;
-            msg += `--------------------------%0A`;
-            cart.forEach(i => {
-                msg += `• ${i.name} [${i.qty}] = ${i.price * i.qty}﷼%0A`;
-                if(i.note.trim()) msg += `   *توصية:* _${i.note}_%0A`;
-            });
-            msg += `--------------------------%0A💰 *الإجمالي: ${total}﷼*`;
-            
-            window.location.href = `https://wa.me/966530195433?text=${msg}`;
-            cart = []; updateCartDisplay(); closeModal(); renderItems();
-        }
-
-        // --- حي بدر وتثبيت التطبيق ---
-        function openNbrModal() {
-            openModalLogic(`<div class="text-center"><h2 class="text-2xl font-black mb-4">كود حي بدر</h2><input type="text" id="nbrInput" placeholder="أدخل الكود" class="w-full p-4 bg-slate-50 rounded-2xl border-2 text-center font-black text-xl mb-4 outline-none"><button onclick="verifyNbr()" class="w-full bg-blue-800 text-white py-4 rounded-2xl font-black">${isNeighbor ? 'إلغاء التفعيل' : 'تفعيل'}</button></div>`);
-        }
-
-        function verifyNbr() {
-            if(document.getElementById('nbrInput').value.trim() === "حي بدر") {
-                isNeighbor = !isNeighbor; localStorage.setItem('isNbr', isNeighbor);
-                setNeighborUI(); renderItems(); closeModal();
-                showToast(isNeighbor ? "تم التفعيل ✅" : "تم الإلغاء");
-            } else { showToast("الكود غير صحيح!"); }
-        }
-
-        function setNeighborUI() {
-            const btn = document.getElementById('nbrBtn');
-            btn.className = isNeighbor ? "bg-emerald-600 p-6 rounded-[35px] text-white flex justify-between items-center shadow-lg transition active:scale-95" : "bg-blue-800 p-6 rounded-[35px] text-white flex justify-between items-center shadow-lg transition active:scale-95";
-            document.getElementById('nbrLabel').innerText = isNeighbor ? "توصيل حي بدر مفعل ✅" : "أدخل الكود للتوصيل المجاني";
-            document.getElementById('nbrIcon').className = isNeighbor ? "fa-solid fa-unlock-keyhole" : "fa-solid fa-lock opacity-30";
-        }
-
         function handleInstallClick() {
-            showToast("اضغط 'إضافة إلى الشاشة الرئيسية' من إعدادات المتصفح 📱");
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choice) => { deferredPrompt = null; hideInstallBanner(); });
+            } else {
+                showToast("استخدم 'إضافة للشاشة الرئيسية' من إعدادات المتصفح 📱");
+            }
+        }
+
+        function confirmAndSend() {
+            const orderID = Math.floor(1000 + Math.random() * 9000);
+            let msg = `*طلب جديد - فوال مروه*%0A🆔 *ID:* ${orderID}%0A--------------------------%0A`;
+            cart.forEach(i => {
+                msg += `• ${i.name} [${i.qty}]%0A`;
+                if(i.note) msg += `  - توصية: ${i.note}%0A`;
+            });
+            window.location.href = `https://wa.me/966530195433?text=${msg}`;
         }
     </script>
 </body>
