@@ -148,7 +148,7 @@
         let activeItemId = null;
         let deferredPrompt;
 
-        // --- زر الرجوع الذكي ---
+        // --- نظام زر الرجوع ---
         history.pushState(null, null, window.location.pathname);
         window.onpopstate = function () {
             if (document.getElementById('mainModal').style.display === 'flex') {
@@ -162,7 +162,7 @@
 
         window.onload = () => {
             renderTabs(); renderItems(); updateCartDisplay(); if(isNeighbor) setNeighborUI();
-            if(!localStorage.getItem('welcomed_v2')) {
+            if(!localStorage.getItem('welcomed_v3')) {
                 setTimeout(() => {
                     openModalLogic(`
                         <div class="text-center py-4">
@@ -173,7 +173,7 @@
                                 <p class="font-bold text-slate-700 leading-relaxed">• تتوفر خدمة التوصيل المجاني حصرياً لأهل <span class="text-emerald-600 font-black">حي بدر</span>.</p>
                                 <p class="font-bold text-slate-700 leading-relaxed">• تفضل بزيارتنا أو تواصل معنا هاتفياً للحصول على كود التفعيل الخاص بالحي.</p>
                             </div>
-                            <button onclick="closeModal(); localStorage.setItem('welcomed_v2','true')" class="w-full bg-blue-700 text-white py-5 rounded-2xl font-black shadow-lg transition active:scale-95">ابدأ طلبك الآن</button>
+                            <button onclick="closeModal(); localStorage.setItem('welcomed_v3','true')" class="w-full bg-blue-700 text-white py-5 rounded-2xl font-black shadow-lg">ابدأ طلبك الآن</button>
                         </div>
                     `);
                 }, 800);
@@ -270,12 +270,90 @@
                             <select id="payWay" class="${isNeighbor?'col-span-2':'col-span-1'} p-4 rounded-2xl bg-white shadow-sm outline-none font-bold"><option value="كاش 💵">كاش 💵</option><option value="شبكة 💳">شبكة 💳</option></select>
                         </div>
                     </div>
-                    <button onclick="saveAsFavorite()" class="w-full mb-4 bg-red-50 text-red-600 py-3 rounded-2xl font-black text-xs transition active:scale-95">❤️ حفظ كوجبة مفضلة (3 وجبات كحد أقصى)</button>
+                    <button onclick="prepareSaveFavorite()" class="w-full mb-4 bg-red-50 text-red-600 py-4 rounded-2xl font-black text-sm border border-red-100 shadow-sm active:scale-95 transition">❤️ حفظ كوجبة مفضلة (3 وجبات)</button>
                     <div class="flex justify-between items-center mb-6 px-4"><span class="text-slate-400 font-bold">الإجمالي:</span><span class="text-3xl font-black text-blue-800">${total}﷼</span></div>
-                    <button onclick="confirmAndSend()" class="w-full bg-green-600 text-white py-5 rounded-[25px] font-black text-xl flex items-center justify-center gap-3 shadow-xl transition active:scale-95">إرسال للواتساب <i class="fa-brands fa-whatsapp"></i></button>
+                    <button onclick="confirmAndSend()" class="w-full bg-green-600 text-white py-5 rounded-[25px] font-black text-xl flex items-center justify-center gap-3 shadow-xl active:scale-95 transition">إرسال للواتساب <i class="fa-brands fa-whatsapp"></i></button>
                 </div>`;
         }
 
+        // --- نظام المفضلات المطور ---
+        function prepareSaveFavorite() {
+            if(cart.length === 0) { showToast("السلة فارغة ⚠️"); return; }
+            const favs = JSON.parse(localStorage.getItem('m_favs_v5') || '[]');
+            if(favs.length >= 3) { showToast("وصلت للحد الأقصى (3 وجبات) ⚠️"); return; }
+
+            openModalLogic(`
+                <div class="text-center py-2">
+                    <h2 class="text-2xl font-black mb-6">تسمية الوجبة المفضلة</h2>
+                    <p class="text-sm font-bold text-slate-500 mb-6">اختر اسماً لهذه الوجبة للرجوع إليها لاحقاً:</p>
+                    <div class="space-y-3">
+                        <button onclick="saveFavWithName('فطوري ❤️')" class="w-full py-5 bg-blue-50 text-blue-700 rounded-3xl font-black border-2 border-blue-100 active:bg-blue-100">فطوري ❤️</button>
+                        <button onclick="saveFavWithName('فطوري المتأخر 🥐')" class="w-full py-5 bg-amber-50 text-amber-700 rounded-3xl font-black border-2 border-amber-100 active:bg-amber-100">فطوري المتأخر 🥐</button>
+                        <button onclick="saveFavWithName('عشائي ✨')" class="w-full py-5 bg-indigo-50 text-indigo-700 rounded-3xl font-black border-2 border-indigo-100 active:bg-indigo-100">عشائي ✨</button>
+                    </div>
+                    <button onclick="openCartModal()" class="mt-6 text-slate-400 font-bold underline">إلغاء</button>
+                </div>
+            `);
+        }
+
+        function saveFavWithName(name) {
+            let favs = JSON.parse(localStorage.getItem('m_favs_v5') || '[]');
+            favs.push({ name: name, items: JSON.parse(JSON.stringify(cart)), total: cart.reduce((s,i)=>s+(i.price*i.qty),0) });
+            localStorage.setItem('m_favs_v5', JSON.stringify(favs));
+            showToast(`تم حفظ "${name}" ✅`);
+            openCartModal();
+        }
+
+        function showFavoriteList() {
+            const favs = JSON.parse(localStorage.getItem('m_favs_v5') || '[]');
+            let content = `<h2 class="text-2xl font-black mb-6 text-red-600">وجباتي المفضلة</h2><div class="space-y-4">`;
+            favs.forEach((f, i) => { 
+                content += `
+                <div onclick="previewFav(${i})" class="p-5 bg-red-50 rounded-[30px] border border-red-100 flex justify-between items-center cursor-pointer shadow-sm">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-xl">⭐</div>
+                        <div><p class="font-black text-slate-800">${f.name}</p><p class="text-[10px] text-red-400 font-bold">اضغط للعرض والاستعادة</p></div>
+                    </div>
+                    <div class="text-left">
+                        <p class="text-red-600 font-black">${f.total}﷼</p>
+                        <button onclick="event.stopPropagation(); deleteFav(${i})" class="text-[10px] text-slate-400 underline">حذف</button>
+                    </div>
+                </div>`; 
+            });
+            content += favs.length ? '' : '<p class="text-center py-10 opacity-30 font-bold">لم تحفظ أي وجبة بعد</p>';
+            openModalLogic(content + '</div>');
+        }
+
+        function previewFav(index) {
+            const f = JSON.parse(localStorage.getItem('m_favs_v5'))[index];
+            let content = `
+                <h2 class="text-xl font-black mb-4 text-slate-800">مكونات ${f.name}</h2>
+                <div class="bg-slate-50 p-6 rounded-[35px] mb-6 border border-slate-100">
+                    ${f.items.map(it => `<div class="flex justify-between text-sm font-bold mb-2"><span>• ${it.name} [${it.qty}]</span><span>${it.price * it.qty}﷼</span></div>`).join('')}
+                    <div class="border-t border-dashed mt-4 pt-4 flex justify-between font-black text-red-600 text-lg"><span>الإجمالي</span><span>${f.total}﷼</span></div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="showFavoriteList()" class="bg-slate-100 text-slate-600 py-4 rounded-2xl font-black">رجوع</button>
+                    <button onclick="applyFav(${index})" class="bg-red-600 text-white py-4 rounded-2xl font-black shadow-lg">استعادة للسلة</button>
+                </div>
+            `;
+            document.getElementById('modalContent').innerHTML = content;
+        }
+
+        function applyFav(index) {
+            const f = JSON.parse(localStorage.getItem('m_favs_v5'))[index];
+            cart = JSON.parse(JSON.stringify(f.items));
+            updateCartDisplay(); renderItems(); closeModal(); showToast("تم استرجاع الوجبة ✅");
+        }
+
+        function deleteFav(i) {
+            let favs = JSON.parse(localStorage.getItem('m_favs_v5'));
+            favs.splice(i, 1);
+            localStorage.setItem('m_favs_v5', JSON.stringify(favs));
+            showFavoriteList();
+        }
+
+        // --- بقية العمليات ---
         function confirmAndSend() {
             let valid = true;
             if (isNeighbor) {
@@ -290,12 +368,6 @@
             const orderType = isNeighbor ? "توصيل حي بدر 🏠" : (document.getElementById('oType')?.value || "سفري 🥡");
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
             
-            let neighborExtra = "";
-            if (isNeighbor && !localStorage.getItem('f_order_done')) {
-                neighborExtra = "%0A%0A📍 *ملاحظة: بما أن هذا طلبي الأول، سأرسل لكم موقعي الحالي الآن*";
-                localStorage.setItem('f_order_done', 'true');
-            }
-
             const orderID = Math.floor(100000 + Math.random() * 900000);
             let logs = JSON.parse(localStorage.getItem('m_logs') || '[]');
             logs.unshift({ id: orderID, date: new Date().toLocaleString('ar-SA'), items: [...cart], total, type: orderType, payment: payMethod });
@@ -308,13 +380,12 @@
                 msg += `• ${i.name} [${i.qty}] = ${i.price * i.qty}﷼%0A`;
                 if(i.note.trim()) msg += `   *توصية:* _${i.note}_%0A`;
             });
-            msg += `--------------------------%0A💰 *الإجمالي: ${total}﷼*${neighborExtra}`;
+            msg += `--------------------------%0A💰 *الإجمالي: ${total}﷼*`;
             
             window.location.href = `https://wa.me/966530195433?text=${msg}`;
             cart = []; updateCartDisplay(); closeModal(); renderItems();
         }
 
-        // --- سجل الطلبات ---
         function openAuthModal() {
             openModalLogic(`<div class="text-center"><h2 class="text-2xl font-black mb-4">دخول السجل</h2><input type="password" id="authInput" placeholder="••••" class="w-full p-4 bg-slate-50 rounded-2xl border-2 text-center text-2xl mb-4 font-black outline-none"><button onclick="verifyAuth()" class="w-full bg-slate-800 text-white py-4 rounded-2xl font-black">دخول</button></div>`);
         }
@@ -367,67 +438,6 @@
             });
         }
 
-        // --- المفضلات (تعديل 3 أصناف بأسماء محددة) ---
-        function saveAsFavorite() {
-            if(cart.length === 0) return;
-            let favs = JSON.parse(localStorage.getItem('m_favs_v4') || []);
-            if(favs.length >= 3) { showToast("الحد الأقصى 3 وجبات فقط ⚠️"); return; }
-            
-            const names = ["فطوري ❤️", "فطوري المتأخر 🥐", "عشائي ✨"];
-            const myName = names[favs.length];
-            
-            favs.push({ name: myName, items: JSON.parse(JSON.stringify(cart)), total: cart.reduce((s,i)=>s+(i.price*i.qty),0) });
-            localStorage.setItem('m_favs_v4', JSON.stringify(favs));
-            showToast(`تم الحفظ في "${myName}"`);
-        }
-
-        function showFavoriteList() {
-            const favs = JSON.parse(localStorage.getItem('m_favs_v4') || '[]');
-            let content = `<h2 class="text-2xl font-black mb-6 text-red-600">وجباتي المفضلة</h2><div class="space-y-4">`;
-            favs.forEach((f, i) => { 
-                content += `
-                <div onclick="previewFav(${i})" class="p-5 bg-red-50 rounded-[30px] border border-red-100 flex justify-between items-center cursor-pointer shadow-sm">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-xl">⭐</div>
-                        <div><p class="font-black text-slate-800">${f.name}</p><p class="text-[10px] text-red-400 font-bold">اضغط للعرض والاستعادة</p></div>
-                    </div>
-                    <div class="text-left">
-                        <p class="text-red-600 font-black">${f.total}﷼</p>
-                        <button onclick="event.stopPropagation(); deleteFav(${i})" class="text-[10px] text-slate-400 underline">حذف</button>
-                    </div>
-                </div>`; 
-            });
-            content += favs.length ? '' : '<p class="text-center py-10 opacity-30 font-bold">لم تحفظ أي وجبة بعد</p>';
-            openModalLogic(content + '</div>');
-        }
-
-        function previewFav(index) {
-            const f = JSON.parse(localStorage.getItem('m_favs_v4'))[index];
-            let content = `
-                <h2 class="text-xl font-black mb-4 text-slate-800">مكونات ${f.name}</h2>
-                <div class="bg-slate-50 p-6 rounded-[35px] mb-6 border border-slate-100">
-                    ${f.items.map(it => `<div class="flex justify-between text-sm font-bold mb-2"><span>• ${it.name} [${it.qty}]</span><span>${it.price * it.qty}﷼</span></div>`).join('')}
-                    <div class="border-t border-dashed mt-4 pt-4 flex justify-between font-black text-red-600 text-lg"><span>الإجمالي</span><span>${f.total}﷼</span></div>
-                </div>
-                <button onclick="applyFav(${index})" class="w-full bg-red-600 text-white py-5 rounded-2xl font-black shadow-lg shadow-red-100 transition active:scale-95">استعادة هذه الوجبة للسلة</button>
-            `;
-            document.getElementById('modalContent').innerHTML = content;
-        }
-
-        function applyFav(index) {
-            const f = JSON.parse(localStorage.getItem('m_favs_v4'))[index];
-            cart = JSON.parse(JSON.stringify(f.items));
-            updateCartDisplay(); renderItems(); closeModal(); showToast("تم استرجاع الوجبة ✅");
-        }
-
-        function deleteFav(i) {
-            let favs = JSON.parse(localStorage.getItem('m_favs_v4'));
-            favs.splice(i, 1);
-            localStorage.setItem('m_favs_v4', JSON.stringify(favs));
-            showFavoriteList();
-        }
-
-        // --- حي بدر ---
         function openNbrModal() {
             openModalLogic(`<div class="text-center"><h2 class="text-2xl font-black mb-4">كود حي بدر</h2><input type="text" id="nbrInput" placeholder="أدخل الكود" class="w-full p-4 bg-slate-50 rounded-2xl border-2 text-center font-black text-xl mb-4 outline-none"><button onclick="verifyNbr()" class="w-full bg-blue-800 text-white py-4 rounded-2xl font-black">${isNeighbor ? 'إلغاء التفعيل' : 'تفعيل'}</button></div>`);
         }
