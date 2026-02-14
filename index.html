@@ -91,8 +91,11 @@
         let activeItemId = null;
         let deferredPrompt;
 
-        // --- نظام التثبيت والرجوع (كما طلبت) ---
+        // --- نظام التثبيت والرجوع ---
         window.onload = () => {
+            // سطر ضروري جداً لتسجيل الـ Service Worker لكي يعمل زر التثبيت
+            if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); }
+
             history.pushState(null, null, window.location.pathname);
             window.addEventListener('popstate', function (event) {
                 const modal = document.getElementById('mainModal');
@@ -117,16 +120,26 @@
         async function handleInstall() {
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-            if (isIOS && !isStandalone) {
-                showToast("لتثبيت التطبيق على iPhone: اضغط على زر 'مشاركة' ثم 'إضافة إلى الصفحة الرئيسية' 📲");
+            
+            if (isStandalone) {
+                showToast("التطبيق مثبت بالفعل في جهازك ✅", "#10b981");
                 return;
             }
+            
+            if (isIOS) {
+                showToast("للتثبيت: اضغط على زر 'مشاركة' ثم 'إضافة إلى الصفحة الرئيسية' 📲");
+                return;
+            }
+            
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') deferredPrompt = null;
+                if (outcome === 'accepted') {
+                    showToast("شكرًا لتثبيت التطبيق! 🎉", "#10b981");
+                    deferredPrompt = null;
+                }
             } else {
-                showToast("التطبيق مثبت بالفعل أو متصفحك لا يدعم التثبيت المباشر ✅");
+                showToast("التطبيق مثبت أو متصفحك يحتاج تثبيت يدوي من الإعدادات 🛠️");
             }
         }
 
@@ -217,7 +230,6 @@
                 cart.push({ id, key, name: size !== 'default' ? `${name} (${getSizeName(size)})` : name, price, qty: 1, size, note: '' });
             }
             updateCartDisplay(); 
-            // تحديث محتوى المودال فقط إذا كان مفتوحاً (تجنباً لفتحه تلقائياً)
             if(document.getElementById('cartRefCheck')) renderCartInModal();
             renderItems();
         }
@@ -296,20 +308,15 @@
 
         function saveToLogs(order) {
             let logs = JSON.parse(localStorage.getItem('m_logs_v11') || '[]');
-            
-            // تحقق من التطابق الكامل (الأصناف والإجمالي)
             const currentHash = order.items.map(i => `${i.name}-${i.qty}`).sort().join('|');
             const duplicate = logs.find(l => {
                 const lHash = l.items.map(i => `${i.name}-${i.qty}`).sort().join('|');
                 return lHash === currentHash && l.total === order.total;
             });
-
             if (duplicate) {
                 showToast(`الطلب موجود مسبقاً! ID:${duplicate.id}`, "#ef4444");
                 return false;
             }
-
-            // تحقق من تكرار الـ ID فقط مع اختلاف التفاصيل
             if (logs.some(l => l.id == order.id)) {
                 openModalLogic(`
                     <div class="text-center py-6">
@@ -321,7 +328,6 @@
                 `);
                 return false;
             }
-
             logs.unshift(order);
             localStorage.setItem('m_logs_v11', JSON.stringify(logs));
             return true;
@@ -347,21 +353,17 @@
                 localStorage.setItem('u_name', nInput.value.trim()); 
                 localStorage.setItem('u_loc', lInput.value.trim());
             }
-            
             const orderID = generateUniqueID();
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
             const payMethod = document.getElementById('payWay').value;
             const orderType = isNeighbor ? "حي بدر 🏠" : document.getElementById('oType').value;
-            
             const orderObj = { 
                 id: orderID, timestamp: Date.now(), items: JSON.parse(JSON.stringify(cart)), total, 
                 type: orderType, payment: payMethod, 
                 customer: isNeighbor ? localStorage.getItem('u_name') : 'عميل محلي', 
                 loc: isNeighbor ? localStorage.getItem('u_loc') : '' 
             };
-            
             if(!saveToLogs(orderObj)) return;
-
             let msg = `*طلب جديد - فوال مروه*%0AID:${orderID}%0A📢 *النوع:* ${orderType}%0A💰 *الدفع:* ${payMethod}%0A`;
             if(isNeighbor) {
                 msg += `🏠 *المنزل:* ${orderObj.loc}%0A`;
@@ -376,7 +378,6 @@
                 if(i.note) msg += `   *توصية:* ${i.note}%0A`; 
             });
             msg += `--------------------------%0A💰 *الإجمالي: ${total}﷼*`;
-            
             window.location.href = `https://wa.me/966530195433?text=${msg}`;
             cart = []; updateCartDisplay(); closeModal(); renderItems();
         }
@@ -477,29 +478,20 @@
                 const payMatch = text.match(/الدفع:\s*([^\n]+)/);
                 const totalMatch = text.match(/الإجمالي:\s*(\d+)/);
                 const itemLines = text.match(/•\s*([^\n\[]+)\[(\d+)\]\s*=\s*(\d+)/g);
-                
                 if(!itemLines || !idMatch) { showToast("تنسيق غير صحيح ⚠️", "#ef4444"); return; }
-                
                 const importedItems = itemLines.map(line => {
                     const p = line.match(/•\s*([^\n\[]+)\[(\d+)\]\s*=\s*(\d+)/);
                     const qty = parseInt(p[2]);
                     const totalPrice = parseInt(p[3]);
                     return { name: p[1].trim(), qty: qty, price: totalPrice/qty, key: Math.random(), id: 999 };
                 });
-
                 const newOrder = { 
-                    id: idMatch[1], 
-                    timestamp: Date.now(), 
-                    items: importedItems, 
+                    id: idMatch[1], timestamp: Date.now(), items: importedItems, 
                     total: totalMatch ? parseInt(totalMatch[1]) : 0, 
                     type: typeMatch ? typeMatch[1].trim() : "مستورد", 
                     payment: payMatch ? payMatch[1].trim() : "كاش 💵" 
                 };
-
-                if(saveToLogs(newOrder)) { 
-                    showToast("تم الحفظ بنجاح ✅", "#10b981"); 
-                    showLogCategories(); 
-                }
+                if(saveToLogs(newOrder)) { showToast("تم الحفظ بنجاح ✅", "#10b981"); showLogCategories(); }
             } catch(e) { showToast("خطأ في القراءة ❌", "#ef4444"); }
         }
 
@@ -552,7 +544,7 @@
                 } else {
                     closeModal();
                     showToast("تم العودة للوضع العادي 🏢");
-                    openModalLogic(`<div class="text-center py-6"><div class="w-24 h-24 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl">🏢</div><h2 class="text-2xl font-black mb-4 text-blue-900">وضع المطعم العادي</h2><p class="text-slate-600 font-bold leading-relaxed">أنت الآن في وضع الطلب من داخل المطعم (محلي أو سفري).<br>طلبك سيرسل للمطعم كطلب خارجي.</p><button onclick="closeModal()" class="w-full bg-blue-800 text-white py-4 rounded-2xl font-black mt-6">فهمت</button></div>`);
+                    openModalLogic(`<div class="text-center py-6"><div class="w-24 h-24 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl">🏢</div><h2 class="text-2xl font-black mb-4 text-blue-900">وضع المطعم العادي</h2><p class="text-slate-600 font-bold mb-8 text-lg leading-relaxed">أنت الآن في وضع الطلب من داخل المطعم (محلي أو سفري).<br>طلبك سيرسل للمطعم كطلب خارجي.</p><button onclick="closeModal()" class="w-full bg-blue-800 text-white py-4 rounded-2xl font-black mt-6">فهمت</button></div>`);
                 }
             } else showToast("الكود خاطئ!", "#ef4444");
         }
