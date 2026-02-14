@@ -302,13 +302,10 @@
                     <div class="flex justify-between items-center mb-4 px-2"><span class="font-black text-slate-500">إجمالي الطلب:</span><span class="text-3xl font-black text-blue-800">${total}﷼</span></div>
                     <button onclick="confirmAndSend()" class="w-full bg-green-600 text-white py-5 rounded-[25px] font-black text-xl flex items-center justify-center gap-3 shadow-xl">إرسال للواتساب <i class="fa-brands fa-whatsapp"></i></button>
                 </div>`);
-        }
-
         function generateUniqueID() {
     return Date.now().toString().slice(-6);
 }
 
-        }
 
         // دالة توليد ID فائق الدقة (التاريخ + الساعة + الدقيقة + الثانية + الملي ثانية) لضمان عدم التكرار
         function generateUniqueID() {
