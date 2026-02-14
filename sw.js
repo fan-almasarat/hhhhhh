@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fawal-mrv-v11'; // تم تحديث الإصدار
+const CACHE_NAME = 'fawal-mrv-final-v12';
 
 const assets = [
   './',
