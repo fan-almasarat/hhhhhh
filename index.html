@@ -9,6 +9,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e40af">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon.png">
 
     <style>
         body { font-family: 'Tajawal', sans-serif; background-color: #f8fafc; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -91,10 +96,12 @@
         let activeItemId = null;
         let deferredPrompt;
 
-        // --- نظام التثبيت والرجوع ---
+        // --- نظام التثبيت والرجوع المحسن ---
         window.onload = () => {
-            // سطر ضروري جداً لتسجيل الـ Service Worker لكي يعمل زر التثبيت
-            if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js'); }
+            // تسجيل Service Worker ضروري للاندرويد
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js').then(() => console.log("SW Registered"));
+            }
 
             history.pushState(null, null, window.location.pathname);
             window.addEventListener('popstate', function (event) {
@@ -115,31 +122,46 @@
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
+            console.log("Install prompt ready");
         });
 
         async function handleInstall() {
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
             
-            if (isStandalone) {
-                showToast("التطبيق مثبت بالفعل في جهازك ✅", "#10b981");
+            if (isIOS && !isStandalone) {
+                openModalLogic(`
+                    <div class="text-center py-6">
+                        <div class="w-20 h-20 bg-blue-100 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 text-4xl"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                        <h2 class="text-2xl font-black mb-4">تثبيت التطبيق على iPhone</h2>
+                        <div class="space-y-6 text-right font-bold text-slate-600">
+                            <div class="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl">
+                                <span class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">1</span>
+                                <p>اضغط على زر المشاركة <i class="fa-solid fa-arrow-up-from-bracket text-blue-600 mx-1"></i> في أسفل المتصفح.</p>
+                            </div>
+                            <div class="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl">
+                                <span class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
+                                <p>اختر "إضافة إلى الصفحة الرئيسية" <i class="fa-regular fa-square-plus text-blue-600 mx-1"></i> من القائمة.</p>
+                            </div>
+                            <div class="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl">
+                                <span class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">3</span>
+                                <p>اضغط على "إضافة" في الزاوية العلوية.</p>
+                            </div>
+                        </div>
+                        <button onclick="closeModal()" class="w-full bg-blue-800 text-white py-4 rounded-2xl font-black mt-8 shadow-lg">فهمت</button>
+                    </div>
+                `);
                 return;
             }
-            
-            if (isIOS) {
-                showToast("للتثبيت: اضغط على زر 'مشاركة' ثم 'إضافة إلى الصفحة الرئيسية' 📲");
-                return;
-            }
-            
+
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    showToast("شكرًا لتثبيت التطبيق! 🎉", "#10b981");
-                    deferredPrompt = null;
-                }
+                if (outcome === 'accepted') deferredPrompt = null;
+            } else if (isStandalone) {
+                showToast("التطبيق مثبت بالفعل على جهازك ✅", "#10b981");
             } else {
-                showToast("التطبيق مثبت أو متصفحك يحتاج تثبيت يدوي من الإعدادات 🛠️");
+                showToast("متصفحك لا يدعم التثبيت المباشر، جرب متصفح Chrome 🌐");
             }
         }
 
@@ -244,7 +266,6 @@
             document.getElementById('floatingTotal').innerText = total + "﷼";
         }
 
-        // --- إدارة السلة والمفضلات ---
         function renderCartInModal() {
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
             const savedName = localStorage.getItem('u_name') || '';
@@ -290,7 +311,6 @@
         function openCartModal() { renderCartInModal(); }
         function toggleFavNames() { document.getElementById('favNamesDiv').classList.toggle('hidden'); }
 
-        // --- سجل الطلبات والتحقق الذكي ---
         function cleanOldLogs() {
             let logs = JSON.parse(localStorage.getItem('m_logs_v11') || '[]');
             const now = Date.now();
@@ -313,10 +333,12 @@
                 const lHash = l.items.map(i => `${i.name}-${i.qty}`).sort().join('|');
                 return lHash === currentHash && l.total === order.total;
             });
+
             if (duplicate) {
                 showToast(`الطلب موجود مسبقاً! ID:${duplicate.id}`, "#ef4444");
                 return false;
             }
+
             if (logs.some(l => l.id == order.id)) {
                 openModalLogic(`
                     <div class="text-center py-6">
@@ -328,6 +350,7 @@
                 `);
                 return false;
             }
+
             logs.unshift(order);
             localStorage.setItem('m_logs_v11', JSON.stringify(logs));
             return true;
@@ -353,17 +376,21 @@
                 localStorage.setItem('u_name', nInput.value.trim()); 
                 localStorage.setItem('u_loc', lInput.value.trim());
             }
+            
             const orderID = generateUniqueID();
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
             const payMethod = document.getElementById('payWay').value;
             const orderType = isNeighbor ? "حي بدر 🏠" : document.getElementById('oType').value;
+            
             const orderObj = { 
                 id: orderID, timestamp: Date.now(), items: JSON.parse(JSON.stringify(cart)), total, 
                 type: orderType, payment: payMethod, 
                 customer: isNeighbor ? localStorage.getItem('u_name') : 'عميل محلي', 
                 loc: isNeighbor ? localStorage.getItem('u_loc') : '' 
             };
+            
             if(!saveToLogs(orderObj)) return;
+
             let msg = `*طلب جديد - فوال مروه*%0AID:${orderID}%0A📢 *النوع:* ${orderType}%0A💰 *الدفع:* ${payMethod}%0A`;
             if(isNeighbor) {
                 msg += `🏠 *المنزل:* ${orderObj.loc}%0A`;
@@ -378,11 +405,11 @@
                 if(i.note) msg += `   *توصية:* ${i.note}%0A`; 
             });
             msg += `--------------------------%0A💰 *الإجمالي: ${total}﷼*`;
+            
             window.location.href = `https://wa.me/966530195433?text=${msg}`;
             cart = []; updateCartDisplay(); closeModal(); renderItems();
         }
 
-        // --- واجهة الإدارة وعرض الفاتورة ---
         function checkAuth() {
             const lastAuth = localStorage.getItem('auth_time_v11');
             if (lastAuth && (Date.now() - lastAuth < 24 * 60 * 60 * 1000)) showLogCategories();
@@ -478,24 +505,32 @@
                 const payMatch = text.match(/الدفع:\s*([^\n]+)/);
                 const totalMatch = text.match(/الإجمالي:\s*(\d+)/);
                 const itemLines = text.match(/•\s*([^\n\[]+)\[(\d+)\]\s*=\s*(\d+)/g);
+                
                 if(!itemLines || !idMatch) { showToast("تنسيق غير صحيح ⚠️", "#ef4444"); return; }
+                
                 const importedItems = itemLines.map(line => {
                     const p = line.match(/•\s*([^\n\[]+)\[(\d+)\]\s*=\s*(\d+)/);
                     const qty = parseInt(p[2]);
                     const totalPrice = parseInt(p[3]);
                     return { name: p[1].trim(), qty: qty, price: totalPrice/qty, key: Math.random(), id: 999 };
                 });
+
                 const newOrder = { 
-                    id: idMatch[1], timestamp: Date.now(), items: importedItems, 
+                    id: idMatch[1], 
+                    timestamp: Date.now(), 
+                    items: importedItems, 
                     total: totalMatch ? parseInt(totalMatch[1]) : 0, 
                     type: typeMatch ? typeMatch[1].trim() : "مستورد", 
                     payment: payMatch ? payMatch[1].trim() : "كاش 💵" 
                 };
-                if(saveToLogs(newOrder)) { showToast("تم الحفظ بنجاح ✅", "#10b981"); showLogCategories(); }
+
+                if(saveToLogs(newOrder)) { 
+                    showToast("تم الحفظ بنجاح ✅", "#10b981"); 
+                    showLogCategories(); 
+                }
             } catch(e) { showToast("خطأ في القراءة ❌", "#ef4444"); }
         }
 
-        // --- نظام المفضلات ---
         function saveFavorite(favName) {
             if(!cart.length) return;
             let favs = JSON.parse(localStorage.getItem('m_favs_v11') || '[]');
@@ -529,7 +564,6 @@
             localStorage.setItem('m_favs_v11', JSON.stringify(favs)); showFavoriteList();
         }
 
-        // --- نظام حي بدر المتطور ---
         function openNbrModal() {
             openModalLogic(`<div class="text-center"><div class="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto mb-4 text-3xl"><i class="fa-solid fa-key"></i></div><h2 class="text-2xl font-black mb-4 text-emerald-900">كود تفعيل الجيران</h2><input type="text" id="nbrInput" placeholder="أدخل الكود" class="w-full p-5 bg-slate-50 rounded-2xl border-2 text-center font-black mb-4 outline-none border-slate-100 focus:border-emerald-500 transition-all"><button onclick="verifyNbr()" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black shadow-lg">${isNeighbor ? 'إيقاف خدمة التوصيل' : 'تفعيل الخدمة'}</button></div>`);
         }
@@ -544,7 +578,7 @@
                 } else {
                     closeModal();
                     showToast("تم العودة للوضع العادي 🏢");
-                    openModalLogic(`<div class="text-center py-6"><div class="w-24 h-24 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl">🏢</div><h2 class="text-2xl font-black mb-4 text-blue-900">وضع المطعم العادي</h2><p class="text-slate-600 font-bold mb-8 text-lg leading-relaxed">أنت الآن في وضع الطلب من داخل المطعم (محلي أو سفري).<br>طلبك سيرسل للمطعم كطلب خارجي.</p><button onclick="closeModal()" class="w-full bg-blue-800 text-white py-4 rounded-2xl font-black mt-6">فهمت</button></div>`);
+                    openModalLogic(`<div class="text-center py-6"><div class="w-24 h-24 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl">🏢</div><h2 class="text-2xl font-black mb-4 text-blue-900">وضع المطعم العادي</h2><p class="text-slate-600 font-bold leading-relaxed">أنت الآن في وضع الطلب من داخل المطعم (محلي أو سفري).<br>طلبك سيرسل للمطعم كطلب خارجي.</p><button onclick="closeModal()" class="w-full bg-blue-800 text-white py-4 rounded-2xl font-black mt-6">فهمت</button></div>`);
                 }
             } else showToast("الكود خاطئ!", "#ef4444");
         }
