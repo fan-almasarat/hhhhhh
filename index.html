@@ -314,18 +314,20 @@
             localStorage.setItem('m_logs_v11', JSON.stringify(filtered));
         }
 
-        // دالة توليد ID مطورة تعتمد على أجزاء من التوقيت الحالي لضمان التفرد لكل طلب
+        // دالة توليد ID فائق الدقة (التاريخ + الساعة + الدقيقة + الثانية + الملي ثانية) لضمان عدم التكرار
         function generateUniqueID() {
-            const now = new Date();
-            const timePart = now.getTime().toString().slice(-4); // آخر 4 أرقام من الملي ثانية
-            const randomPart = Math.floor(100 + Math.random() * 899).toString(); // 3 أرقام عشوائية
-            return timePart + randomPart; // النتيجة 7 أرقام فريدة جداً
+            const d = new Date();
+            // تنسيق: يوم-ساعة-دقيقة-ثانية-ملي ثانية
+            return `${d.getDate()}${d.getHours()}${d.getMinutes()}${d.getSeconds()}${d.getMilliseconds()}`;
         }
 
         function saveToLogs(order) {
             let logs = JSON.parse(localStorage.getItem('m_logs_v11') || '[]');
-            // تم إلغاء فحص الـ Hash Check للسماح بطلبات متكررة حقيقية
-            logs.unshift(order);
+            // فحص إذا كان الـ ID موجود مسبقاً (لحالة السحب من الواتساب)
+            const exists = logs.some(l => l.id == order.id);
+            if (exists) return false;
+
+            logs.push(order); // الحفظ في السفل (Push) ليكون المسلسل ترتيباً زمنياً
             localStorage.setItem('m_logs_v11', JSON.stringify(logs));
             return true;
         }
@@ -342,23 +344,28 @@
                 localStorage.setItem('u_loc', lInput.value.trim());
             }
             
+            const now = new Date();
             const orderID = generateUniqueID();
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
             const payMethod = document.getElementById('payWay').value;
             const orderType = isNeighbor ? "حي بدر 🏠" : document.getElementById('oType').value;
-            const now = new Date();
-            const orderTime = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+            const orderFullTime = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             
             const orderObj = { 
-                id: orderID, timestamp: now.getTime(), items: JSON.parse(JSON.stringify(cart)), total, 
-                type: orderType, payment: payMethod, 
+                id: orderID, 
+                timestamp: now.getTime(), 
+                fullTime: orderFullTime,
+                items: JSON.parse(JSON.stringify(cart)), 
+                total, 
+                type: orderType, 
+                payment: payMethod, 
                 customer: isNeighbor ? localStorage.getItem('u_name') : 'عميل محلي', 
                 loc: isNeighbor ? localStorage.getItem('u_loc') : '' 
             };
             
             saveToLogs(orderObj);
 
-            let msg = `*طلب جديد - فوال مروه*%0AID: ${orderID}%0A⏰ *الوقت:* ${orderTime}%0A📢 *النوع:* ${orderType}%0A💰 *الدفع:* ${payMethod}%0A`;
+            let msg = `*طلب جديد - فوال مروه*%0AID: ${orderID}%0A⏰ *الوقت:* ${orderFullTime}%0A📅 *التاريخ:* ${now.toLocaleDateString('ar-SA')}%0A📢 *النوع:* ${orderType}%0A💰 *الدفع:* ${payMethod}%0A`;
             if(isNeighbor) {
                 msg += `🏠 *المنزل:* ${orderObj.loc}%0A`;
                 if(!localStorage.getItem('loc_sent_v11')) {
@@ -423,9 +430,32 @@
         function showDetailedLogs(type) {
             const logs = JSON.parse(localStorage.getItem('m_logs_v11') || '[]');
             const filtered = logs.filter(l => l.payment.includes(type) || l.type.includes(type));
-            let content = `<div class="min-h-[70vh]"><h2 class="text-2xl font-black mb-6">طلبات ${type}</h2><div class="space-y-3">`;
-            content += filtered.map(l => `<div onclick='viewOrderDetails(${JSON.stringify(l)})' class="p-4 bg-white rounded-2xl border flex justify-between items-center shadow-sm cursor-pointer"><div><span class="font-black text-sm">ID:${l.id}</span><p class="text-[10px] text-slate-400 font-bold">${new Date(l.timestamp).toLocaleTimeString('ar-SA')}</p></div><div class="font-black text-blue-700">${l.total}﷼</div></div>`).join('');
-            openModalLogic(content + `</div></div>`, showLogCategories);
+            const totalSum = filtered.reduce((s, l) => s + l.total, 0);
+
+            let content = `<div class="min-h-[70vh]"><h2 class="text-2xl font-black mb-6">سجل ${type}</h2><div class="space-y-3 mb-10">`;
+            
+            // عرض الطلبات بالمسلسل للسفل (1، 2، 3...)
+            content += filtered.map((l, index) => `
+                <div onclick='viewOrderDetails(${JSON.stringify(l)})' class="p-4 bg-white rounded-2xl border flex justify-between items-center shadow-sm cursor-pointer border-r-4 ${type.includes('كاش')?'border-amber-400':'border-blue-400'}">
+                    <div class="flex items-center gap-4">
+                        <span class="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center text-[10px] font-black text-slate-400">${index + 1}</span>
+                        <div>
+                            <span class="font-black text-sm text-slate-700">ID: ${l.id}</span>
+                            <p class="text-[9px] text-slate-400 font-bold">${l.fullTime || new Date(l.timestamp).toLocaleTimeString('ar-SA')}</p>
+                        </div>
+                    </div>
+                    <div class="font-black text-blue-800">${l.total}﷼</div>
+                </div>`).join('');
+
+            // القسم الإحصائي في أسفل السجل (حساب دقيق)
+            content += `</div>
+                <div class="bg-slate-900 text-white p-6 rounded-[35px] shadow-xl space-y-2">
+                    <div class="flex justify-between items-center"><span class="text-xs opacity-60 font-bold">عدد الطلبات المنجزة:</span><span class="font-black text-xl text-emerald-400">${filtered.length}</span></div>
+                    <div class="flex justify-between items-center"><span class="text-xs opacity-60 font-bold">إجمالي المبالغ (${type}):</span><span class="font-black text-2xl text-white">${totalSum}﷼</span></div>
+                </div>
+            </div>`;
+            
+            openModalLogic(content, showLogCategories);
         }
 
         function viewOrderDetails(order) {
@@ -435,7 +465,7 @@
                         <h3 class="font-black text-xl">فوال مروه</h3>
                         <p class="text-[9px] font-bold text-slate-400 mb-2">${new Date(order.timestamp).toLocaleString('ar-SA')}</p>
                         <div class="bg-slate-100 py-2 rounded-xl">
-                            <p class="text-sm font-black">ID:${order.id}</p>
+                            <p class="text-sm font-black">ID: ${order.id}</p>
                         </div>
                     </div>
                     <div class="flex justify-between px-2 text-[10px] font-bold mb-4">
@@ -491,11 +521,29 @@
                     payment: payMatch ? payMatch[1].trim() : "كاش 💵" 
                 };
 
-                if(saveToLogs(newOrder)) { 
-                    showToast("تم الحفظ بنجاح ✅", "#10b981"); 
-                    showLogCategories(); 
+                // منطق السحب الذكي ومنع التكرار
+                if(!saveToLogs(newOrder)) { 
+                    openModalLogic(`
+                        <div class="text-center py-6">
+                            <div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">🚫</div>
+                            <h3 class="text-xl font-black text-red-600 mb-2">تنبيه: الطلب مكرر!</h3>
+                            <p class="text-xs font-bold text-slate-500 mb-6 px-4">يوجد طلب في السجل بنفس الـ ID: <span class="text-red-600">${newOrder.id}</span> بنفس التفاصيل.</p>
+                            <button onclick='saveWithNewID(${JSON.stringify(newOrder)})' class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg">توليد ID جديد وحفظ الطلب</button>
+                            <button onclick="showLogCategories()" class="w-full bg-slate-100 text-slate-500 py-3 rounded-2xl font-bold mt-3">إلغاء</button>
+                        </div>
+                    `);
+                    return;
                 }
+                showToast("تم الحفظ بنجاح ✅", "#10b981"); 
+                showLogCategories(); 
             } catch(e) { showToast("خطأ في القراءة ❌", "#ef4444"); }
+        }
+
+        function saveWithNewID(order) {
+            order.id = generateUniqueID(); // توليد ID جديد بالملي ثانية
+            saveToLogs(order);
+            showToast("تم توليد ID جديد وحفظ الطلب ✅", "#10b981");
+            showLogCategories();
         }
 
         function saveFavorite(favName) {
