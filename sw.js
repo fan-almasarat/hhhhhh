@@ -1,5 +1,4 @@
-const CACHE_NAME = 'fawal-mrv-final-v12';
-
+const CACHE_NAME = 'fawal-mrv-final-full-v14';
 const assets = [
   './',
   './index.html',
@@ -17,9 +16,7 @@ self.addEventListener('install', e => {
 });
 
 self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))
-  );
+  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))));
 });
 
 self.addEventListener('fetch', e => {
