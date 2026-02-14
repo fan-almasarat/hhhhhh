@@ -304,14 +304,10 @@
                 </div>`);
         }
 
-        function openCartModal() { renderCartInModal(); }
-        function toggleFavNames() { document.getElementById('favNamesDiv').classList.toggle('hidden'); }
+        function generateUniqueID() {
+    return Date.now().toString().slice(-6);
+}
 
-        function cleanOldLogs() {
-            let logs = JSON.parse(localStorage.getItem('m_logs_v11') || '[]');
-            const now = Date.now();
-            const filtered = logs.filter(log => (now - log.timestamp) < (24 * 60 * 60 * 1000));
-            localStorage.setItem('m_logs_v11', JSON.stringify(filtered));
         }
 
         // دالة توليد ID فائق الدقة (التاريخ + الساعة + الدقيقة + الثانية + الملي ثانية) لضمان عدم التكرار
