@@ -106,22 +106,32 @@
             });
 
             cleanOldLogs(); renderTabs(); renderItems(); updateCartDisplay(); setNeighborUI();
-            if(!localStorage.getItem('first_welcome_v11')) showWelcomeMessage();
-        };
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-        });
-
-        async function handleInstall() {
+                    async function handleInstall() {
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-            if (isIOS && !isStandalone) {
-                showToast("لتثبيت التطبيق على iPhone: اضغط على زر 'مشاركة' ثم 'إضافة إلى الصفحة الرئيسية' 📲");
+            
+            if (isStandalone) {
+                showToast("التطبيق مثبت بالفعل في جهازك ✅", "#10b981");
                 return;
             }
+            
+            if (isIOS) {
+                showToast("للتثبيت: اضغط على زر 'مشاركة' ثم 'إضافة إلى الصفحة الرئيسية' 📲");
+                return;
+            }
+            
             if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    showToast("شكرًا لتثبيت تطبيقنا! 🎉", "#10b981");
+                    deferredPrompt = null;
+                }
+            } else {
+                showToast("التطبيق مثبت أو متصفحك يحتاج تثبيت يدوي من الإعدادات 🛠️");
+            }
+        }
+ {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
                 if (outcome === 'accepted') deferredPrompt = null;
