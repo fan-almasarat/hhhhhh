@@ -67,7 +67,7 @@
     </div>
 
     <nav class="fixed bottom-0 left-0 right-0 h-20 bg-white/95 backdrop-blur-lg flex justify-around items-center z-[1100] border-t border-slate-100 px-6">
-        <a href="https://maps.google.com" target="_blank" class="flex flex-col items-center text-slate-400"><i class="fa-solid fa-map-location-dot text-xl"></i><span class="text-[9px] font-black">موقعنا</span></a>
+        <a href="https://maps.app.goo.gl/Twt1MasJaJFYTfCZA" target="_blank" class="flex flex-col items-center text-slate-400"><i class="fa-solid fa-map-location-dot text-xl"></i><span class="text-[9px] font-black">موقعنا</span></a>
         <button id="installBtn" onclick="handleInstall()" class="w-16 h-16 bg-blue-700 text-white rounded-full -mt-10 border-[5px] border-white shadow-2xl flex items-center justify-center active:scale-90 transition-all"><i class="fa-solid fa-cloud-arrow-down text-xl"></i></button>
         <a href="tel:0530195433" class="flex flex-col items-center text-slate-400"><i class="fa-solid fa-headset text-xl"></i><span class="text-[9px] font-black">اتصال</span></a>
     </nav>
@@ -302,17 +302,21 @@
                     <div class="flex justify-between items-center mb-4 px-2"><span class="font-black text-slate-500">إجمالي الطلب:</span><span class="text-3xl font-black text-blue-800">${total}﷼</span></div>
                     <button onclick="confirmAndSend()" class="w-full bg-green-600 text-white py-5 rounded-[25px] font-black text-xl flex items-center justify-center gap-3 shadow-xl">إرسال للواتساب <i class="fa-brands fa-whatsapp"></i></button>
                 </div>`);
-                function generateUniqueID() {
-            return Date.now().toString().slice(-6);
         }
 
+        function openCartModal() { renderCartInModal(); }
+        function toggleFavNames() { document.getElementById('favNamesDiv').classList.toggle('hidden'); }
 
+        function cleanOldLogs() {
+            let logs = JSON.parse(localStorage.getItem('m_logs_v11') || '[]');
+            const now = Date.now();
+            const filtered = logs.filter(log => (now - log.timestamp) < (24 * 60 * 60 * 1000));
+            localStorage.setItem('m_logs_v11', JSON.stringify(filtered));
+        }
 
-        // دالة توليد ID فائق الدقة (التاريخ + الساعة + الدقيقة + الثانية + الملي ثانية) لضمان عدم التكرار
+        // دالة توليد ID مكون من 6 أرقام تعتمد على الملي ثانية لضمان عدم التكرار والجمالية
         function generateUniqueID() {
-            const d = new Date();
-            // تنسيق: يوم-ساعة-دقيقة-ثانية-ملي ثانية
-            return `${d.getDate()}${d.getHours()}${d.getMinutes()}${d.getSeconds()}${d.getMilliseconds()}`;
+            return Date.now().toString().slice(-6);
         }
 
         function saveToLogs(order) {
