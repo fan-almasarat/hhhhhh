@@ -98,7 +98,6 @@
 
         // --- نظام التثبيت والرجوع المحسن ---
         window.onload = () => {
-            // تسجيل Service Worker ضروري للاندرويد
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js').then(() => console.log("SW Registered"));
             }
@@ -122,7 +121,6 @@
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            console.log("Install prompt ready");
         });
 
         async function handleInstall() {
@@ -165,7 +163,6 @@
             }
         }
 
-        // --- الواجهات والرسائل ---
         function showToast(text, color = '#1e293b') {
             const toast = document.getElementById("customToast");
             if (toast) {
@@ -202,7 +199,6 @@
         }
         function closeModal() { document.getElementById('mainModal').style.display = 'none'; }
 
-        // --- العرض والتحكم ---
         function renderTabs() {
             const tabs = document.getElementById('categoryTabs');
             tabs.innerHTML = Object.keys(DB).map(cat => `<button onclick="setCategory('${cat}')" class="px-6 py-2 rounded-2xl whitespace-nowrap font-bold transition-all ${cat === currentCategory ? 'bg-white text-blue-900 shadow-xl' : 'text-white/70'}">${cat}</button>`).join('');
@@ -318,51 +314,20 @@
             localStorage.setItem('m_logs_v11', JSON.stringify(filtered));
         }
 
+        // دالة توليد ID مطورة تعتمد على أجزاء من التوقيت الحالي لضمان التفرد لكل طلب
         function generateUniqueID() {
-            let logs = JSON.parse(localStorage.getItem('m_logs_v11') || '[]');
-            let newID;
-            do { newID = Math.floor(100000 + Math.random() * 900000); }
-            while (logs.some(l => l.id == newID));
-            return newID;
+            const now = new Date();
+            const timePart = now.getTime().toString().slice(-4); // آخر 4 أرقام من الملي ثانية
+            const randomPart = Math.floor(100 + Math.random() * 899).toString(); // 3 أرقام عشوائية
+            return timePart + randomPart; // النتيجة 7 أرقام فريدة جداً
         }
 
         function saveToLogs(order) {
             let logs = JSON.parse(localStorage.getItem('m_logs_v11') || '[]');
-            const currentHash = order.items.map(i => `${i.name}-${i.qty}`).sort().join('|');
-            const duplicate = logs.find(l => {
-                const lHash = l.items.map(i => `${i.name}-${i.qty}`).sort().join('|');
-                return lHash === currentHash && l.total === order.total;
-            });
-
-            if (duplicate) {
-                showToast(`الطلب موجود مسبقاً! ID:${duplicate.id}`, "#ef4444");
-                return false;
-            }
-
-            if (logs.some(l => l.id == order.id)) {
-                openModalLogic(`
-                    <div class="text-center py-6">
-                        <div class="w-20 h-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">⚠️</div>
-                        <h3 class="text-xl font-black mb-4">عفواً، الـ ID:${order.id} مكرر</h3>
-                        <p class="text-sm font-bold text-slate-500 mb-6">لكن تفاصيل الطلب مختلفة. هل تريد إنشاء رقم تعريفي جديد وحفظه؟</p>
-                        <button onclick='saveWithNewID(${JSON.stringify(order)})' class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black">حفظ بـ ID جديد تلقائي</button>
-                    </div>
-                `);
-                return false;
-            }
-
+            // تم إلغاء فحص الـ Hash Check للسماح بطلبات متكررة حقيقية
             logs.unshift(order);
             localStorage.setItem('m_logs_v11', JSON.stringify(logs));
             return true;
-        }
-
-        function saveWithNewID(order) {
-            order.id = generateUniqueID();
-            let logs = JSON.parse(localStorage.getItem('m_logs_v11') || '[]');
-            logs.unshift(order);
-            localStorage.setItem('m_logs_v11', JSON.stringify(logs));
-            showToast("تم الحفظ بـ ID جديد ✅", "#10b981");
-            showLogCategories();
         }
 
         function confirmAndSend() {
@@ -381,17 +346,19 @@
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
             const payMethod = document.getElementById('payWay').value;
             const orderType = isNeighbor ? "حي بدر 🏠" : document.getElementById('oType').value;
+            const now = new Date();
+            const orderTime = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
             
             const orderObj = { 
-                id: orderID, timestamp: Date.now(), items: JSON.parse(JSON.stringify(cart)), total, 
+                id: orderID, timestamp: now.getTime(), items: JSON.parse(JSON.stringify(cart)), total, 
                 type: orderType, payment: payMethod, 
                 customer: isNeighbor ? localStorage.getItem('u_name') : 'عميل محلي', 
                 loc: isNeighbor ? localStorage.getItem('u_loc') : '' 
             };
             
-            if(!saveToLogs(orderObj)) return;
+            saveToLogs(orderObj);
 
-            let msg = `*طلب جديد - فوال مروه*%0AID:${orderID}%0A📢 *النوع:* ${orderType}%0A💰 *الدفع:* ${payMethod}%0A`;
+            let msg = `*طلب جديد - فوال مروه*%0AID: ${orderID}%0A⏰ *الوقت:* ${orderTime}%0A📢 *النوع:* ${orderType}%0A💰 *الدفع:* ${payMethod}%0A`;
             if(isNeighbor) {
                 msg += `🏠 *المنزل:* ${orderObj.loc}%0A`;
                 if(!localStorage.getItem('loc_sent_v11')) {
@@ -500,7 +467,7 @@
             const text = document.getElementById('waPaste').value;
             if(!text) return;
             try {
-                const idMatch = text.match(/ID:(\d+)/);
+                const idMatch = text.match(/ID:\s*(\d+)/);
                 const typeMatch = text.match(/النوع:\s*([^\n]+)/);
                 const payMatch = text.match(/الدفع:\s*([^\n]+)/);
                 const totalMatch = text.match(/الإجمالي:\s*(\d+)/);
