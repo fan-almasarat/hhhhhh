@@ -97,7 +97,6 @@
         let activeItemId = null;
         let deferredPrompt;
 
-        // --- نظام التثبيت والرجوع المحسن ---
         window.onload = () => {
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js').then(() => console.log("SW Registered"));
@@ -452,7 +451,6 @@
             openModalLogic(content, showLogCategories);
         }
 
-        // --- تعديل دالة عرض التفاصيل لدعم طباعة البلوتوث ---
         function viewOrderDetails(order) {
             const content = `
                 <div id="receiptUI" class="mb-6">
@@ -489,29 +487,30 @@
 
         // --- دالة الطباعة الحرارية عبر البلوتوث ---
         async function printToBluetooth(order) {
+            // تنسيق النص (ESC/POS) بشكل مبسط
             let receiptText = "";
-            receiptText += "\x1B\x61\x01"; // الوسط
-            receiptText += "فوال مروه\n";
+            receiptText += "\x1B\x61\x01"; // مركز
+            receiptText += "FAWAL MARWAH\n";
             receiptText += "--------------------------------\n";
-            receiptText += `ID: ${order.id}\n`;
-            receiptText += `${new Date(order.timestamp).toLocaleString('ar-SA')}\n`;
+            receiptText += `ORDER ID: ${order.id}\n`;
+            receiptText += `${new Date(order.timestamp).toLocaleString('en-US')}\n`;
             receiptText += "--------------------------------\n";
-            receiptText += "\x1B\x61\x02"; // اليمين
+            receiptText += "\x1B\x61\x00"; // يسار
             
             order.items.forEach(it => {
                 receiptText += `${it.name}\n`;
-                receiptText += `x${it.qty} | ${it.price * it.qty} RY\n`;
+                receiptText += `QTY: ${it.qty} | PRICE: ${it.price * it.qty} SAR\n`;
             });
 
             receiptText += "--------------------------------\n";
-            receiptText += `TOTAL: ${order.total} RY\n`;
+            receiptText += `TOTAL: ${order.total} SAR\n`;
             receiptText += "--------------------------------\n";
-            if(order.loc) receiptText += `${order.customer}\n${order.loc}\n`;
-            receiptText += "\n\n\n\x1D\x56\x00"; // قص الورق
+            receiptText += "\n\n\n\n"; // مسافة للقص
 
             try {
-                showToast("جاري البحث عن الطابعة...");
-                // تعريف الـ UUID الافتراضي لمعظم الطابعات الحرارية الصينية
+                showToast("جاري البحث عن طابعة...");
+                
+                // UUID الافتراضي لمعظم طابعات البلوتوث الحرارية
                 const device = await navigator.bluetooth.requestDevice({
                     filters: [{ services: ['000018f0-0000-1000-8000-00805f9b34fb'] }, { namePrefix: 'TP' }, { namePrefix: 'Printer' }],
                     optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb']
@@ -525,11 +524,11 @@
                 const data = encoder.encode(receiptText);
                 
                 await characteristic.writeValue(data);
-                showToast("تمت الطباعة بنجاح ✅", "#10b981");
+                showToast("تم إرسال الطلب للطابعة ✅", "#10b981");
                 
             } catch (error) {
                 console.error(error);
-                showToast("فشل الاتصال: تأكد من تشغيل البلوتوث والطابعة", "#ef4444");
+                showToast("فشل الاتصال بالطابعة ❌", "#ef4444");
             }
         }
 
@@ -571,6 +570,7 @@
                         <div class="text-center py-6">
                             <div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">🚫</div>
                             <h3 class="text-xl font-black text-red-600 mb-2">تنبيه: الطلب مكرر!</h3>
+                            <p class="text-xs font-bold text-slate-500 mb-6 px-4">يوجد طلب في السجل بنفس الـ ID: <span class="text-red-600">${newOrder.id}</span> بنفس التفاصيل.</p>
                             <button onclick='saveWithNewID(${JSON.stringify(newOrder)})' class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg">توليد ID جديد وحفظ الطلب</button>
                             <button onclick="showLogCategories()" class="w-full bg-slate-100 text-slate-500 py-3 rounded-2xl font-bold mt-3">إلغاء</button>
                         </div>
@@ -632,7 +632,7 @@
                 localStorage.setItem('isNbr', isNeighbor);
                 setNeighborUI(); renderItems();
                 if(isNeighbor) {
-                    openModalLogic(`<div class="text-center py-6"><div class="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl">🏘️</div><h2 class="text-3xl font-black mb-4 text-emerald-900">أهلاً بجيراننا!</h2><button onclick="closeModal()" class="w-full bg-emerald-600 text-white py-5 rounded-3xl font-black shadow-xl">ابدأ طلبك الآن</button></div>`);
+                    openModalLogic(`<div class="text-center py-6"><div class="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl">🏘️</div><h2 class="text-3xl font-black mb-4 text-emerald-900">أهلاً بجيراننا!</h2><p class="text-slate-600 font-bold mb-8 text-lg leading-relaxed">تم تفعيل نظام <span class=\"text-emerald-600\">التوصيل المجاني</span> لحي بدر بنجاح.</p><button onclick="closeModal()" class="w-full bg-emerald-600 text-white py-5 rounded-3xl font-black shadow-xl">ابدأ طلبك الآن</button></div>`);
                 } else {
                     closeModal();
                     showToast("تم العودة للوضع العادي 🏢");
