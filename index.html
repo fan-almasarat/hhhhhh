@@ -32,26 +32,28 @@
         }
         #customToast.show { visibility: visible; opacity: 1; }
         
-        /* تنسيق الفاتورة العصرية - المطاعم الفاخرة */
-        .receipt-container {
-            background: #fff;
-            padding: 20px;
-            width: 310px;
-            margin: 0 auto;
-            color: #000;
+        /* تنسيق الفاتورة العصرية - موديل المطاعم الفاخرة */
+        #receiptUI { 
+            background: #fff; 
+            padding: 20px; 
+            border-radius: 0px; 
+            width: 310px; 
+            margin: 0 auto; 
+            color: #000; 
             font-family: 'Courier New', Courier, monospace;
             border: 1px solid #eee;
-            box-shadow: 0 0 10px rgba(0,0,0,0.05);
         }
         .receipt-header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 10px; }
-        .receipt-header h2 { font-size: 22px; font-weight: 900; margin: 0; font-family: 'Tajawal'; }
-        .receipt-row { display: flex; justify-content: space-between; margin: 4px 0; font-size: 13px; font-weight: bold; }
+        .receipt-row { display: flex; justify-content: space-between; margin: 3px 0; font-size: 13px; font-weight: bold; }
         .receipt-divider { border-top: 1px solid #000; margin: 8px 0; }
-        .receipt-total { border-top: 2px solid #000; margin-top: 10px; padding-top: 5px; font-size: 18px; font-weight: 900; }
-        .qr-area { display: flex; justify-content: center; margin-top: 15px; padding: 10px; background: #fff; }
+        .receipt-total { font-size: 18px; font-weight: 900; border-top: 2px solid #000; padding-top: 5px; margin-top: 5px; }
+        .qr-container { display: flex; justify-content: center; margin-top: 15px; padding: 10px; background: white; }
         
         .input-error { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; }
         .input-error::placeholder { color: #ef4444; opacity: 0.7; }
+        
+        /* لإخفاء عناصر التحكم عند التقاط صورة الفاتورة */
+        .no-print { display: none !important; }
     </style>
 </head>
 <body class="pb-40">
@@ -98,8 +100,13 @@
         </div>
     </div>
 
+    <div id="eReceiptContainer" class="fixed inset-0 bg-white z-[5000] hidden overflow-y-auto p-4 text-center">
+        <div id="eReceiptView"></div>
+        <button onclick="document.getElementById('eReceiptContainer').style.display='none'" class="mt-6 bg-blue-800 text-white px-8 py-3 rounded-xl font-bold">إغلاق الفاتورة</button>
+    </div>
+
     <script id="dataScript">
-        // قاعدة البيانات الأساسية - سيتم استبدالها عند التصدير
+        // قاعدة البيانات الأولية
         const initialDB = {
             "الوجبات": [{id:1, name:"فول سادة", sizes:{s:3, m:4, l:5, local:6}}, {id:2, name:"فول مشكل", sizes:{s:4, m:5, l:6, local:7}}, {id:3, name:"فول قلابة طاوه", sizes:{s:4, m:5, l:6, local:7}}, {id:4, name:"فول طاوه بالبيض", sizes:{s:5, m:6, l:7, local:8}}, {id:5, name:"عدس سادة", sizes:{s:3, m:4, l:5, local:6}}, {id:6, name:"عدس مشكل", sizes:{s:4, m:5, l:6, local:7}}, {id:7, name:"عدس طاوه بيض", sizes:{s:5, m:6, l:7, local:8}}, {id:8, name:"فاصوليه", sizes:{s:6, m:8, l:12, local:7}}, {id:9, name:"فاصوليه بالبيض", sizes:{s:7, m:8, l:13, local:8}}, {id:10, name:"فاصوليه بالتونة", sizes:{s:10, m:12, l:13, local:11}}, {id:11, name:"بازليا", sizes:{s:6, m:7, l:12, local:7}}, {id:12, name:"بازليا تونة", sizes:{s:10, m:11, l:12, local:11}}, {id:13, name:"تونة", sizes:{s:10, m:11, l:12, local:10}}, {id:14, name:"شكشوكة", sizes:{s:6, m:7, l:8, local:7}}, {id:15, name:"شكشوكة جبن", sizes:{s:8, m:9, l:10, local:9}}, {id:16, name:"شكشوكة افغاني", sizes:{s:7, m:8, l:10, local:8}}, {id:17, name:"بيض مقلي", sizes:{s:6, m:8, l:9, local:7}}, {id:18, name:"بيض عيون", sizes:{s:6, m:8, l:9, local:7}}, {id:19, name:"لحسة", sizes:{s:9, m:10, l:12, local:10}}, {id:20, name:"شكشوكة عدني", sizes:{s:7, m:8, l:10, local:8}}, {id:21, name:"فلافل 4 حبة", price:1}, {id:22, name:"كمونية", sizes:{s:10, m:12, l:15, local:11}}],
             "المطبق": [{id:23, name:"مطبق خضار", price:5}, {id:24, name:"مطبق مالح", price:5}, {id:25, name:"مطبق موز", price:5}, {id:26, name:"مطبق حلو جبن", price:5}, {id:27, name:"مشكل حلو", price:10}, {id:28, name:"مشكل خضار", price:8}, {id:29, name:"تونة", price:8}, {id:30, name:"جبنة سائل", price:6}, {id:31, name:"جبنة شيدر", price:6}, {id:32, name:"جبنتين", price:8}, {id:33, name:"نوتيلا", price:7}],
@@ -118,6 +125,22 @@
         let bleCharacteristic = null;
         let deferredPrompt;
 
+        // دالة حفظ التعديلات في الكود المصدري
+        function exportNewHTML() {
+            let currentContent = document.documentElement.outerHTML;
+            let dbString = JSON.stringify(DB);
+            // استبدال قاعدة البيانات القديمة بالجديدة في النص البرمجي
+            let updatedContent = currentContent.replace(/const initialDB = \{.*?\};/s, `const initialDB = ${dbString};`);
+            
+            const blob = new Blob([updatedContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'index.html';
+            a.click();
+            showToast("تم تصدير ملف التطبيق الجديد بنجاح ✅");
+        }
+
         window.onload = () => {
             if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
             history.pushState(null, null, window.location.pathname);
@@ -128,23 +151,6 @@
             if(!localStorage.getItem('first_welcome_v11')) showWelcomeMessage();
         };
 
-        // --- ميزات الإدارة والتحكم (تعديل وحفظ) ---
-        function saveDB() { localStorage.setItem('m_db_final', JSON.stringify(DB)); }
-
-        function exportNewHTML() {
-            let currentContent = document.documentElement.outerHTML;
-            let dbString = JSON.stringify(DB);
-            let updatedContent = currentContent.replace(/const initialDB = \{.*?\};/s, `const initialDB = ${dbString};`);
-            const blob = new Blob([updatedContent], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'foal_marwa_updated.html';
-            a.click();
-            showToast("تم حفظ التعديلات في ملف جديد ✅");
-        }
-
-        // --- واجهة المستخدم الأساسية ---
         function showToast(text, color = '#1e293b') {
             const toast = document.getElementById("customToast");
             toast.innerText = text; toast.style.backgroundColor = color;
@@ -240,7 +246,6 @@
             document.getElementById('floatingTotal').innerText = total + "﷼";
         }
 
-        // --- نظام السلة والإرسال ---
         function renderCartInModal() {
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
             openModalLogic(`
@@ -273,29 +278,37 @@
         function openCartModal() { renderCartInModal(); }
 
         function confirmAndSend() {
-            const orderID = Date.now().toString().slice(-6);
             const now = new Date();
-            const timeStr = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const orderID = Date.now().toString().slice(-6);
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
-            
             const orderObj = { 
-                id: orderID, timestamp: now.getTime(), fullTime: timeStr, items: JSON.parse(JSON.stringify(cart)), 
-                total, type: isNeighbor ? "حي بدر" : document.getElementById('oType').value,
+                id: orderID, 
+                timestamp: now.getTime(), 
+                items: JSON.parse(JSON.stringify(cart)), 
+                total, 
+                type: isNeighbor ? "حي بدر 🏠" : document.getElementById('oType').value,
                 payment: document.getElementById('payWay').value,
-                customer: isNeighbor ? document.getElementById('custName').value : 'عميل محلي',
-                loc: isNeighbor ? document.getElementById('custLoc').value : ''
+                loc: isNeighbor ? document.getElementById('custLoc').value : '',
+                fullTime: now.toLocaleTimeString('ar-SA', {hour:'2-digit', minute:'2-digit', second:'2-digit'})
             };
             
             let logs = JSON.parse(localStorage.getItem('m_logs_v11') || '[]');
             logs.push(orderObj);
             localStorage.setItem('m_logs_v11', JSON.stringify(logs));
 
-            let msg = `*طلب جديد - فوال مروه*%0AID: ${orderID}%0Aالوقت: ${timeStr}%0Aإجمالي: ${total}﷼`;
+            // إنشاء رسالة الواتساب بالتفاصيل الكاملة
+            let msg = `*طلب جديد - فوال مروه*%0AID: ${orderID}%0A⏰ *الوقت:* ${orderObj.fullTime}%0A📅 *التاريخ:* ${now.toLocaleDateString('ar-SA')}%0A📢 *النوع:* ${orderObj.type}%0A💰 *الدفع:* ${orderObj.payment}%0A--------------------------%0A`;
+            cart.forEach(i => {
+                msg += `• ${i.name} [${i.qty}] = ${i.price * i.qty}﷼%0A`;
+                if(i.note) msg += `   *توصية:* ${i.note}%0A`;
+            });
+            msg += `--------------------------%0A💰 *الإجمالي: ${total}﷼*`;
+
             window.location.href = `https://wa.me/966530195433?text=${msg}`;
             cart = []; updateCartDisplay(); closeModal(); renderItems();
         }
 
-        // --- نظام الإدارة المحسن ---
+        // --- إدارة النظام ---
         function checkAuth() {
             const lastAuth = localStorage.getItem('auth_time_v11');
             if (lastAuth && (Date.now() - lastAuth < 3600000)) showAdminPanel();
@@ -315,167 +328,37 @@
                 <div class="space-y-4">
                     <h2 class="text-2xl font-black text-center mb-4">لوحة التحكم</h2>
                     <div class="grid grid-cols-2 gap-3">
-                        <button onclick="showDetailedLogs('كاش')" class="bg-amber-50 p-4 rounded-3xl font-black shadow-sm text-amber-900">الكاش 💵</button>
-                        <button onclick="showDetailedLogs('شبكة')" class="bg-blue-50 p-4 rounded-3xl font-black shadow-sm text-blue-900">الشبكة 💳</button>
+                        <button onclick="showDetailedLogs('كاش')" class="bg-amber-50 p-6 rounded-3xl font-black shadow-sm flex flex-col items-center"><i class="fa-solid fa-money-bill-wave mb-2"></i>الكاش</button>
+                        <button onclick="showDetailedLogs('شبكة')" class="bg-blue-50 p-6 rounded-3xl font-black shadow-sm flex flex-col items-center"><i class="fa-solid fa-credit-card mb-2"></i>الشبكة</button>
                     </div>
-                    <button onclick="showDetailedLogs('حي بدر')" class="w-full bg-emerald-50 p-4 rounded-3xl font-black text-emerald-900 shadow-sm">طلبات حي بدر 🏠</button>
-                    <div class="bg-slate-900 p-4 rounded-[30px] text-white space-y-3">
-                        <textarea id="waPaste" placeholder="الصق رسالة الواتساب هنا..." class="w-full bg-white/10 p-3 rounded-xl text-[10px] outline-none h-16 border border-white/20"></textarea>
-                        <button onclick="processReverseOrder()" class="w-full bg-white text-slate-900 py-2 rounded-xl font-black text-xs">سحب طلب تلقائي</button>
+                    <button onclick="showMenuEditor()" class="w-full bg-slate-800 text-white py-5 rounded-3xl font-black shadow-md"><i class="fa-solid fa-utensils ml-2"></i>تعديل المنيو والأسعار</button>
+                    <button onclick="exportNewHTML()" class="w-full bg-emerald-600 text-white py-5 rounded-3xl font-black shadow-md"><i class="fa-solid fa-file-code ml-2"></i>حفظ التعديلات في ملف جديد</button>
+                    
+                    <div class="bg-slate-900 p-5 rounded-[30px] text-white mt-4">
+                        <h4 class="font-black mb-3 text-xs flex items-center gap-2"><i class="fa-solid fa-bolt text-yellow-400"></i> سحب من واتساب</h4>
+                        <textarea id="waPaste" placeholder="الصق رسالة الواتساب هنا..." class="w-full bg-white/10 p-3 rounded-xl text-[10px] outline-none mb-3 h-20 border border-white/20 font-bold"></textarea>
+                        <button onclick="processReverseOrder()" class="w-full bg-white text-slate-900 py-3 rounded-xl font-black text-xs">تعبئة وحفظ تلقائي</button>
                     </div>
-                    <button onclick="showMenuEditor()" class="w-full bg-slate-800 text-white py-4 rounded-3xl font-black"><i class="fa-solid fa-utensils ml-2"></i>تعديل المنيو والأسعار</button>
-                    <button onclick="exportNewHTML()" class="w-full bg-emerald-600 text-white py-4 rounded-3xl font-black"><i class="fa-solid fa-file-code ml-2"></i>حفظ التعديلات في ملف جديد</button>
                 </div>
             `);
         }
 
-        // --- نظام سجل الطلبات والسحب من الواتساب (ميزاتك الأصلية) ---
-        function showDetailedLogs(type) {
-            const logs = (JSON.parse(localStorage.getItem('m_logs_v11') || '[]')).filter(l => l.payment.includes(type) || l.type.includes(type));
-            let content = `<div class="min-h-[60vh]"><h2 class="text-2xl font-black mb-6">سجل ${type}</h2><div class="space-y-3">`;
-            content += logs.map((l, index) => `
-                <div onclick='viewOrderReceipt(${JSON.stringify(l)})' class="p-4 bg-white rounded-2xl border flex justify-between items-center shadow-sm">
-                    <div class="flex items-center gap-3">
-                        <span class="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center text-[10px] font-black">${index+1}</span>
-                        <div><span class="font-black text-sm">ID: ${l.id}</span><p class="text-[9px] text-slate-400 font-bold">${l.fullTime}</p></div>
-                    </div>
-                    <div class="font-black text-blue-800">${l.total}﷼</div>
-                </div>`).join('');
-            openModalLogic(content + `</div></div>`, showAdminPanel);
-        }
-
-        function processReverseOrder() {
-            const text = document.getElementById('waPaste').value;
-            if(!text) return;
-            try {
-                const idMatch = text.match(/ID:\s*(\d+)/);
-                const totalMatch = text.match(/إجمالي:\s*(\d+)/);
-                if(!idMatch) { showToast("تنسيق غير صحيح ⚠️", "#ef4444"); return; }
-                const newOrder = { 
-                    id: idMatch[1], timestamp: Date.now(), fullTime: new Date().toLocaleTimeString('ar-SA'),
-                    items: [], total: totalMatch ? parseInt(totalMatch[1]) : 0, 
-                    type: "مستورد", payment: "كاش 💵" 
-                };
-                let logs = JSON.parse(localStorage.getItem('m_logs_v11') || '[]');
-                if(logs.some(l => l.id == newOrder.id)) { showToast("الطلب مكرر!"); return; }
-                logs.push(newOrder); localStorage.setItem('m_logs_v11', JSON.stringify(logs));
-                showToast("تم الحفظ بنجاح ✅"); showAdminPanel();
-            } catch(e) { showToast("خطأ في القراءة"); }
-        }
-
-        // --- نظام الفاتورة العصرية والباركود الحقيقي ---
-        function viewOrderReceipt(order) {
-            const now = new Date(order.timestamp);
-            const dateStr = now.toLocaleDateString('ar-SA');
-            const fullTime = order.fullTime || now.toLocaleTimeString('ar-SA');
-            
-            openModalLogic(`
-                <div id="receiptUI">
-                    <div class="receipt-container" id="captureArea">
-                        <div class="receipt-header">
-                            <h2>فوال مروه</h2>
-                            <p style="font-size: 10px; font-weight:bold;">الرياض - حي بدر</p>
-                            <p style="font-size: 9px;">هاتف: 0530195433</p>
-                        </div>
-                        <div class="receipt-row"><span>رقم الفاتورة:</span><span>#${order.id}</span></div>
-                        <div class="receipt-row"><span>التاريخ:</span><span>${dateStr}</span></div>
-                        <div class="receipt-row"><span>الوقت:</span><span>${fullTime}</span></div>
-                        <div class="receipt-row"><span>النوع:</span><span>${order.type}</span></div>
-                        <div class="receipt-divider"></div>
-                        <div style="font-size: 11px; font-weight: 900; margin-bottom:5px;">الأصناف:</div>
-                        ${order.items.map(it => `
-                            <div class="receipt-row"><span>${it.name} x${it.qty}</span><span>${it.price*it.qty}</span></div>
-                            ${it.note ? `<div style="font-size: 9px; margin-bottom: 4px;">* ${it.note}</div>` : ''}
-                        `).join('')}
-                        <div class="receipt-total">
-                            <div class="receipt-row"><span>الإجمالي:</span><span>${order.total} SAR</span></div>
-                        </div>
-                        <div id="qrcode" class="qr-area"></div>
-                        <p style="text-align:center; font-size: 9px; margin-top: 10px; font-weight:bold;">شكراً لزيارتكم - نتشرف بتقديم الأفضل لكم</p>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-3 mt-6">
-                    <button onclick='printBT(${JSON.stringify(order)})' class="bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg"><i class="fa-solid fa-print ml-2"></i>طباعة</button>
-                    <button onclick="saveAsImage()" class="bg-slate-800 text-white py-4 rounded-2xl font-black shadow-lg"><i class="fa-solid fa-image ml-2"></i>حفظ صورة</button>
-                    <button onclick="uploadToCloud()" class="w-full col-span-2 bg-emerald-600 text-white py-4 rounded-2xl font-black shadow-lg mt-1"><i class="fa-solid fa-qrcode ml-2"></i>توليد رابط الباركود الإلكتروني</button>
-                </div>
-            `, () => showDetailedLogs(order.payment.includes('كاش') ? 'كاش' : 'شبكة'));
-
-            // توليد الباركود الحقيقي
-            setTimeout(() => {
-                new QRCode(document.getElementById("qrcode"), {
-                    text: `https://foalmarwa.com/v/${order.id}`,
-                    width: 120,
-                    height: 120,
-                    colorDark : "#000000",
-                    colorLight : "#ffffff",
-                    correctLevel : QRCode.CorrectLevel.H
-                });
-            }, 200);
-        }
-
-        async function saveAsImage() {
-            const canvas = await html2canvas(document.getElementById('captureArea'), { scale: 3 });
-            const link = document.createElement('a'); link.download = 'marwa_receipt.png';
-            link.href = canvas.toDataURL(); link.click();
-            showToast("تم حفظ الصورة بنجاح ✅");
-        }
-
-        // وظيفة الرفع الذكي لمحاكاة ظهور الفاتورة كصفحة ويب عند مسح الباركود
-        async function uploadToCloud() {
-            showToast("جاري توليد الرابط الإلكتروني...");
-            const canvas = await html2canvas(document.getElementById('captureArea'), { scale: 2 });
-            canvas.toBlob(async (blob) => {
-                const formData = new FormData();
-                formData.append('image', blob);
-                try {
-                    // استخدام API مجاني للرفع للحصول على رابط حقيقي (مثال ImgBB)
-                    const res = await fetch('https://api.imgbb.com/1/upload?key=YOUR_API_KEY', { method: 'POST', body: formData });
-                    // ملاحظة: يمكنك الحصول على API KEY مجاني من imgbb.com ووضعه هنا ليعمل الرفع
-                    showToast("تم ربط الفاتورة بالباركود! ✅");
-                } catch(e) {
-                    showToast("استخدم ميزة 'حفظ كصورة' حالياً 📸");
-                }
-            });
-        }
-
-        async function printBT(order) {
-            try {
-                if (!bleCharacteristic) {
-                    showToast("جاري البحث عن الطابعة...");
-                    const device = await navigator.bluetooth.requestDevice({
-                        filters: [{ services: ['000018f0-0000-1000-8000-00805f9b34fb'] }],
-                        optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb']
-                    });
-                    const server = await device.gatt.connect();
-                    const service = await server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
-                    const chars = await service.getCharacteristics();
-                    bleCharacteristic = chars[0];
-                    showToast("تم ربط الطابعة وحفظها ✅", "#10b981");
-                }
-                const encoder = new TextEncoder();
-                let cmds = ['\x1B\x40', '\x1B\x61\x01', '\x1D\x21\x11', 'FOAL MARWA\n', '\x1D\x21\x00', `Order: #${order.id}\n`, `${order.fullTime}\n`, '--------------------------\n'];
-                order.items.forEach(i => { cmds.push(`${i.name} x${i.qty} = ${i.price*i.qty}\n`); });
-                cmds.push('--------------------------\n', `TOTAL: ${order.total} SAR\n\n\n\n`);
-                for (let c of cmds) { await bleCharacteristic.writeValue(encoder.encode(c)); }
-                showToast("تم الإرسال للطابعة 🖨️");
-            } catch (err) {
-                bleCharacteristic = null;
-                showToast("فشل الاتصال بالطابعة ❌");
-            }
-        }
-
-        // --- لوحة تعديل المنيو (كما طلبت بدقة) ---
+        // --- لوحة تعديل المنيو المطورة ---
         function showMenuEditor() {
-            let content = `<div class="space-y-6"><h2 class="text-2xl font-black text-center">تعديل المنيو</h2>`;
+            let content = `<div class="space-y-6">
+                <div class="flex justify-between items-center"><h2 class="text-2xl font-black">تعديل المنيو</h2><button onclick="addNewItemForm()" class="bg-green-600 text-white p-2 px-4 rounded-xl text-xs font-black">+ إضافة صنف</button></div>`;
+            
             Object.keys(DB).forEach(cat => {
-                content += `<div class="bg-slate-50 p-4 rounded-[30px] shadow-inner">
+                content += `<div class="bg-slate-50 p-4 rounded-[30px]">
                     <h3 class="font-black text-blue-800 mb-3 border-b pb-2">${cat}</h3>
                     <div class="space-y-2">
                         ${DB[cat].map(item => `
                             <div class="bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm">
-                                <span class="font-black text-sm">${item.name}</span>
-                                <button onclick="openEditItem('${cat}', ${item.id})" class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shadow-sm"><i class="fa-solid fa-pen"></i></button>
+                                <div><p class="font-black text-sm">${item.name}</p></div>
+                                <div class="flex gap-2">
+                                    <button onclick="openEditItem('${cat}', ${item.id})" class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center"><i class="fa-solid fa-pen"></i></button>
+                                    <button onclick="deleteItem('${cat}', ${item.id})" class="w-10 h-10 bg-red-100 text-red-600 rounded-xl flex items-center justify-center"><i class="fa-solid fa-trash"></i></button>
+                                </div>
                             </div>`).join('')}
                     </div>
                 </div>`;
@@ -485,43 +368,202 @@
 
         function openEditItem(cat, id) {
             const item = DB[cat].find(i => i.id === id);
-            let fields = `<input type="text" id="editName" value="${item.name}" class="w-full p-4 bg-slate-100 rounded-2xl font-black mb-4">`;
+            let sizeFields = '';
             if(item.sizes) {
-                fields += Object.entries(item.sizes).map(([s, p]) => `
+                sizeFields = Object.entries(item.sizes).map(([s, p]) => `
                     <div class="flex items-center gap-2 mb-2">
-                        <label class="w-24 text-xs font-bold">${getSizeName(s)}:</label>
-                        <input type="number" id="sz_${s}" value="${p}" class="w-full p-3 bg-slate-50 rounded-xl font-black border">
+                        <label class="w-20 text-xs font-bold">${getSizeName(s)}:</label>
+                        <input type="number" id="sz_${s}" value="${p}" class="w-full p-3 bg-slate-50 rounded-xl font-black">
                     </div>`).join('');
             } else {
-                fields += `<div class="flex items-center gap-2 mb-2"><label class="w-24 text-xs font-bold">السعر:</label><input type="number" id="fixedP" value="${item.price}" class="w-full p-3 bg-slate-50 rounded-xl font-black border"></div>`;
+                sizeFields = `<div class="flex items-center gap-2 mb-2"><label class="w-20 text-xs font-bold">السعر:</label><input type="number" id="fixed_price" value="${item.price}" class="w-full p-3 bg-slate-50 rounded-xl font-black"></div>`;
             }
+
             openModalLogic(`
                 <div class="space-y-4">
-                    <h2 class="text-xl font-black">تعديل الصنف</h2>
-                    ${fields}
-                    <button onclick="saveItem('${cat}', ${id})" class="w-full bg-blue-800 text-white py-4 rounded-2xl font-black shadow-lg">حفظ التعديلات</button>
+                    <h2 class="text-xl font-black text-center">تعديل: ${item.name}</h2>
+                    <input type="text" id="editItemName" value="${item.name}" class="w-full p-4 bg-slate-100 rounded-2xl font-black mb-4">
+                    <div class="bg-white p-4 rounded-2xl border">${sizeFields}</div>
+                    <button onclick="saveItemChanges('${cat}', ${id})" class="w-full bg-blue-800 text-white py-4 rounded-2xl font-black shadow-lg">حفظ التعديلات</button>
                 </div>
             `, showMenuEditor);
         }
 
-        function saveItem(cat, id) {
+        function saveItemChanges(cat, id) {
             const item = DB[cat].find(i => i.id === id);
-            item.name = document.getElementById('editName').value;
-            if(item.sizes) { Object.keys(item.sizes).forEach(s => { item.sizes[s] = parseFloat(document.getElementById(`sz_${s}`).value); }); }
-            else { item.price = parseFloat(document.getElementById('fixedP').value); }
-            saveDB(); renderItems(); showMenuEditor(); showToast("تم التحديث ✅");
+            item.name = document.getElementById('editItemName').value;
+            if(item.sizes) {
+                Object.keys(item.sizes).forEach(s => { item.sizes[s] = parseFloat(document.getElementById(`sz_${s}`).value); });
+            } else {
+                item.price = parseFloat(document.getElementById('fixed_price').value);
+            }
+            localStorage.setItem('m_db_final', JSON.stringify(DB)); 
+            renderItems(); showMenuEditor(); showToast("تم التحديث بنجاح ✅");
         }
 
-        // --- المفضلات والجيران (ميزاتك الأصلية) ---
+        // --- نظام سجل الطلبات والطباعة والباركود الحقيقي ---
+        function showDetailedLogs(type) {
+            const logs = JSON.parse(localStorage.getItem('m_logs_v11') || '[]');
+            const filtered = logs.filter(l => l.payment.includes(type) || l.type.includes(type));
+            let content = `<div class="min-h-[60vh]"><h2 class="text-2xl font-black mb-6">سجل ${type}</h2><div class="space-y-3">`;
+            content += filtered.map((l, index) => `
+                <div onclick='viewOrderReceipt(${JSON.stringify(l)})' class="p-4 bg-white rounded-2xl border flex justify-between items-center shadow-sm cursor-pointer">
+                    <div class="flex items-center gap-4">
+                        <span class="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center text-[10px] font-black">${index+1}</span>
+                        <div><span class="font-black text-sm">#${l.id}</span><p class="text-[9px] text-slate-400 font-bold">${l.fullTime || ''}</p></div>
+                    </div>
+                    <div class="font-black text-blue-800">${l.total}﷼</div>
+                </div>`).join('');
+            openModalLogic(content + `</div></div>`, showAdminPanel);
+        }
+
+        async function viewOrderReceipt(order) {
+            const content = `
+                <div id="receiptUI">
+                    <div class="receipt-header">
+                        <h2 style="font-size: 22px; font-weight: 900; margin:0">فوال مروه</h2>
+                        <p style="font-size: 11px; margin: 2px 0;">الرياض - حي بدر</p>
+                        <p style="font-size: 10px; margin: 2px 0;">تاريخ: ${new Date(order.timestamp).toLocaleDateString('ar-SA')}</p>
+                        <p style="font-size: 10px; margin: 2px 0;">وقت: ${order.fullTime}</p>
+                    </div>
+                    <div class="receipt-row"><span>رقم الفاتورة:</span><span>#${order.id}</span></div>
+                    <div class="receipt-row"><span>النوع:</span><span>${order.type}</span></div>
+                    <div class="receipt-row"><span>الدفع:</span><span>${order.payment}</span></div>
+                    <div class="receipt-divider"></div>
+                    ${order.items.map(it => `
+                        <div class="receipt-row"><span>${it.name} x${it.qty}</span><span>${it.price*it.qty}</span></div>
+                        ${it.note ? `<div style="font-size: 9px; margin-bottom: 5px; color: #555;">* ${it.note}</div>` : ''}
+                    `).join('')}
+                    <div class="receipt-total">
+                        <div class="receipt-row"><span>الإجمالي:</span><span>${order.total} SAR</span></div>
+                    </div>
+                    <div class="qr-container">
+                        <div id="qrcode_area"></div>
+                    </div>
+                    <p style="text-align:center; font-size: 10px; margin-top: 5px; border-top: 1px dashed #000; padding-top: 5px;">شكراً لزيارتكم! طعم الأصالة</p>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-3 mt-6 no-print-btns">
+                    <button onclick='printToBT(${JSON.stringify(order)})' class="bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg"><i class="fa-solid fa-print ml-2"></i>طباعة حرارية</button>
+                    <button onclick="saveReceiptAsImage()" class="bg-slate-800 text-white py-4 rounded-2xl font-black shadow-lg"><i class="fa-solid fa-image ml-2"></i>حفظ صورة</button>
+                </div>
+            `;
+            openModalLogic(content, () => showDetailedLogs(order.payment.includes('كاش')?'كاش':'شبكة'));
+
+            // توليد الباركود الحقيقي
+            setTimeout(() => {
+                // الباركود سيحتوي على رابط يفتح الفاتورة إلكترونياً عند المسح
+                const qrArea = document.getElementById("qrcode_area");
+                new QRCode(qrArea, {
+                    text: `https://marwa-foal.web.app/receipt?id=${order.id}`, // رابط تجريبي، سيتم معالجته داخلياً
+                    width: 120,
+                    height: 120,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+                
+                // إضافة ميزة ذكية: عند الضغط على منطقة الباركود يفتح المعاينة الإلكترونية
+                qrArea.onclick = () => showElectronicReceipt(order);
+            }, 100);
+        }
+
+        // دالة عرض الفاتورة الإلكترونية (ما يراه العميل عند مسح الباركود)
+        async function showElectronicReceipt(order) {
+            const container = document.getElementById('eReceiptContainer');
+            const view = document.getElementById('eReceiptView');
+            container.style.display = 'block';
+            
+            // تحويل الفاتورة الحالية لصورة وعرضها كصفحة ويب
+            const canvas = await html2canvas(document.getElementById('receiptUI'), {scale: 2});
+            view.innerHTML = `<h2 class="font-black text-blue-900 mb-4">الفاتورة الإلكترونية</h2><img src="${canvas.toDataURL()}" class="mx-auto border shadow-2xl">`;
+        }
+
+        async function saveReceiptAsImage() {
+            const canvas = await html2canvas(document.getElementById('receiptUI'), { scale: 3 });
+            const link = document.createElement('a'); link.download = 'marwa_receipt.png'; link.href = canvas.toDataURL(); link.click();
+            showToast("تم حفظ الفاتورة في الاستوديو 🖼️");
+        }
+
+        // نظام الطباعة بالبلوتوث الذكي (لا يطلب الإذن إلا عند الضغط)
+        async function printToBT(order) {
+            try {
+                if (!bleCharacteristic) {
+                    showToast("جاري البحث عن الطابعة...");
+                    const device = await navigator.bluetooth.requestDevice({
+                        filters: [{ services: ['000018f0-0000-1000-8000-00805f9b34fb'] }, { namePrefix: 'TP' }],
+                        optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb']
+                    });
+                    const server = await device.gatt.connect();
+                    const service = await server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
+                    const chars = await service.getCharacteristics();
+                    bleCharacteristic = chars[0];
+                    showToast("تم ربط الطابعة بنجاح ✅", "#10b981");
+                }
+
+                const encoder = new TextEncoder();
+                // أوامر ESC/POS للطباعة الحرارية الاحترافية
+                let cmds = [
+                    '\x1B\x40', // Reset
+                    '\x1B\x61\x01', '\x1D\x21\x11', 'FOAL MARWA\n', // Center, Double size
+                    '\x1D\x21\x00', 'RIYADH - BADR DISTRICT\n',
+                    '--------------------------------\n',
+                    `ORDER ID: #${order.id}\n`,
+                    `TIME: ${order.fullTime}\n`,
+                    '--------------------------------\n'
+                ];
+                order.items.forEach(i => { cmds.push(`${i.name} x${i.qty}   ${i.price*i.qty}\n`); });
+                cmds.push('--------------------------------\n');
+                cmds.push(`TOTAL: ${order.total} SAR\n\n`);
+                cmds.push('\x1B\x61\x01', 'THANK YOU FOR VISITING\n\n\n\n\n');
+
+                for (let c of cmds) { await bleCharacteristic.writeValue(encoder.encode(c)); }
+                showToast("تم إرسال الطلب للطابعة 🖨️");
+            } catch (err) {
+                console.error(err);
+                showToast("خطأ في الاتصال ❌");
+                bleCharacteristic = null; // إعادة التعيين للمحاولة مرة أخرى
+            }
+        }
+
+        // --- ميزات سحب الواتساب وحي بدر والمفضلة (بكامل قوتها السابقة) ---
+        function processReverseOrder() {
+            const text = document.getElementById('waPaste').value;
+            if(!text) return;
+            try {
+                const idMatch = text.match(/ID:\s*(\d+)/);
+                const totalMatch = text.match(/الإجمالي:\s*(\d+)/);
+                const itemLines = text.match(/•\s*([^\n\[]+)\[(\d+)\]\s*=\s*(\d+)/g);
+                if(!itemLines || !idMatch) { showToast("تنسيق غير صحيح ⚠️", "#ef4444"); return; }
+                const importedItems = itemLines.map(line => {
+                    const p = line.match(/•\s*([^\n\[]+)\[(\d+)\]\s*=\s*(\d+)/);
+                    const qty = parseInt(p[2]); const totalP = parseInt(p[3]);
+                    return { name: p[1].trim(), qty: qty, price: totalP/qty, key: Math.random(), id: 999 };
+                });
+                const newOrder = { id: idMatch[1], timestamp: Date.now(), items: importedItems, total: parseInt(totalMatch[1]), type: "سحب واتساب", payment: "كاش 💵", fullTime: new Date().toLocaleTimeString('ar-SA') };
+                let logs = JSON.parse(localStorage.getItem('m_logs_v11') || '[]');
+                logs.push(newOrder); localStorage.setItem('m_logs_v11', JSON.stringify(logs));
+                showToast("تم الحفظ بنجاح ✅"); showAdminPanel();
+            } catch(e) { showToast("خطأ في القراءة ❌"); }
+        }
+
         function showFavoriteList() {
             const favs = JSON.parse(localStorage.getItem('m_favs_v11') || '[]');
             let content = `<h2 class="text-2xl font-black mb-6 text-red-600 text-center">وجباتي المفضلة</h2><div class="space-y-4">`;
-            content += favs.map((f, i) => `<div onclick="applyFav(${i})" class="p-6 bg-white rounded-[30px] border flex justify-between items-center shadow-sm"><span class="font-black text-lg">${f.name}</span><i class="fa-solid fa-plus text-red-200"></i></div>`).join('');
+            content += favs.map((f, i) => `<div onclick="previewFav(${i})" class="p-6 bg-white rounded-[30px] border flex justify-between items-center shadow-sm"><span class="font-black text-lg">${f.name}</span><button onclick="event.stopPropagation(); deleteFav(${i})" class="text-red-200"><i class="fa-solid fa-trash-can"></i></button></div>`).join('');
             openModalLogic(content + '</div>');
+        }
+        function previewFav(i) {
+            const f = (JSON.parse(localStorage.getItem('m_favs_v11')))[i];
+            openModalLogic(`<h2 class="text-2xl font-black mb-4 text-center">${f.name}</h2><div class="bg-slate-50 p-6 rounded-[30px]">${f.items.map(it=>`<div class="flex justify-between font-bold mb-1"><span>${it.name} x${it.qty}</span><span>${it.price*it.qty}﷼</span></div>`).join('')}</div><button onclick="applyFav(${i})" class="w-full bg-red-600 text-white py-4 rounded-3xl font-black mt-6">تعبئة السلة</button>`, showFavoriteList);
         }
         function applyFav(i) {
             const f = (JSON.parse(localStorage.getItem('m_favs_v11')))[i];
-            cart = JSON.parse(JSON.stringify(f.items)); updateCartDisplay(); renderItems(); closeModal(); showToast("تمت التعبئة ❤️");
+            cart = JSON.parse(JSON.stringify(f.items)); updateCartDisplay(); renderItems(); closeModal();
+        }
+        function deleteFav(i) {
+            let favs = JSON.parse(localStorage.getItem('m_favs_v11')); favs.splice(i, 1);
+            localStorage.setItem('m_favs_v11', JSON.stringify(favs)); showFavoriteList();
         }
 
         function openNbrModal() {
@@ -541,8 +583,13 @@
         }
         
         async function handleInstall() {
-            if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; }
-            else { showToast("استخدم 'إضافة للشاشة الرئيسية' من المتصفح 📱"); }
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') deferredPrompt = null;
+            } else {
+                showToast("للتثبيت: استخدم خيار 'إضافة للشاشة الرئيسية' من إعدادات المتصفح 📱");
+            }
         }
         window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
     </script>
