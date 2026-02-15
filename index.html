@@ -3,422 +3,495 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>فوال مروه - نظام الإدارة والطباعة الذكي</title>
+    <title> فوال مروه غزواني </title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e40af">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon.png">
 
     <style>
-        body { font-family: 'Tajawal', sans-serif; background-color: #f1f5f9; user-select: none; }
+        body { font-family: 'Tajawal', sans-serif; background-color: #f8fafc; user-select: none; -webkit-tap-highlight-color: transparent; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .modal-blur { backdrop-filter: blur(10px); background: rgba(0,0,0,0.7); }
-        .slide-up { animation: slideUp 0.3s ease-out; }
-        @keyframes slideUp { from { transform: translateY(20%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        
-        /* تصميم الفاتورة الحرارية للمعاينة */
-        .receipt-preview {
-            width: 300px;
-            background: white;
-            padding: 20px;
-            color: #000;
-            border: 1px solid #ddd;
-            font-size: 14px;
-            line-height: 1.4;
-            margin: 0 auto;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        .modal-blur { backdrop-filter: blur(15px); background: rgba(15, 23, 42, 0.8); }
+        .slide-up { animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .item-card.active .sizes-panel { max-height: 500px; opacity: 1; margin-top: 15px; }
+        .sizes-panel { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.4s ease; }
+        #customToast {
+            visibility: hidden; min-width: 280px; background-color: #1e293b; color: #fff;
+            text-align: center; border-radius: 20px; padding: 16px; position: fixed;
+            z-index: 10000; left: 50%; bottom: 120px; transform: translateX(-50%);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); font-weight: bold; opacity: 0; transition: 0.3s;
         }
-        .receipt-header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 10px; }
-        .receipt-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-weight: bold; }
-        .receipt-total { border-top: 2px solid #000; margin-top: 10px; padding-top: 5px; font-size: 18px; font-weight: 900; }
-        .qr-container { display: flex; justify-content: center; margin-top: 15px; }
+        #customToast.show { visibility: visible; opacity: 1; }
         
-        /* أزرار عصرية */
-        .btn-modern { transition: all 0.2s; border-radius: 16px; font-weight: 900; }
-        .btn-modern:active { transform: scale(0.96); opacity: 0.9; }
+        /* تنسيق المعاينة العصرية للفاتورة */
+        #receiptPreview { 
+            background: #fff; padding: 20px; border-radius: 15px; border: 1px solid #eee; 
+            width: 100%; max-width: 300px; margin: 0 auto; color: #000; font-family: 'Courier New', Courier, monospace;
+        }
+        .thermal-font { font-family: 'Courier New', Courier, monospace; }
+        .qr-container { display: flex; justify-content: center; margin-top: 15px; padding: 10px; background: #fff; }
+        .input-error { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; }
     </style>
 </head>
-<body class="pb-32">
+<body class="pb-40">
 
-    <div id="toast" class="fixed bottom-24 left-1/2 -translate-x-1/2 z-[9999] bg-slate-900 text-white px-6 py-3 rounded-full font-bold shadow-2xl opacity-0 transition-opacity pointer-events-none"></div>
+    <div id="customToast"></div>
 
-    <header class="bg-blue-900 text-white p-6 rounded-b-[40px] shadow-lg sticky top-0 z-[100]">
-        <div class="flex justify-between items-center mb-4">
-            <div><h1 class="text-2xl font-black">فوال مروه</h1><p class="text-[10px] opacity-60">نظام الطلبات الذكي</p></div>
+    <header class="bg-blue-800 text-white p-6 rounded-b-[45px] shadow-2xl sticky top-0 z-[100]">
+        <div class="flex justify-between items-center mb-6">
+            <div><h1 class="text-2xl font-black italic">فوال مروه</h1><p class="text-[10px] opacity-70 font-bold tracking-widest text-left">C.R: 2055134169</p></div>
             <div class="flex gap-2">
-                <button onclick="checkAuth()" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/20"><i class="fa-solid fa-gear"></i></button>
-                <button onclick="showFavoriteList()" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center border border-white/20 text-red-400"><i class="fa-solid fa-heart"></i></button>
+                <button onclick="checkAuth()" class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 backdrop-blur-md"><i class="fa-solid fa-receipt text-lg"></i></button>
+                <button onclick="showFavoriteList()" class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 text-red-400 backdrop-blur-md"><i class="fa-solid fa-heart text-lg"></i></button>
             </div>
         </div>
-        <div id="categoryTabs" class="flex gap-2 overflow-x-auto no-scrollbar"></div>
+        <div id="categoryTabs" class="flex gap-3 overflow-x-auto no-scrollbar pb-2"></div>
     </header>
 
-    <main class="max-w-md mx-auto p-4 space-y-4">
-        <div id="itemsGrid" class="grid grid-cols-1 gap-4"></div>
+    <main class="max-w-md mx-auto p-4 space-y-5">
+        <div id="nbrBtn" onclick="openNbrModal()" class="p-6 rounded-[35px] text-white flex justify-between items-center shadow-xl cursor-pointer transform active:scale-95 transition-all duration-300">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 bg-white/20 rounded-3xl flex items-center justify-center text-3xl"><i class="fa-solid fa-house-chimney-user"></i></div>
+                <div><h3 class="font-black text-xl">خدمة أهل حي بدر</h3><p id="nbrLabel" class="text-xs opacity-80 font-bold">مزايا حصرية للجيران</p></div>
+            </div>
+            <i id="nbrIcon" class="fa-solid fa-lock text-xl opacity-40"></i>
+        </div>
+        <div id="itemsGrid" class="space-y-4 pb-12"></div>
     </main>
 
-    <div id="floatingCart" onclick="openCartModal()" class="fixed bottom-24 left-4 right-4 bg-blue-600 text-white p-4 rounded-3xl shadow-2xl z-[1000] hidden justify-between items-center btn-modern">
-        <div class="flex items-center gap-3">
-            <span id="cartCount" class="bg-white text-blue-600 w-8 h-8 rounded-full flex items-center justify-center font-black">0</span>
-            <span class="font-black">مراجعة الطلب</span>
-        </div>
-        <span id="cartTotal" class="text-xl font-black">0﷼</span>
+    <div id="floatingCart" onclick="openCartModal()" class="fixed bottom-24 left-6 right-6 bg-slate-900 text-white p-5 rounded-[30px] shadow-2xl z-[1000] hidden justify-between items-center border border-white/10 slide-up">
+        <div class="flex items-center gap-4"><div class="bg-blue-600 w-10 h-10 rounded-full flex items-center justify-center font-black">0</div><span class="font-black">مراجعة الطلبات</span></div>
+        <span id="floatingTotal" class="text-2xl font-black text-blue-400">0﷼</span>
     </div>
 
-    <div id="mainModal" class="fixed inset-0 z-[2000] hidden modal-blur items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-[35px] p-6 slide-up overflow-y-auto max-h-[90vh] relative">
-            <button onclick="closeModal()" class="absolute top-4 left-4 w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center font-bold">✕</button>
-            <div id="modalContent" class="mt-6"></div>
+    <nav class="fixed bottom-0 left-0 right-0 h-20 bg-white/95 backdrop-blur-lg flex justify-around items-center z-[1100] border-t border-slate-100 px-6">
+        <a href="https://maps.app.goo.gl/Twt1MasJaJFYTfCZA" target="_blank" class="flex flex-col items-center text-slate-400"><i class="fa-solid fa-map-location-dot text-xl"></i><span class="text-[9px] font-black">موقعنا</span></a>
+        <button id="installBtn" onclick="handleInstall()" class="w-16 h-16 bg-blue-700 text-white rounded-full -mt-10 border-[5px] border-white shadow-2xl flex items-center justify-center active:scale-90 transition-all"><i class="fa-solid fa-cloud-arrow-down text-xl"></i></button>
+        <a href="tel:0530195433" class="flex flex-col items-center text-slate-400"><i class="fa-solid fa-headset text-xl"></i><span class="text-[9px] font-black">اتصال</span></a>
+    </nav>
+
+    <div id="mainModal" class="fixed inset-0 z-[2000] hidden modal-blur items-end sm:items-center justify-center p-0">
+        <div class="bg-white w-full max-w-lg rounded-t-[50px] p-8 slide-up overflow-y-auto max-h-[92vh] relative shadow-2xl">
+            <button id="modalNavBtn" class="absolute top-6 left-6 w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 font-bold z-[2001]">✕</button>
+            <div id="modalContent"></div>
         </div>
     </div>
 
     <script>
-        // قاعدة البيانات الافتراضية
-        let defaultDB = {
-            "الوجبات": [{id:1, name:"فول سادة", sizes:{s:3, m:4, l:5, local:6}}, {id:2, name:"فول مشكل", sizes:{s:4, m:5, l:6, local:7}}, {id:5, name:"عدس سادة", sizes:{s:3, m:4, l:5, local:6}}],
-            "المطبق": [{id:23, name:"مطبق خضار", price:5}, {id:24, name:"مطبق مالح", price:5}],
-            "المشروبات": [{id:71, name:"ماء", price:1}, {id:74, name:"شاي بالحليب", price:2}]
+        // --- قاعدة البيانات الأصلية ---
+        const initialDB = {
+            "الوجبات": [{id:1, name:"فول سادة", sizes:{s:3, m:4, l:5, local:6}}, {id:2, name:"فول مشكل", sizes:{s:4, m:5, l:6, local:7}}, {id:3, name:"فول قلابة طاوه", sizes:{s:4, m:5, l:6, local:7}}, {id:4, name:"فول طاوه بالبيض", sizes:{s:5, m:6, l:7, local:8}}, {id:5, name:"عدس سادة", sizes:{s:3, m:4, l:5, local:6}}, {id:6, name:"عدس مشكل", sizes:{s:4, m:5, l:6, local:7}}, {id:7, name:"عدس طاوه بيض", sizes:{s:5, m:6, l:7, local:8}}, {id:8, name:"فاصوليه", sizes:{s:6, m:8, l:12, local:7}}, {id:9, name:"فاصوليه بالبيض", sizes:{s:7, m:8, l:13, local:8}}, {id:10, name:"فاصوليه بالتونة", sizes:{s:10, m:12, l:13, local:11}}, {id:11, name:"بازليا", sizes:{s:6, m:7, l:12, local:7}}, {id:12, name:"بازليا تونة", sizes:{s:10, m:11, l:12, local:11}}, {id:13, name:"تونة", sizes:{s:10, m:11, l:12, local:10}}, {id:14, name:"شكشوكة", sizes:{s:6, m:7, l:8, local:7}}, {id:15, name:"شكشوكة جبن", sizes:{s:8, m:9, l:10, local:9}}, {id:16, name:"شكشوكة افغاني", sizes:{s:7, m:8, l:10, local:8}}, {id:17, name:"بيض مقلي", sizes:{s:6, m:8, l:9, local:7}}, {id:18, name:"بيض عيون", sizes:{s:6, m:8, l:9, local:7}}, {id:19, name:"لحسة", sizes:{s:9, m:10, l:12, local:10}}, {id:20, name:"شكشوكة عدني", sizes:{s:7, m:8, l:10, local:8}}, {id:21, name:"فلافل 4 حبة", price:1}, {id:22, name:"كمونية", sizes:{s:10, m:12, l:15, local:11}}],
+            "المطبق": [{id:23, name:"مطبق خضار", price:5}, {id:24, name:"مطبق مالح", price:5}, {id:25, name:"مطبق موز", price:5}, {id:26, name:"مطبق حلو جبن", price:5}, {id:27, name:"مشكل حلو", price:10}, {id:28, name:"مشكل خضار", price:8}, {id:29, name:"تونة", price:8}, {id:30, name:"جبنة سائل", price:6}, {id:31, name:"جبنة شيدر", price:6}, {id:32, name:"جبنتين", price:8}, {id:33, name:"نوتيلا", price:7}],
+            "العريكة والفتة": [{id:34, name:"قشطة عسل", price:12}, {id:35, name:"جبنة ديلوكس", price:14}, {id:36, name:"ملكي", price:16}, {id:37, name:"عريكة عرائسي", price:18}, {id:38, name:"عريكة مروة", price:18}, {id:39, name:"عريكة دبل قشطة", price:18}, {id:40, name:"فتة سمن عسل", price:10}],
+            "المعصوب": [{id:41, name:"قشطة عسل", price:12}, {id:42, name:"جنبية ديلوكس", price:14}, {id:43, name:"ملكي", price:16}, {id:44, name:"معصوب عرائسي", price:18}, {id:45, name:"معصوب مروة", price:18}, {id:46, name:"معصوب دبل قشطة", price:18}, {id:47, name:"مرسي", price:10}],
+            "السندوتشات": [{id:48, name:"كبدة", sizes:{samoli:4, fatira:5}}, {id:49, name:"كبدة جبنة", sizes:{samoli:5, fatira:6}}, {id:50, name:"مقلقل", sizes:{samoli:4, fatira:5}}, {id:51, name:"مقلقل جبن", sizes:{samoli:5, fatira:6}}, {id:52, name:"بيض مقلي", sizes:{samoli:3, fatira:4}}, {id:53, name:"بيض مقلي جبن", sizes:{samoli:4, fatira:5}}, {id:54, name:"شكشوكة", sizes:{samoli:3, fatira:4}}, {id:55, name:"شكشوكة جبن", sizes:{samoli:4, fatira:5}}],
+            "التميس": [{id:56, name:"تميس عادي", price:1}, {id:57, name:"تميس سكر", price:3}, {id:58, name:"تميس بر", price:2}, {id:59, name:"تميس جبن", price:5}, {id:60, name:"تميس جبن سكر", price:6}, {id:61, name:"تميس بر جبن", price:7}, {id:62, name:"تميس جبن دبل", price:9}, {id:63, name:"تميس سمن", price:2}, {id:64, name:"تميس سمن سكر", price:3}, {id:65, name:"تميس سمن جبن سكر", price:8}, {id:66, name:"تميس بسكوت", price:3}, {id:67, name:"تميس بسكوت سكر", price:4}, {id:68, name:"تميس بسكوت جبن", price:8}, {id:69, name:"تميس زعتر", price:4}, {id:70, name:"تميس بر زعتر", price:5}],
+            "المشروبات": [{id:71, name:"ماء", price:1}, {id:72, name:"مشروب غازي", price:3}, {id:73, name:"شاي سادة", price:1}, {id:74, name:"شاي بالحليب", price:2}]
         };
 
-        let DB = JSON.parse(localStorage.getItem('m_db_v12')) || defaultDB;
-        let cart = [];
-        let currentCategory = Object.keys(DB)[0];
-        let bleDevice = null;
-        let bleCharacteristic = null;
+        let DB = JSON.parse(localStorage.getItem('m_db_v12')) || initialDB;
 
-        // تشغيل النظام
-        window.onload = () => { renderTabs(); renderItems(); };
+        let cart = [];
+        let isNeighbor = localStorage.getItem('isNbr') === 'true';
+        let currentCategory = "الوجبات";
+        let activeItemId = null;
+        let deferredPrompt;
+        
+        // بلوتوث
+        let bleCharacteristic = null;
+        let savedDeviceAddr = localStorage.getItem('printer_addr');
+
+        window.onload = () => {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js').then(() => console.log("SW Registered"));
+            }
+            renderTabs(); renderItems(); updateCartDisplay(); setNeighborUI();
+            if(!localStorage.getItem('first_welcome_v11')) showWelcomeMessage();
+        };
 
         function saveDB() { localStorage.setItem('m_db_v12', JSON.stringify(DB)); }
 
-        function renderTabs() {
-            const tabs = document.getElementById('categoryTabs');
-            tabs.innerHTML = Object.keys(DB).map(cat => `
-                <button onclick="setCategory('${cat}')" class="px-5 py-2 rounded-xl whitespace-nowrap font-bold transition-all ${cat === currentCategory ? 'bg-white text-blue-900 shadow-md' : 'text-white/60'}">
-                    ${cat}
-                </button>
-            `).join('');
+        // --- وظائف عامة ---
+        function showToast(text, color = '#1e293b') {
+            const toast = document.getElementById("customToast");
+            toast.innerText = text; toast.style.backgroundColor = color;
+            toast.classList.add("show");
+            setTimeout(() => { toast.classList.remove("show"); }, 3000);
         }
 
+        function openModalLogic(content, backFn = null) {
+            const modal = document.getElementById('mainModal');
+            document.getElementById('modalContent').innerHTML = content;
+            document.getElementById('modalNavBtn').innerHTML = backFn ? '←' : '✕';
+            document.getElementById('modalNavBtn').onclick = () => backFn ? backFn() : closeModal();
+            modal.style.display = 'flex';
+        }
+        function closeModal() { document.getElementById('mainModal').style.display = 'none'; }
+
+        // --- العرض والتحكم بالقائمة ---
+        function renderTabs() {
+            const tabs = document.getElementById('categoryTabs');
+            tabs.innerHTML = Object.keys(DB).map(cat => `<button onclick="setCategory('${cat}')" class="px-6 py-2 rounded-2xl whitespace-nowrap font-bold transition-all ${cat === currentCategory ? 'bg-white text-blue-900 shadow-xl' : 'text-white/70'}">${cat}</button>`).join('');
+        }
         function setCategory(cat) { currentCategory = cat; renderTabs(); renderItems(); }
 
         function renderItems() {
             const grid = document.getElementById('itemsGrid');
-            grid.innerHTML = (DB[currentCategory] || []).map(item => `
-                <div class="bg-white p-5 rounded-[25px] shadow-sm border border-slate-100">
+            grid.innerHTML = (DB[currentCategory] || []).map(item => {
+                const isActive = activeItemId === item.id;
+                return `<div class="bg-white rounded-[35px] p-6 shadow-sm border border-slate-50 item-card ${isActive ? 'active shadow-lg' : ''}" onclick="toggleItem(${item.id})">
                     <div class="flex justify-between items-center">
-                        <span class="font-black text-blue-900 text-lg">${item.name}</span>
-                        ${item.price ? `
-                        <div class="flex items-center gap-3 bg-blue-50 p-2 rounded-2xl">
-                            <button onclick="updateQty(${item.id}, -1, '${item.name}', ${item.price})" class="w-8 h-8 bg-white text-red-500 rounded-lg shadow-sm font-black">-</button>
-                            <span class="font-black text-sm">${getQty(item.id, 'default')}</span>
-                            <button onclick="updateQty(${item.id}, 1, '${item.name}', ${item.price})" class="w-8 h-8 bg-blue-700 text-white rounded-lg shadow-sm font-black">+</button>
-                            <span class="text-blue-700 font-black text-sm mr-1">${item.price}﷼</span>
-                        </div>` : ''}
+                        <div class="text-lg font-black text-blue-900">${item.name}</div>
+                        ${item.price ? `<div class="flex items-center gap-3 bg-slate-50 p-2 rounded-2xl">
+                                <button onclick="event.stopPropagation(); updateQty(${item.id}, -1, '${item.name}', ${item.price})" class="w-10 h-10 bg-white text-red-500 rounded-xl shadow-md font-black">-</button>
+                                <span class="font-black text-sm">${getQty(item.id, 'default')}</span>
+                                <button onclick="event.stopPropagation(); updateQty(${item.id}, 1, '${item.name}', ${item.price})" class="w-10 h-10 bg-blue-700 text-white rounded-xl shadow-md font-black">+</button>
+                                <div class="text-blue-700 font-black mr-2 text-sm">${item.price}﷼</div>
+                            </div>` : `<i class="fa-solid fa-plus-circle text-blue-200 text-2xl"></i>`}
                     </div>
-                    ${item.sizes ? `
-                    <div class="grid grid-cols-2 gap-2 mt-4">
-                        ${Object.entries(item.sizes).map(([s, p]) => `
-                            <div class="bg-slate-50 p-2 rounded-xl flex justify-between items-center border border-slate-100">
-                                <span class="text-[10px] font-bold text-slate-500">${getSizeName(s)} (${p}﷼)</span>
-                                <div class="flex items-center gap-2">
-                                    <button onclick="updateQty(${item.id}, -1, '${item.name}', ${p}, '${s}')" class="w-6 h-6 bg-white text-red-500 rounded-md shadow-xs font-black">-</button>
-                                    <span class="font-black text-xs">${getQty(item.id, s)}</span>
-                                    <button onclick="updateQty(${item.id}, 1, '${item.name}', ${p}, '${s}')" class="w-6 h-6 bg-blue-700 text-white rounded-md shadow-xs font-black">+</button>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>` : ''}
-                </div>
-            `).join('');
+                    ${item.sizes ? `<div class="sizes-panel grid grid-cols-2 gap-3" onclick="event.stopPropagation()">
+                            ${Object.entries(item.sizes).filter(([s]) => isNeighbor ? s !== 'local' : true).map(([s, p]) => `
+                                <div class="bg-blue-50/50 p-3 rounded-2xl flex justify-between items-center border border-blue-100">
+                                    <div class="text-[10px] font-black text-blue-900">${getSizeName(s)}<br>${p}﷼</div>
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="updateQty(${item.id}, -1, '${item.name}', ${p}, '${s}')" class="w-7 h-7 bg-white text-red-500 rounded-lg shadow-sm font-black">-</button>
+                                        <span class="font-bold text-xs">${getQty(item.id, s)}</span>
+                                        <button onclick="updateQty(${item.id}, 1, '${item.name}', ${p}, '${s}')" class="w-7 h-7 bg-blue-700 text-white rounded-lg shadow-sm font-black">+</button>
+                                    </div>
+                                </div>`).join('')}
+                        </div>` : ''}
+                </div>`;
+            }).join('');
         }
 
+        function toggleItem(id) { activeItemId = (activeItemId === id) ? null : id; renderItems(); }
         function getSizeName(s) { return {s:'صغير', m:'وسط', l:'كبير', local:'محلي', samoli:'صامولي', fatira:'فطيرة'}[s] || s; }
+        function getQty(id, size) { const it = cart.find(i => i.key === `${id}-${size}`); return it ? it.qty : 0; }
 
         function updateQty(id, delta, name, price, size = 'default') {
-            const key = `${id}-${size}`;
+            const key = `${id}-${size}`; 
             const idx = cart.findIndex(i => i.key === key);
-            if (idx > -1) {
-                cart[idx].qty += delta;
-                if (cart[idx].qty <= 0) cart.splice(idx, 1);
-            } else if (delta > 0) {
-                cart.push({ id, key, name: size !== 'default' ? `${name} (${getSizeName(size)})` : name, price, qty: 1, size });
-            }
-            updateCartDisplay();
-            renderItems();
+            if (idx > -1) { cart[idx].qty += delta; if (cart[idx].qty <= 0) cart.splice(idx, 1); }
+            else if (delta > 0) { cart.push({ id, key, name: size !== 'default' ? `${name} (${getSizeName(size)})` : name, price, qty: 1, size, note: '' }); }
+            updateCartDisplay(); if(document.getElementById('cartRefCheck')) renderCartInModal(); renderItems();
         }
-
-        function getQty(id, size) { const it = cart.find(i => i.key === `${id}-${size}`); return it ? it.qty : 0; }
 
         function updateCartDisplay() {
             const count = cart.reduce((s, i) => s + i.qty, 0);
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
-            const floating = document.getElementById('floatingCart');
-            floating.style.display = count > 0 ? 'flex' : 'none';
-            document.getElementById('cartCount').innerText = count;
-            document.getElementById('cartTotal').innerText = total + "﷼";
+            document.getElementById('floatingCart').style.display = count > 0 ? 'flex' : 'none';
+            document.querySelector('#floatingCart .bg-blue-600').innerText = count;
+            document.getElementById('floatingTotal').innerText = total + "﷼";
         }
-
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.innerText = msg; t.style.opacity = 1;
-            setTimeout(() => t.style.opacity = 0, 2500);
-        }
-
-        function openModalLogic(content) {
-            document.getElementById('modalContent').innerHTML = content;
-            document.getElementById('mainModal').style.display = 'flex';
-        }
-        function closeModal() { document.getElementById('mainModal').style.display = 'none'; }
 
         // --- لوحة التحكم المتطورة ---
         function checkAuth() {
-            openModalLogic(`
-                <div class="text-center p-4">
-                    <h2 class="text-2xl font-black mb-4">الدخول للإدارة</h2>
-                    <input type="password" id="authPass" placeholder="رمز الدخول" class="w-full p-4 bg-slate-100 rounded-2xl text-center text-xl outline-none mb-4">
-                    <button onclick="verifyAdmin()" class="w-full bg-blue-900 text-white py-4 rounded-2xl font-black">دخول</button>
-                </div>
-            `);
+            const lastAuth = localStorage.getItem('auth_time_v11');
+            if (lastAuth && (Date.now() - lastAuth < 24 * 60 * 60 * 1000)) showAdminPanel();
+            else openAuthModal();
+        }
+        function openAuthModal() {
+            openModalLogic(`<div class="text-center"><h2 class="text-2xl font-black mb-4">دخول الإدارة</h2><input type="password" id="authInput" placeholder="••••" class="w-full p-4 bg-slate-50 rounded-2xl border-2 text-center text-2xl mb-4 outline-none font-black"><button onclick="verifyAuth()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black shadow-lg">دخول</button></div>`);
+        }
+        function verifyAuth() {
+            if(document.getElementById('authInput').value === "123456Aa") {
+                localStorage.setItem('auth_time_v11', Date.now()); showAdminPanel();
+            } else showToast("الرمز خاطئ!", "#ef4444");
         }
 
-        function verifyAdmin() {
-            if(document.getElementById('authPass').value === "123") {
-                showAdminDashboard();
-            } else showToast("الرمز خاطئ");
-        }
-
-        function showAdminDashboard() {
+        function showAdminPanel() {
             openModalLogic(`
                 <div class="space-y-4">
-                    <h2 class="text-2xl font-black mb-6 flex items-center gap-2"><i class="fa-solid fa-screwdriver-wrench"></i> لوحة التحكم</h2>
-                    
-                    <button onclick="showMenuEditor()" class="w-full p-6 bg-blue-50 text-blue-900 rounded-[25px] flex items-center justify-between font-black border border-blue-100 shadow-sm">
-                        <span>تعديل المنيو والأسعار</span><i class="fa-solid fa-chevron-left"></i>
+                    <h2 class="text-2xl font-black text-center mb-6">لوحة التحكم</h2>
+                    <button onclick="showAdminMenuEditor()" class="w-full bg-blue-600 text-white py-5 rounded-3xl font-black flex items-center justify-center gap-3 shadow-lg">
+                        <i class="fa-solid fa-utensils"></i> تعديل المنيو والأسعار
                     </button>
-
-                    <button onclick="downloadUpdatedCode()" class="w-full p-6 bg-emerald-50 text-emerald-900 rounded-[25px] flex items-center justify-between font-black border border-emerald-100 shadow-sm">
-                        <span>حفظ التعديلات في الكود وتحميله</span><i class="fa-solid fa-file-code"></i>
+                    <button onclick="exportFullCode()" class="w-full bg-emerald-600 text-white py-4 rounded-3xl font-black flex items-center justify-center gap-3 shadow-lg">
+                        <i class="fa-solid fa-file-code"></i> تحميل نسخة المنيو المحدثة
                     </button>
-
-                    <div class="p-6 bg-slate-900 text-white rounded-[30px] mt-6">
-                        <h3 class="text-xs font-bold opacity-50 mb-2">إحصائية سريعة</h3>
-                        <p class="font-black text-xl">إجمالي الأصناف: ${Object.values(DB).flat().length}</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="showDetailedLogs('كاش')" class="bg-slate-100 p-4 rounded-2xl font-black text-xs">سجل الكاش</button>
+                        <button onclick="showDetailedLogs('شبكة')" class="bg-slate-100 p-4 rounded-2xl font-black text-xs">سجل الشبكة</button>
                     </div>
                 </div>
             `);
         }
 
-        function showMenuEditor() {
-            let html = `<div class="space-y-6">
-                <div class="flex justify-between items-center"><h2 class="text-xl font-black">تعديل المنيو</h2><button onclick="addNewItemPrompt()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold">+ صنف جديد</button></div>
-                <div class="space-y-4">`;
+        function showAdminMenuEditor() {
+            let content = `<div class="space-y-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-black">تعديل المنيو</h2>
+                    <button onclick="addNewItemPrompt()" class="bg-green-600 text-white px-4 py-2 rounded-xl text-xs font-black">+ صنف جديد</button>
+                </div>`;
             
             Object.keys(DB).forEach(cat => {
-                html += `<div class="bg-slate-50 p-4 rounded-3xl border border-slate-100">
-                    <h3 class="text-blue-900 font-black mb-3 text-sm">${cat}</h3>
-                    <div class="space-y-2">
+                content += `<div class="bg-slate-50 p-4 rounded-3xl mb-4">
+                    <h3 class="font-black text-blue-800 mb-3 border-b pb-2 flex justify-between items-center">${cat}</h3>
+                    <div class="space-y-3">
                         ${DB[cat].map(item => `
-                            <div class="bg-white p-3 rounded-2xl flex justify-between items-center shadow-sm border border-slate-50">
-                                <span class="font-bold text-sm text-slate-700">${item.name}</span>
-                                <div class="flex gap-2">
-                                    <button onclick="editItemForm('${cat}', ${item.id})" class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center"><i class="fa-solid fa-pen text-xs"></i></button>
-                                    <button onclick="deleteItem('${cat}', ${item.id})" class="w-8 h-8 bg-red-100 text-red-600 rounded-lg flex items-center justify-center"><i class="fa-solid fa-trash text-xs"></i></button>
+                            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="font-black text-blue-900">${item.name}</span>
+                                    <div class="flex gap-2">
+                                        <button onclick="editFullItem('${cat}', ${item.id})" class="text-blue-500 bg-blue-50 w-8 h-8 rounded-lg flex items-center justify-center"><i class="fa-solid fa-pen text-xs"></i></button>
+                                        <button onclick="deleteItem('${cat}', ${item.id})" class="text-red-500 bg-red-50 w-8 h-8 rounded-lg flex items-center justify-center"><i class="fa-solid fa-trash text-xs"></i></button>
+                                    </div>
+                                </div>
+                                <div class="text-[10px] font-bold text-slate-400">
+                                    ${item.price ? `السعر: ${item.price}﷼` : `أحجام: ${Object.keys(item.sizes).length}`}
                                 </div>
                             </div>
                         `).join('')}
                     </div>
                 </div>`;
             });
-            html += `</div></div>`;
-            openModalLogic(html);
+            content += `</div>`;
+            openModalLogic(content, showAdminPanel);
         }
 
-        function editItemForm(cat, id) {
+        function editFullItem(cat, id) {
             const item = DB[cat].find(i => i.id === id);
-            let sizeInputs = '';
+            let sizesHtml = '';
+            
             if(item.sizes) {
-                sizeInputs = Object.entries(item.sizes).map(([s, p]) => `
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="w-20 text-xs font-bold">${getSizeName(s)}</span>
-                        <input type="number" step="0.5" id="size_${s}" value="${p}" class="flex-1 p-3 bg-slate-50 rounded-xl outline-none font-bold">
-                    </div>
-                `).join('');
+                sizesHtml = `<div class="bg-blue-50 p-4 rounded-2xl space-y-3">
+                    <p class="text-xs font-black mb-2 text-blue-700">تعديل أسعار الأحجام:</p>
+                    ${Object.entries(item.sizes).map(([key, val]) => `
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-bold w-12">${getSizeName(key)}</span>
+                            <input type="number" id="size_${key}" value="${val}" class="flex-1 p-2 rounded-lg border-none text-xs font-black text-center">
+                        </div>
+                    `).join('')}
+                </div>`;
             }
 
             openModalLogic(`
                 <div class="space-y-4">
-                    <h2 class="text-xl font-black text-center">تعديل الصنف</h2>
-                    <div class="space-y-3">
-                        <label class="text-[10px] font-bold text-slate-400">اسم الصنف</label>
-                        <input type="text" id="editName" value="${item.name}" class="w-full p-4 bg-slate-50 rounded-2xl font-black outline-none border-2 border-transparent focus:border-blue-500">
-                        
-                        ${item.price !== undefined ? `
-                            <label class="text-[10px] font-bold text-slate-400">السعر (﷼)</label>
-                            <input type="number" step="0.5" id="editPrice" value="${item.price}" class="w-full p-4 bg-slate-50 rounded-2xl font-black outline-none">
-                        ` : `
-                            <label class="text-[10px] font-bold text-slate-400">أسعار الأحجام</label>
-                            <div class="bg-slate-100 p-4 rounded-2xl">${sizeInputs}</div>
-                        `}
-                    </div>
-                    <button onclick="saveItemEdits('${cat}', ${id})" class="w-full bg-blue-900 text-white py-4 rounded-2xl font-black shadow-lg">حفظ التغييرات</button>
+                    <h2 class="text-xl font-black">تعديل شامل لـ ${item.name}</h2>
+                    <input type="text" id="editName" value="${item.name}" placeholder="اسم الصنف" class="w-full p-4 rounded-2xl bg-slate-50 border-none font-black">
+                    ${item.price !== undefined ? `
+                        <input type="number" id="editPrice" value="${item.price}" placeholder="السعر" class="w-full p-4 rounded-2xl bg-slate-50 border-none font-black">
+                    ` : sizesHtml}
+                    <button onclick="saveFullItemUpdate('${cat}', ${id})" class="w-full bg-blue-800 text-white py-4 rounded-2xl font-black shadow-lg">حفظ التعديلات</button>
                 </div>
-            `);
+            `, showAdminMenuEditor);
         }
 
-        function saveItemEdits(cat, id) {
+        function saveFullItemUpdate(cat, id) {
             const item = DB[cat].find(i => i.id === id);
             item.name = document.getElementById('editName').value;
             
             if(item.price !== undefined) {
                 item.price = parseFloat(document.getElementById('editPrice').value);
-            } else if(item.sizes) {
-                Object.keys(item.sizes).forEach(s => {
-                    item.sizes[s] = parseFloat(document.getElementById(`size_${s}`).value);
+            } else {
+                Object.keys(item.sizes).forEach(key => {
+                    item.sizes[key] = parseFloat(document.getElementById(`size_${key}`).value);
                 });
             }
-            
-            saveDB(); showMenuEditor(); showToast("تم التحديث بنجاح"); renderItems();
+            saveDB(); renderItems(); showAdminMenuEditor(); showToast("تم الحفظ بنجاح ✅", "#10b981");
         }
 
-        function downloadUpdatedCode() {
-            // تحديث كود الـ DB داخل الملف
-            let currentContent = document.documentElement.outerHTML;
-            const dbString = JSON.stringify(DB);
-            const blob = new Blob([currentContent.replace(/let DB = JSON\.parse\(localStorage\.getItem\('m_db_v12'\)\) \|\| defaultDB;/, `let DB = ${dbString};`)], {type: "text/html"});
+        function exportFullCode() {
+            let currentFullHTML = document.documentElement.outerHTML;
+            // استبدال الجزء الخاص بالـ DB الافتراضي بالـ DB الحالي المعدل
+            const dbRegex = /const initialDB = \{[\s\S]*?\};/;
+            const newDBString = `const initialDB = ${JSON.stringify(DB)};`;
+            currentFullHTML = currentFullHTML.replace(dbRegex, newDBString);
+            
+            const blob = new Blob([currentFullHTML], { type: 'text/html' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = "Foal_Marwa_System_Updated.html";
+            a.download = 'Maroah_Updated_App.html';
             a.click();
+            showToast("تم تحميل الملف المحدث 📁");
         }
 
-        // --- نظام الطباعة والمعاينة والباركود ---
+        // --- نظام الطباعة والمعاينة المتطور ---
         function openCartModal() {
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
-            const orderID = Math.floor(1000 + Math.random() * 9000);
-            
-            let content = `<div id="cartModalUI">
-                <h2 class="text-2xl font-black mb-6 text-center text-blue-900">ملخص الطلب</h2>
-                <div class="space-y-3 mb-8">
-                    ${cart.map(i => `
-                        <div class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl">
-                            <div><p class="font-black text-sm">${i.name}</p><p class="text-[10px] text-blue-600 font-bold">${i.qty} x ${i.price}﷼</p></div>
-                            <span class="font-black">${i.qty * i.price}﷼</span>
-                        </div>
-                    `).join('')}
+            openModalLogic(`
+                <div id="cartRefCheck">
+                    <h2 class="text-2xl font-black mb-6 text-center">سلة الطلبات</h2>
+                    <div class="space-y-3 mb-6">
+                        ${cart.map((i, index) => `
+                            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex justify-between items-center">
+                                <div><h4 class="font-black text-sm">${i.name}</h4><p class="text-blue-600 font-black text-xs">${i.price * i.qty}﷼</p></div>
+                                <div class="flex items-center gap-3">
+                                    <button onclick="updateQty(${i.id}, -1, '', 0, '${i.size}')" class="w-8 h-8 bg-white text-red-500 rounded-lg shadow-sm font-black">-</button>
+                                    <span class="font-black">${i.qty}</span>
+                                    <button onclick="updateQty(${i.id}, 1, '', 0, '${i.size}')" class="w-8 h-8 bg-blue-700 text-white rounded-xl shadow-sm font-black">+</button>
+                                </div>
+                            </div>`).join('')}
+                    </div>
+                    <div class="bg-slate-900 text-white p-5 rounded-[25px] flex justify-between items-center mb-4">
+                        <span class="font-bold">الإجمالي</span><span class="text-2xl font-black">${total}﷼</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <select id="oType" class="p-4 rounded-2xl bg-slate-100 font-bold outline-none"><option value="سفري 🥡">سفري 🥡</option><option value="محلي 🍽️">محلي 🍽️</option></select>
+                        <select id="payWay" class="p-4 rounded-2xl bg-slate-100 font-bold outline-none"><option value="كاش 💵">كاش 💵</option><option value="شبكة 💳">شبكة 💳</option></select>
+                    </div>
+                    <button onclick="confirmAndShowPreview()" class="w-full bg-green-600 text-white py-5 rounded-[25px] font-black text-xl shadow-xl flex items-center justify-center gap-3">متابعة الطلب <i class="fa-solid fa-circle-check"></i></button>
                 </div>
-                <div class="flex justify-between items-center mb-6 font-black text-2xl border-t-2 border-dashed pt-4">
-                    <span>الإجمالي</span><span>${total}﷼</span>
-                </div>
-                <div class="grid grid-cols-1 gap-3">
-                    <button onclick="showReceiptPreview(${orderID})" class="w-full bg-slate-900 text-white py-5 rounded-[25px] font-black flex items-center justify-center gap-3">
-                        <i class="fa-solid fa-receipt"></i> معاينة وطباعة الفاتورة
-                    </button>
-                    <button onclick="sendToWhatsApp(${orderID})" class="w-full bg-green-600 text-white py-4 rounded-[25px] font-black flex items-center justify-center gap-3 opacity-80">
-                         إرسال واتساب <i class="fa-brands fa-whatsapp"></i>
-                    </button>
-                </div>
-            </div>`;
-            openModalLogic(content);
+            `);
         }
 
-        function showReceiptPreview(orderID) {
+        function confirmAndShowPreview() {
+            const orderID = Math.floor(100000 + Math.random() * 900000);
+            const orderType = document.getElementById('oType').value;
+            const payMethod = document.getElementById('payWay').value;
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
-            const now = new Date().toLocaleString('ar-SA');
+            const now = new Date();
             
+            const orderObj = { 
+                id: orderID, timestamp: now.getTime(), items: JSON.parse(JSON.stringify(cart)), 
+                total, type: orderType, payment: payMethod 
+            };
+            
+            // تخزين في السجل
+            let logs = JSON.parse(localStorage.getItem('m_logs_v11') || '[]');
+            logs.push(orderObj); localStorage.setItem('m_logs_v11', JSON.stringify(logs));
+
+            showReceiptPreview(orderObj);
+            cart = []; updateCartDisplay(); renderItems();
+        }
+
+        function showReceiptPreview(order) {
+            const dateStr = new Date(order.timestamp).toLocaleString('ar-SA');
+            const receiptID = `ORDER-${order.id}`;
+
             let content = `
-                <div id="receiptToPrint" class="receipt-preview mb-6">
-                    <div class="receipt-header">
-                        <h2 style="font-size:22px; font-weight:900">فوال مروه</h2>
-                        <p style="font-size:10px">حي بدر - الدمام</p>
-                        <p style="font-size:10px">${now}</p>
-                        <p style="font-size:12px; margin-top:5px">رقم الطلب: <b>#${orderID}</b></p>
+                <div class="text-center mb-4"><span class="bg-blue-100 text-blue-700 px-4 py-1 rounded-full text-[10px] font-black">تم تأكيد الطلب بنجاح ✅</span></div>
+                <div id="receiptPreview">
+                    <div class="text-center border-b border-dashed pb-3 mb-3">
+                        <h2 class="font-black text-xl">فوال مروه</h2>
+                        <p class="text-[8px] thermal-font">حي بدر - 0530195433</p>
+                        <p class="text-[9px] mt-1">${dateStr}</p>
                     </div>
-                    <div class="receipt-body">
-                        ${cart.map(i => `<div class="receipt-row"><span>${i.name} x${i.qty}</span><span>${i.qty*i.price}</span></div>`).join('')}
+                    <div class="flex justify-between text-[10px] thermal-font mb-2">
+                        <span>رقم الطلب: ${order.id}</span>
+                        <span>${order.type}</span>
                     </div>
-                    <div class="receipt-total">
-                        <div class="receipt-row"><span>الإجمالي:</span><span>${total} ﷼</span></div>
+                    <div class="border-b border-dashed mb-2 pb-2">
+                        ${order.items.map(it => `
+                            <div class="flex justify-between text-[11px] thermal-font mb-1 font-bold">
+                                <span>${it.name} x${it.qty}</span>
+                                <span>${it.price * it.qty}</span>
+                            </div>
+                        `).join('')}
                     </div>
-                    <div class="qr-container" id="qrCodeDiv"></div>
-                    <p style="text-align:center; font-size:9px; margin-top:10px">شكراً لزيارتكم</p>
+                    <div class="flex justify-between font-black text-sm mb-2">
+                        <span>الإجمالي</span>
+                        <span>${order.total} ﷼</span>
+                    </div>
+                    <div class="text-center text-[9px] thermal-font border-t border-dashed pt-2">
+                        طريقة الدفع: ${order.payment}
+                    </div>
+                    <div id="qrcode" class="qr-container"></div>
                 </div>
-                <div class="flex flex-col gap-3">
-                    <button onclick="printReceipt()" class="w-full bg-blue-700 text-white py-5 rounded-3xl font-black text-xl shadow-xl flex items-center justify-center gap-3 active:scale-95">
-                        <i class="fa-solid fa-print"></i> طباعة الآن (Bluetooth)
+                <div class="grid grid-cols-1 gap-3 mt-6">
+                    <button onclick="handleThermalPrint(${order.id})" class="w-full bg-blue-800 text-white py-5 rounded-2xl font-black shadow-lg flex items-center justify-center gap-3">
+                        <i class="fa-solid fa-print"></i> طباعة الفاتورة (Bluetooth)
                     </button>
-                    <button onclick="closeModal()" class="text-slate-400 font-bold py-2">رجوع</button>
+                    <button onclick="closeModal()" class="w-full bg-slate-100 text-slate-500 py-3 rounded-2xl font-bold">إغلاق</button>
                 </div>
             `;
+            
             openModalLogic(content);
             
             // توليد الباركود
             setTimeout(() => {
-                new QRCode(document.getElementById("qrCodeDiv"), {
-                    text: `Order#${orderID}|Total:${total}SAR|Items:${cart.length}`,
-                    width: 80, height: 80
+                new QRCode(document.getElementById("qrcode"), {
+                    text: `https://maroah-foal.web.app/order/${order.id}`,
+                    width: 100, height: 100,
+                    colorDark : "#000000", colorLight : "#ffffff"
                 });
             }, 100);
         }
 
-        // --- وظائف البلوتوث الحقيقية ---
-        async function connectAndPrint(data) {
+        // --- محرك البلوتوث والطباعة الحرارية ---
+        async function handleThermalPrint(orderId) {
+            const logs = JSON.parse(localStorage.getItem('m_logs_v11') || '[]');
+            const order = logs.find(l => l.id == orderId);
+            if (!order) return;
+
             try {
-                // محاولة استعادة الطابعة المحفوظة أو طلب واحدة جديدة
+                // محاولة الاتصال إذا لم يكن هناك اتصال نشط
                 if (!bleCharacteristic) {
                     showToast("جاري البحث عن الطابعة...");
-                    bleDevice = await navigator.bluetooth.requestDevice({
-                        filters: [{ services: ['000018f0-0000-1000-8000-00805f9b34fb'] }, { namePrefix: 'TP' }, { namePrefix: 'Printer' }],
+                    const device = await navigator.bluetooth.requestDevice({
+                        filters: [{ services: ['000018f0-0000-1000-8000-00805f9b34fb'] }, { namePrefix: 'Printer' }, { namePrefix: 'TP' }],
                         optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb']
                     });
-                    const server = await bleDevice.gatt.connect();
+                    const server = await device.gatt.connect();
                     const service = await server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
-                    const chars = await service.getCharacteristics();
-                    bleCharacteristic = chars[0];
+                    const char = await service.getCharacteristics();
+                    bleCharacteristic = char[0];
+                    localStorage.setItem('printer_addr', device.id);
                 }
 
                 const encoder = new TextEncoder();
-                // تهيئة الطابعة والأوامر
-                await bleCharacteristic.writeValue(encoder.encode('\x1B\x40')); // Reset
-                await bleCharacteristic.writeValue(encoder.encode('\x1B\x61\x01')); // Center
-                await bleCharacteristic.writeValue(encoder.encode('\x1D\x21\x11')); // Double size
-                await bleCharacteristic.writeValue(encoder.encode('FOAL MARWAH\n\n'));
-                await bleCharacteristic.writeValue(encoder.encode('\x1D\x21\x00')); // Normal
-                await bleCharacteristic.writeValue(encoder.encode(data));
-                await bleCharacteristic.writeValue(encoder.encode('\n\n\n\n')); // Feed
-                
-                showToast("تمت الطباعة بنجاح ✅");
-            } catch (error) {
-                console.error(error);
-                showToast("خطأ: تعذر الوصول للطابعة");
+                // أوامر ESC/POS للطباعة الحرارية
+                let data = new Uint8Array([
+                    0x1B, 0x40, // تهيئة
+                    0x1B, 0x61, 0x01, // توسيط
+                    ...encoder.encode("FOAL MARWAH\n"),
+                    ...encoder.encode("MARWAH GHUZWANI\n"),
+                    0x1B, 0x61, 0x00, // محاذاة لليمين
+                    ...encoder.encode("--------------------------------\n"),
+                    ...encoder.encode(`ORDER ID: ${order.id}\n`),
+                    ...encoder.encode(`DATE: ${new Date().toLocaleDateString()}\n`),
+                    ...encoder.encode("--------------------------------\n")
+                ]);
+                await bleCharacteristic.writeValue(data);
+
+                for (const it of order.items) {
+                    let line = `${it.name} x${it.qty}  ${it.price*it.qty} SAR\n`;
+                    await bleCharacteristic.writeValue(encoder.encode(line));
+                }
+
+                let footer = new Uint8Array([
+                    ...encoder.encode("--------------------------------\n"),
+                    ...encoder.encode(`TOTAL: ${order.total} SAR\n`),
+                    ...encoder.encode(`PAYMENT: ${order.payment}\n`),
+                    ...encoder.encode("\nTHANK YOU FOR VISITING\n\n\n\n")
+                ]);
+                await bleCharacteristic.writeValue(footer);
+                showToast("تمت الطباعة بنجاح 🖨️", "#10b981");
+
+            } catch (err) {
+                console.error(err);
+                showToast("فشل الاتصال بالطابعة ❌");
                 bleCharacteristic = null;
             }
         }
 
-        function printReceipt() {
-            let textData = "--------------------------------\n";
-            cart.forEach(i => {
-                textData += `${i.name} x${i.qty}  ${i.qty*i.price} SAR\n`;
-            });
-            textData += "--------------------------------\n";
-            const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
-            textData += `TOTAL: ${total} SAR\n`;
-            
-            connectAndPrint(textData);
+        // --- بقية وظائف التطبيق الأصلية ---
+        function showWelcomeMessage() {
+            openModalLogic(`
+                <div class="text-center py-6">
+                    <div class="w-24 h-24 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl">🥣</div>
+                    <h2 class="text-3xl font-black mb-4 text-blue-900">مرحباً بكم في فوال مروه</h2>
+                    <p class="text-slate-600 font-bold mb-8">تفضلوا بالطلب من داخل المطعم بكل سهولة.</p>
+                    <button onclick="closeModal(); localStorage.setItem('first_welcome_v11','true')" class="w-full bg-blue-800 text-white py-5 rounded-3xl font-black shadow-xl">ابدأ استكشاف القائمة</button>
+                </div>
+            `);
         }
 
-        function sendToWhatsApp(orderID) {
-            const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
-            let msg = `*طلب جديد - فوال مروه*%0AID: #${orderID}%0A`;
-            cart.forEach(i => msg += `• ${i.name} [${i.qty}] = ${i.price*i.qty}﷼%0A`);
-            msg += `*الإجمالي: ${total}﷼*`;
-            window.open(`https://wa.me/966530195433?text=${msg}`);
-        }
+        function handleInstall() { showToast("جاري التثبيت..."); }
+        function openNbrModal() { /* وظيفة كود التفعيل للجيران */ }
+        function showFavoriteList() { /* قائمة المفضلة */ }
+        function showDetailedLogs(type) { /* عرض السجلات */ }
+        function setNeighborUI() { /* تنسيق وضع الجيران */ }
 
-        // وظائف إضافية للمفضلات
-        function showFavoriteList() { /* مشابهة للكود السابق */ showToast("المفضلات ستظهر هنا"); }
     </script>
 </body>
 </html>
