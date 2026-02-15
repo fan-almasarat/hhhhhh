@@ -33,6 +33,8 @@
         #receiptUI { background: #fff; padding: 25px; border-radius: 20px; border: 2px solid #f1f5f9; width: 320px; margin: 0 auto; color: #1e293b; }
         .input-error { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; }
         .input-error::placeholder { color: #ef4444; opacity: 0.7; }
+        .out-of-stock { filter: grayscale(1); opacity: 0.5; pointer-events: none; }
+        .stock-badge { position: absolute; top: 10px; left: 10px; background: #ef4444; color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 900; }
     </style>
 </head>
 <body class="pb-40">
@@ -43,7 +45,7 @@
         <div class="flex justify-between items-center mb-6">
             <div><h1 class="text-2xl font-black italic">فوال مروه</h1><p class="text-[10px] opacity-70 font-bold tracking-widest text-left">C.R: 2055134169</p></div>
             <div class="flex gap-2">
-                <button onclick="checkAuth()" class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 backdrop-blur-md"><i class="fa-solid fa-receipt text-lg"></i></button>
+                <button onclick="checkAuth()" class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 backdrop-blur-md"><i class="fa-solid fa-gear text-lg"></i></button>
                 <button onclick="showFavoriteList()" class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 text-red-400 backdrop-blur-md"><i class="fa-solid fa-heart text-lg"></i></button>
             </div>
         </div>
@@ -79,7 +81,8 @@
         </div>
     </div>
 
-    <script>
+    <script id="databaseScript">
+        // قاعدة البيانات الأساسية - سيتم تعديل هذا الجزء برمجياً عند الحفظ الدائم
         const DB = {
             "الوجبات": [{id:1, name:"فول سادة", sizes:{s:3, m:4, l:5, local:6}}, {id:2, name:"فول مشكل", sizes:{s:4, m:5, l:6, local:7}}, {id:3, name:"فول قلابة طاوه", sizes:{s:4, m:5, l:6, local:7}}, {id:4, name:"فول طاوه بالبيض", sizes:{s:5, m:6, l:7, local:8}}, {id:5, name:"عدس سادة", sizes:{s:3, m:4, l:5, local:6}}, {id:6, name:"عدس مشكل", sizes:{s:4, m:5, l:6, local:7}}, {id:7, name:"عدس طاوه بيض", sizes:{s:5, m:6, l:7, local:8}}, {id:8, name:"فاصوليه", sizes:{s:6, m:8, l:12, local:7}}, {id:9, name:"فاصوليه بالبيض", sizes:{s:7, m:8, l:13, local:8}}, {id:10, name:"فاصوليه بالتونة", sizes:{s:10, m:12, l:13, local:11}}, {id:11, name:"بازليا", sizes:{s:6, m:7, l:12, local:7}}, {id:12, name:"بازليا تونة", sizes:{s:10, m:11, l:12, local:11}}, {id:13, name:"تونة", sizes:{s:10, m:11, l:12, local:10}}, {id:14, name:"شكشوكة", sizes:{s:6, m:7, l:8, local:7}}, {id:15, name:"شكشوكة جبن", sizes:{s:8, m:9, l:10, local:9}}, {id:16, name:"شكشوكة افغاني", sizes:{s:7, m:8, l:10, local:8}}, {id:17, name:"بيض مقلي", sizes:{s:6, m:8, l:9, local:7}}, {id:18, name:"بيض عيون", sizes:{s:6, m:8, l:9, local:7}}, {id:19, name:"لحسة", sizes:{s:9, m:10, l:12, local:10}}, {id:20, name:"شكشوكة عدني", sizes:{s:7, m:8, l:10, local:8}}, {id:21, name:"فلافل 4 حبة", price:1}, {id:22, name:"كمونية", sizes:{s:10, m:12, l:15, local:11}}],
             "المطبق": [{id:23, name:"مطبق خضار", price:5}, {id:24, name:"مطبق مالح", price:5}, {id:25, name:"مطبق موز", price:5}, {id:26, name:"مطبق حلو جبن", price:5}, {id:27, name:"مشكل حلو", price:10}, {id:28, name:"مشكل خضار", price:8}, {id:29, name:"تونة", price:8}, {id:30, name:"جبنة سائل", price:6}, {id:31, name:"جبنة شيدر", price:6}, {id:32, name:"جبنتين", price:8}, {id:33, name:"نوتيلا", price:7}],
@@ -89,12 +92,15 @@
             "التميس": [{id:56, name:"تميس عادي", price:1}, {id:57, name:"تميس سكر", price:3}, {id:58, name:"تميس بر", price:2}, {id:59, name:"تميس جبن", price:5}, {id:60, name:"تميس جبن سكر", price:6}, {id:61, name:"تميس بر جبن", price:7}, {id:62, name:"تميس جبن دبل", price:9}, {id:63, name:"تميس سمن", price:2}, {id:64, name:"تميس سمن سكر", price:3}, {id:65, name:"تميس سمن جبن سكر", price:8}, {id:66, name:"تميس بسكوت", price:3}, {id:67, name:"تميس بسكوت سكر", price:4}, {id:68, name:"تميس بسكوت جبن", price:8}, {id:69, name:"تميس زعتر", price:4}, {id:70, name:"تميس بر زعتر", price:5}],
             "المشروبات": [{id:71, name:"ماء", price:1}, {id:72, name:"مشروب غازي", price:3}, {id:73, name:"شاي سادة", price:1}, {id:74, name:"شاي بالحليب", price:2}]
         };
+    </script>
 
+    <script>
         let cart = [];
         let isNeighbor = localStorage.getItem('isNbr') === 'true';
         let currentCategory = "الوجبات";
         let activeItemId = null;
         let deferredPrompt;
+        let unavailableItems = JSON.parse(localStorage.getItem('out_of_stock_v1') || '[]');
         
         // --- متغيرات طابعة البلوتوث ---
         let bluetoothDevice = null;
@@ -104,76 +110,43 @@
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js').then(() => console.log("SW Registered"));
             }
-
             history.pushState(null, null, window.location.pathname);
             window.addEventListener('popstate', function (event) {
                 const modal = document.getElementById('mainModal');
-                if (modal && modal.style.display === 'flex') {
-                    closeModal();
-                    history.pushState(null, null, window.location.pathname);
-                } else {
-                    history.pushState(null, null, window.location.pathname);
-                    showToast("للحصول على أفضل تجربة، ثبت التطبيق 📱");
-                }
+                if (modal && modal.style.display === 'flex') { closeModal(); history.pushState(null, null, window.location.pathname); }
+                else { history.pushState(null, null, window.location.pathname); showToast("للحصول على أفضل تجربة، ثبت التطبيق 📱"); }
             });
-
             cleanOldLogs(); renderTabs(); renderItems(); updateCartDisplay(); setNeighborUI();
             if(!localStorage.getItem('first_welcome_v11')) showWelcomeMessage();
         };
 
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-        });
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
 
         async function handleInstall() {
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-            
             if (isIOS && !isStandalone) {
                 openModalLogic(`
                     <div class="text-center py-6">
                         <div class="w-20 h-20 bg-blue-100 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 text-4xl"><i class="fa-solid fa-mobile-screen-button"></i></div>
                         <h2 class="text-2xl font-black mb-4">تثبيت التطبيق على iPhone</h2>
                         <div class="space-y-6 text-right font-bold text-slate-600">
-                            <div class="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl">
-                                <span class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">1</span>
-                                <p>اضغط على زر المشاركة <i class="fa-solid fa-arrow-up-from-bracket text-blue-600 mx-1"></i> في أسفل المتصفح.</p>
-                            </div>
-                            <div class="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl">
-                                <span class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
-                                <p>اختر "إضافة إلى الصفحة الرئيسية" <i class="fa-regular fa-square-plus text-blue-600 mx-1"></i> من القائمة.</p>
-                            </div>
-                            <div class="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl">
-                                <span class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">3</span>
-                                <p>اضغط على "إضافة" في الزاوية العلوية.</p>
-                            </div>
+                            <div class="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl"><span class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">1</span><p>اضغط على زر المشاركة <i class="fa-solid fa-arrow-up-from-bracket text-blue-600 mx-1"></i> في أسفل المتصفح.</p></div>
+                            <div class="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl"><span class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span><p>اختر "إضافة إلى الصفحة الرئيسية" <i class="fa-regular fa-square-plus text-blue-600 mx-1"></i> من القائمة.</p></div>
+                            <div class="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl"><span class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">3</span><p>اضغط على "إضافة" في الزاوية العلوية.</p></div>
                         </div>
                         <button onclick="closeModal()" class="w-full bg-blue-800 text-white py-4 rounded-2xl font-black mt-8 shadow-lg">فهمت</button>
-                    </div>
-                `);
+                    </div>`);
                 return;
             }
-
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') deferredPrompt = null;
-            } else if (isStandalone) {
-                showToast("التطبيق مثبت بالفعل على جهازك ✅", "#10b981");
-            } else {
-                showToast("متصفحك لا يدعم التثبيت المباشر، جرب متصفح Chrome 🌐");
-            }
+            if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') deferredPrompt = null; }
+            else if (isStandalone) { showToast("التطبيق مثبت بالفعل على جهازك ✅", "#10b981"); }
+            else { showToast("متصفحك لا يدعم التثبيت المباشر، جرب متصفح Chrome 🌐"); }
         }
 
         function showToast(text, color = '#1e293b') {
             const toast = document.getElementById("customToast");
-            if (toast) {
-                toast.innerText = text;
-                toast.style.backgroundColor = color;
-                toast.classList.add("show");
-                setTimeout(() => { toast.classList.remove("show"); }, 3000);
-            }
+            if (toast) { toast.innerText = text; toast.style.backgroundColor = color; toast.classList.add("show"); setTimeout(() => { toast.classList.remove("show"); }, 3000); }
         }
 
         function showWelcomeMessage() {
@@ -183,14 +156,11 @@
                     <h2 class="text-3xl font-black mb-4 text-blue-900">مرحباً بكم في فوال مروه</h2>
                     <div class="space-y-4 text-slate-600 font-bold mb-8 text-lg leading-relaxed">
                         <p>تفضلوا بالطلب من <span class="text-blue-600">داخل المطعم</span> بكل سهولة.</p>
-                        <div class="bg-emerald-50 p-4 rounded-3xl border border-emerald-100">
-                            <p class="text-emerald-700">🚚 جيراننا أهل حي بدر!<br>لكم توصيل مجاني خاص.</p>
-                        </div>
+                        <div class="bg-emerald-50 p-4 rounded-3xl border border-emerald-100"><p class="text-emerald-700">🚚 جيراننا أهل حي بدر!<br>لكم توصيل مجاني خاص.</p></div>
                         <p class="text-sm">للحصول على كود التفعيل، نسعد بزيارتكم للمطعم أو التواصل معنا.</p>
                     </div>
                     <button onclick="closeModal(); localStorage.setItem('first_welcome_v11','true')" class="w-full bg-blue-800 text-white py-5 rounded-3xl font-black shadow-xl">ابدأ استكشاف القائمة</button>
-                </div>
-            `);
+                </div>`);
         }
 
         function openModalLogic(content, backFn = null) {
@@ -212,7 +182,9 @@
             const grid = document.getElementById('itemsGrid');
             grid.innerHTML = DB[currentCategory].map(item => {
                 const isActive = activeItemId === item.id;
-                return `<div class="bg-white rounded-[35px] p-6 shadow-sm border border-slate-50 item-card ${isActive ? 'active shadow-lg' : ''}" onclick="toggleItem(${item.id})">
+                const isOut = unavailableItems.includes(item.id);
+                return `<div class="bg-white rounded-[35px] p-6 shadow-sm border border-slate-50 item-card ${isActive ? 'active shadow-lg' : ''} ${isOut ? 'out-of-stock' : ''}" onclick="toggleItem(${item.id})">
+                    ${isOut ? '<span class="stock-badge">غير متوفر حالياً</span>' : ''}
                     <div class="flex justify-between items-center">
                         <div class="text-lg font-black text-blue-900">${item.name}</div>
                         ${item.price ? `<div class="flex items-center gap-3 bg-slate-50 p-2 rounded-2xl">
@@ -237,24 +209,16 @@
             }).join('');
         }
 
-        function toggleItem(id) { activeItemId = (activeItemId === id) ? null : id; renderItems(); }
+        function toggleItem(id) { if(!unavailableItems.includes(id)) { activeItemId = (activeItemId === id) ? null : id; renderItems(); } }
         function getSizeName(s) { return {s:'صغير', m:'وسط', l:'كبير', local:'محلي', samoli:'صامولي', fatira:'فطيرة'}[s] || s; }
 
         function updateQty(id, delta, name, price, size = 'default') {
             const key = `${id}-${size}`; 
             const idx = cart.findIndex(i => i.key === key);
-            if (idx > -1) { 
-                cart[idx].qty += delta; 
-                if (cart[idx].qty <= 0) cart.splice(idx, 1); 
-            }
-            else if (delta > 0) {
-                cart.push({ id, key, name: size !== 'default' ? `${name} (${getSizeName(size)})` : name, price, qty: 1, size, note: '' });
-            }
-            updateCartDisplay(); 
-            if(document.getElementById('cartRefCheck')) renderCartInModal();
-            renderItems();
+            if (idx > -1) { cart[idx].qty += delta; if (cart[idx].qty <= 0) cart.splice(idx, 1); }
+            else if (delta > 0) { cart.push({ id, key, name: size !== 'default' ? `${name} (${getSizeName(size)})` : name, price, qty: 1, size, note: '' }); }
+            updateCartDisplay(); if(document.getElementById('cartRefCheck')) renderCartInModal(); renderItems();
         }
-        
         function getQty(id, size) { const it = cart.find(i => i.key === `${id}-${size}`); return it ? it.qty : 0; }
         
         function updateCartDisplay() {
@@ -269,7 +233,6 @@
             const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
             const savedName = localStorage.getItem('u_name') || '';
             const savedLoc = localStorage.getItem('u_loc') || '';
-            
             openModalLogic(`
                 <div id="cartRefCheck">
                     <h2 class="text-2xl font-black mb-6 text-slate-800 text-center">مراجعة طلبي</h2>
@@ -309,92 +272,37 @@
 
         function openCartModal() { renderCartInModal(); }
         function toggleFavNames() { document.getElementById('favNamesDiv').classList.toggle('hidden'); }
-
-        function cleanOldLogs() {
-            let logs = JSON.parse(localStorage.getItem('m_logs_v11') || '[]');
-            const now = Date.now();
-            const filtered = logs.filter(log => (now - log.timestamp) < (24 * 60 * 60 * 1000));
-            localStorage.setItem('m_logs_v11', JSON.stringify(filtered));
-        }
-
-        function generateUniqueID() {
-            return Date.now().toString().slice(-6);
-        }
-
-        function saveToLogs(order) {
-            let logs = JSON.parse(localStorage.getItem('m_logs_v11') || '[]');
-            const exists = logs.some(l => l.id == order.id);
-            if (exists) return false;
-            logs.push(order);
-            localStorage.setItem('m_logs_v11', JSON.stringify(logs));
-            return true;
-        }
+        function cleanOldLogs() { let logs = JSON.parse(localStorage.getItem('m_logs_v11') || '[]'); const now = Date.now(); const filtered = logs.filter(log => (now - log.timestamp) < (24 * 60 * 60 * 1000)); localStorage.setItem('m_logs_v11', JSON.stringify(filtered)); }
+        function generateUniqueID() { return Date.now().toString().slice(-6); }
+        function saveToLogs(order) { let logs = JSON.parse(localStorage.getItem('m_logs_v11') || '[]'); const exists = logs.some(l => l.id == order.id); if (exists) return false; logs.push(order); localStorage.setItem('m_logs_v11', JSON.stringify(logs)); return true; }
 
         function confirmAndSend() {
             if (isNeighbor) {
                 const nInput = document.getElementById('custName'); const lInput = document.getElementById('custLoc');
-                if(!nInput.value.trim() || !lInput.value.trim()){ 
-                    if(!nInput.value.trim()) nInput.classList.add('input-error');
-                    if(!lInput.value.trim()) lInput.classList.add('input-error');
-                    showToast("يرجى إكمال البيانات باللون الأحمر ⚠️", "#ef4444"); return; 
-                }
-                localStorage.setItem('u_name', nInput.value.trim()); 
-                localStorage.setItem('u_loc', lInput.value.trim());
+                if(!nInput.value.trim() || !lInput.value.trim()){ if(!nInput.value.trim()) nInput.classList.add('input-error'); if(!lInput.value.trim()) lInput.classList.add('input-error'); showToast("يرجى إكمال البيانات باللون الأحمر ⚠️", "#ef4444"); return; }
+                localStorage.setItem('u_name', nInput.value.trim()); localStorage.setItem('u_loc', lInput.value.trim());
             }
-            
-            const now = new Date();
-            const orderID = generateUniqueID();
-            const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
-            const payMethod = document.getElementById('payWay').value;
-            const orderType = isNeighbor ? "حي بدر 🏠" : document.getElementById('oType').value;
+            const now = new Date(); const orderID = generateUniqueID(); const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
+            const payMethod = document.getElementById('payWay').value; const orderType = isNeighbor ? "حي بدر 🏠" : document.getElementById('oType').value;
             const orderFullTime = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            
-            const orderObj = { 
-                id: orderID, 
-                timestamp: now.getTime(), 
-                fullTime: orderFullTime,
-                items: JSON.parse(JSON.stringify(cart)), 
-                total, 
-                type: orderType, 
-                payment: payMethod, 
-                customer: isNeighbor ? localStorage.getItem('u_name') : 'عميل محلي', 
-                loc: isNeighbor ? localStorage.getItem('u_loc') : '' 
-            };
-            
+            const orderObj = { id: orderID, timestamp: now.getTime(), fullTime: orderFullTime, items: JSON.parse(JSON.stringify(cart)), total, type: orderType, payment: payMethod, customer: isNeighbor ? localStorage.getItem('u_name') : 'عميل محلي', loc: isNeighbor ? localStorage.getItem('u_loc') : '' };
             saveToLogs(orderObj);
-
             let msg = `*طلب جديد - فوال مروه*%0AID: ${orderID}%0A⏰ *الوقت:* ${orderFullTime}%0A📅 *التاريخ:* ${now.toLocaleDateString('ar-SA')}%0A📢 *النوع:* ${orderType}%0A💰 *الدفع:* ${payMethod}%0A`;
-            if(isNeighbor) {
-                msg += `🏠 *المنزل:* ${orderObj.loc}%0A`;
-                if(!localStorage.getItem('loc_sent_v11')) {
-                    msg += `%0A📍 *ملاحظة: بما أن هذا طلبي الأول، سأرسل لكم موقعي الحالي الآن*`;
-                    localStorage.setItem('loc_sent_v11', 'true');
-                }
-            }
-            msg += `--------------------------%0A`;
-            cart.forEach(i => { 
-                msg += `• ${i.name} [${i.qty}] = ${i.price * i.qty}﷼%0A`; 
-                if(i.note) msg += `   *توصية:* ${i.note}%0A`; 
-            });
+            if(isNeighbor) { msg += `🏠 *المنزل:* ${orderObj.loc}%0A`; if(!localStorage.getItem('loc_sent_v11')) { msg += `%0A📍 *ملاحظة: بما أن هذا طلبي الأول، سأرسل لكم موقعي الحالي الآن*`; localStorage.setItem('loc_sent_v11', 'true'); } }
+            msg += `--------------------------%0A`; cart.forEach(i => { msg += `• ${i.name} [${i.qty}] = ${i.price * i.qty}﷼%0A`; if(i.note) msg += `   *توصية:* ${i.note}%0A`; });
             msg += `--------------------------%0A💰 *الإجمالي: ${total}﷼*`;
-            
             window.location.href = `https://wa.me/966530195433?text=${msg}`;
             cart = []; updateCartDisplay(); closeModal(); renderItems();
         }
 
+        // --- لوحة التحكم الجديدة ---
         function checkAuth() {
             const lastAuth = localStorage.getItem('auth_time_v11');
             if (lastAuth && (Date.now() - lastAuth < 24 * 60 * 60 * 1000)) showLogCategories();
             else openAuthModal();
         }
-        function openAuthModal() {
-            openModalLogic(`<div class="text-center"><h2 class="text-2xl font-black mb-4">دخول الإدارة</h2><input type="password" id="authInput" placeholder="••••" class="w-full p-4 bg-slate-50 rounded-2xl border-2 text-center text-2xl mb-4 outline-none font-black"><button onclick="verifyAuth()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black shadow-lg">دخول</button></div>`);
-        }
-        function verifyAuth() {
-            if(document.getElementById('authInput').value === "123456Aa") {
-                localStorage.setItem('auth_time_v11', Date.now()); showLogCategories();
-            } else showToast("الرمز خاطئ!", "#ef4444");
-        }
+        function openAuthModal() { openModalLogic(`<div class="text-center"><h2 class="text-2xl font-black mb-4">دخول الإدارة</h2><input type="password" id="authInput" placeholder="••••" class="w-full p-4 bg-slate-50 rounded-2xl border-2 text-center text-2xl mb-4 outline-none font-black"><button onclick="verifyAuth()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black shadow-lg">دخول</button></div>`); }
+        function verifyAuth() { if(document.getElementById('authInput').value === "123456Aa") { localStorage.setItem('auth_time_v11', Date.now()); showLogCategories(); } else showToast("الرمز خاطئ!", "#ef4444"); }
 
         function showLogCategories() {
             const logs = JSON.parse(localStorage.getItem('m_logs_v11') || '[]');
@@ -403,14 +311,13 @@
             const nbrs = logs.filter(l => l.type.includes('بدر'));
             openModalLogic(`
                 <div class="space-y-4">
-                    <h2 class="text-2xl font-black text-center mb-6">سجل اليوم</h2>
+                    <h2 class="text-2xl font-black text-center mb-6">لوحة الإدارة ⚙️</h2>
+                    <button onclick="showInventoryManager()" class="w-full p-5 bg-orange-600 text-white rounded-[25px] font-black shadow-lg flex justify-between items-center px-8">
+                        <span>تعديل المنيو والأسعار 📝</span><i class="fa-solid fa-pen-to-square"></i>
+                    </button>
                     <div class="grid grid-cols-2 gap-3">
-                        <div onclick="showDetailedLogs('كاش')" class="bg-amber-50 p-6 rounded-[30px] border border-amber-100 text-center cursor-pointer shadow-sm">
-                            <h3 class="font-black text-amber-900 mb-1">الكاش 💵</h3><span class="font-black text-xl">${cash.length}</span>
-                        </div>
-                        <div onclick="showDetailedLogs('شبكة')" class="bg-blue-50 p-6 rounded-[30px] border border-blue-100 text-center cursor-pointer shadow-sm">
-                            <h3 class="font-black text-blue-900 mb-1">الشبكة 💳</h3><span class="font-black text-xl">${net.length}</span>
-                        </div>
+                        <div onclick="showDetailedLogs('كاش')" class="bg-amber-50 p-6 rounded-[30px] border border-amber-100 text-center cursor-pointer shadow-sm"><h3 class="font-black text-amber-900 mb-1">الكاش 💵</h3><span class="font-black text-xl">${cash.length}</span></div>
+                        <div onclick="showDetailedLogs('شبكة')" class="bg-blue-50 p-6 rounded-[30px] border border-blue-100 text-center cursor-pointer shadow-sm"><h3 class="font-black text-blue-900 mb-1">الشبكة 💳</h3><span class="font-black text-xl">${net.length}</span></div>
                     </div>
                     <div onclick="showDetailedLogs('حي بدر')" class="bg-emerald-50 p-6 rounded-[30px] border border-emerald-100 cursor-pointer shadow-sm flex justify-between items-center px-8">
                         <h3 class="font-black text-emerald-900">حي بدر 🏠</h3>
@@ -421,254 +328,136 @@
                         <textarea id="waPaste" placeholder="الصق رسالة الواتساب هنا..." class="w-full bg-white/10 p-3 rounded-xl text-[10px] outline-none mb-3 h-20 border border-white/20 font-bold"></textarea>
                         <button onclick="processReverseOrder()" class="w-full bg-white text-slate-900 py-3 rounded-xl font-black text-xs">تعبئة وحفظ تلقائي</button>
                     </div>
-                </div>
-            `);
+                </div>`);
         }
 
+        // --- ميزة إدارة المنيو والحفظ الدائم ---
+        function showInventoryManager() {
+            let content = `
+                <h2 class="text-2xl font-black mb-4 text-center">تعديل المنيو 🛠️</h2>
+                <button onclick="exportUpdatedFile()" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black mb-6 shadow-lg flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-download"></i> حفظ التعديلات في ملف الكود
+                </button>
+                <div class="bg-blue-50 p-4 rounded-2xl mb-6 space-y-2 border border-blue-100">
+                    <p class="text-[10px] font-black text-blue-600">إضافة صنف جديد لـ (${currentCategory}):</p>
+                    <input id="newPName" type="text" placeholder="اسم الوجبة" class="w-full p-3 rounded-xl border-none outline-none font-bold text-sm shadow-sm">
+                    <input id="newPPrice" type="number" placeholder="السعر" class="w-full p-3 rounded-xl border-none outline-none font-bold text-sm shadow-sm">
+                    <button onclick="addNewProduct()" class="w-full bg-blue-800 text-white py-3 rounded-xl font-black shadow-md">إضافة للمنيو</button>
+                </div>
+                <div class="space-y-3">
+                    <h3 class="font-black text-xs text-slate-400 px-2">الأصناف الحالية في (${currentCategory}):</h3>
+                    ${DB[currentCategory].map(item => `
+                        <div class="p-4 bg-white border rounded-2xl flex flex-col gap-3 shadow-sm">
+                            <div class="flex justify-between items-center">
+                                <span class="font-black text-blue-900">${item.name}</span>
+                                ${item.price ? `<input type="number" value="${item.price}" onchange="updatePrice(${item.id}, this.value)" class="w-16 p-2 border rounded-xl text-center font-black text-blue-600 bg-slate-50">` : '<span class="text-[9px] text-slate-400">أصناف متعددة الأحجام</span>'}
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="toggleStock(${item.id})" class="flex-1 text-[10px] py-2 rounded-xl font-black ${unavailableItems.includes(item.id) ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-orange-50 text-orange-600 border border-orange-100'}">
+                                    ${unavailableItems.includes(item.id) ? 'إعادة تفعيل' : 'إيقاف مؤقت'}
+                                </button>
+                                <button onclick="deleteProduct(${item.id})" class="bg-red-50 text-red-500 px-4 rounded-xl border border-red-100"><i class="fa-solid fa-trash-can"></i></button>
+                            </div>
+                        </div>`).join('')}
+                </div>`;
+            openModalLogic(content, showLogCategories);
+        }
+
+        function addNewProduct() {
+            const name = document.getElementById('newPName').value;
+            const price = document.getElementById('newPPrice').value;
+            if(!name || !price) return showToast("أكمل البيانات ⚠️", "#f59e0b");
+            DB[currentCategory].push({ id: Date.now(), name, price: parseInt(price) });
+            showInventoryManager(); renderItems(); showToast("تمت الإضافة بنجاح ✅", "#10b981");
+        }
+
+        function updatePrice(id, newPrice) {
+            DB[currentCategory] = DB[currentCategory].map(p => p.id === id ? {...p, price: parseInt(newPrice)} : p);
+            renderItems(); showToast("تم تحديث السعر 💰");
+        }
+
+        function toggleStock(id) {
+            if(unavailableItems.includes(id)) unavailableItems = unavailableItems.filter(i => i !== id);
+            else unavailableItems.push(id);
+            localStorage.setItem('out_of_stock_v1', JSON.stringify(unavailableItems));
+            showInventoryManager(); renderItems();
+        }
+
+        function deleteProduct(id) {
+            if(confirm("هل أنت متأكد من حذف هذا الصنف نهائياً؟")) {
+                DB[currentCategory] = DB[currentCategory].filter(p => p.id !== id);
+                showInventoryManager(); renderItems();
+            }
+        }
+
+        function exportUpdatedFile() {
+            let fullHTML = document.documentElement.outerHTML;
+            const newDBString = `const DB = ${JSON.stringify(DB, null, 12)};`;
+            const dbRegex = /const DB = \{[\s\S]*?\};/;
+            fullHTML = fullHTML.replace(dbRegex, newDBString);
+            const blob = new Blob(['<!DOCTYPE html>\n' + fullHTML], { type: 'text/html' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'index.html'; a.click();
+            alert("تم إنشاء ملف التطبيق المحدث بنجاح! قم باستبدال ملف index.html القديم بهذا الملف الجديد لضمان بقاء التعديلات للأبد.");
+        }
+
+        // --- الوظائف الباقية ---
         function showDetailedLogs(type) {
             const logs = JSON.parse(localStorage.getItem('m_logs_v11') || '[]');
             const filtered = logs.filter(l => l.payment.includes(type) || l.type.includes(type));
             const totalSum = filtered.reduce((s, l) => s + l.total, 0);
-
             let content = `<div class="min-h-[70vh]"><h2 class="text-2xl font-black mb-6">سجل ${type}</h2><div class="space-y-3 mb-10">`;
-            
-            content += filtered.map((l, index) => `
-                <div onclick='viewOrderDetails(${JSON.stringify(l)})' class="p-4 bg-white rounded-2xl border flex justify-between items-center shadow-sm cursor-pointer border-r-4 ${type.includes('كاش')?'border-amber-400':'border-blue-400'}">
-                    <div class="flex items-center gap-4">
-                        <span class="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center text-[10px] font-black text-slate-400">${index + 1}</span>
-                        <div>
-                            <span class="font-black text-sm text-slate-700">ID: ${l.id}</span>
-                            <p class="text-[9px] text-slate-400 font-bold">${l.fullTime || new Date(l.timestamp).toLocaleTimeString('ar-SA')}</p>
-                        </div>
-                    </div>
-                    <div class="font-black text-blue-800">${l.total}﷼</div>
-                </div>`).join('');
-
-            content += `</div>
-                <div class="bg-slate-900 text-white p-6 rounded-[35px] shadow-xl space-y-2">
-                    <div class="flex justify-between items-center"><span class="text-xs opacity-60 font-bold">عدد الطلبات المنجزة:</span><span class="font-black text-xl text-emerald-400">${filtered.length}</span></div>
-                    <div class="flex justify-between items-center"><span class="text-xs opacity-60 font-bold">إجمالي المبالغ (${type}):</span><span class="font-black text-2xl text-white">${totalSum}﷼</span></div>
-                </div>
-            </div>`;
-            
+            content += filtered.map((l, index) => `<div onclick='viewOrderDetails(${JSON.stringify(l)})' class="p-4 bg-white rounded-2xl border flex justify-between items-center shadow-sm cursor-pointer border-r-4 ${type.includes('كاش')?'border-amber-400':'border-blue-400'}"><div class="flex items-center gap-4"><span class="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center text-[10px] font-black text-slate-400">${index + 1}</span><div><span class="font-black text-sm text-slate-700">ID: ${l.id}</span><p class="text-[9px] text-slate-400 font-bold">${l.fullTime || new Date(l.timestamp).toLocaleTimeString('ar-SA')}</p></div></div><div class="font-black text-blue-800">${l.total}﷼</div></div>`).join('');
+            content += `</div><div class="bg-slate-900 text-white p-6 rounded-[35px] shadow-xl space-y-2"><div class="flex justify-between items-center"><span class="text-xs opacity-60 font-bold">عدد الطلبات:</span><span class="font-black text-xl text-emerald-400">${filtered.length}</span></div><div class="flex justify-between items-center"><span class="text-xs opacity-60 font-bold">الإجمالي:</span><span class="font-black text-2xl text-white">${totalSum}﷼</span></div></div></div>`;
             openModalLogic(content, showLogCategories);
         }
 
         function viewOrderDetails(order) {
-            const content = `
-                <div id="receiptUI" class="mb-6">
-                    <div class="text-center mb-4 pb-4 border-b">
-                        <h3 class="font-black text-xl">فوال مروه</h3>
-                        <p class="text-[9px] font-bold text-slate-400 mb-2">${new Date(order.timestamp).toLocaleString('ar-SA')}</p>
-                        <div class="bg-slate-100 py-2 rounded-xl">
-                            <p class="text-sm font-black">ID: ${order.id}</p>
-                        </div>
-                    </div>
-                    <div class="flex justify-between px-2 text-[10px] font-bold mb-4">
-                        <span>النوع: ${order.type}</span>
-                        <span>الدفع: ${order.payment}</span>
-                    </div>
-                    <div class="space-y-2 mb-4">
-                        ${order.items.map(it => `<div class="flex justify-between text-sm font-bold"><span>${it.name} x${it.qty}</span><span>${it.price*it.qty}﷼</span></div>`).join('')}
-                    </div>
-                    <div class="border-t-2 border-dashed pt-4 flex justify-between font-black text-xl">
-                        <span>الإجمالي:</span><span>${order.total}﷼</span>
-                    </div>
-                    ${order.loc ? `<div class="mt-4 pt-4 border-t text-center text-[10px] font-bold text-slate-500">${order.customer}<br>${order.loc}</div>` : ''}
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <button onclick='directBTPrint(${JSON.stringify(order)})' class="bg-blue-600 text-white py-4 rounded-2xl font-black text-sm shadow-lg"><i class="fa-solid fa-print ml-2"></i>طباعة حرارية</button>
-                    <button onclick="saveReceiptImage()" class="bg-slate-800 text-white py-4 rounded-2xl font-black text-sm shadow-lg"><i class="fa-solid fa-image ml-2"></i>حفظ صورة</button>
-                </div>
-            `;
+            const content = `<div id="receiptUI" class="mb-6"><div class="text-center mb-4 pb-4 border-b"><h3 class="font-black text-xl">فوال مروه</h3><p class="text-[9px] font-bold text-slate-400 mb-2">${new Date(order.timestamp).toLocaleString('ar-SA')}</p><div class="bg-slate-100 py-2 rounded-xl"><p class="text-sm font-black">ID: ${order.id}</p></div></div><div class="flex justify-between px-2 text-[10px] font-bold mb-4"><span>النوع: ${order.type}</span><span>الدفع: ${order.payment}</span></div><div class="space-y-2 mb-4">${order.items.map(it => `<div class="flex justify-between text-sm font-bold"><span>${it.name} x${it.qty}</span><span>${it.price*it.qty}﷼</span></div>`).join('')}</div><div class="border-t-2 border-dashed pt-4 flex justify-between font-black text-xl"><span>الإجمالي:</span><span>${order.total}﷼</span></div>${order.loc ? `<div class="mt-4 pt-4 border-t text-center text-[10px] font-bold text-slate-500">${order.customer}<br>${order.loc}</div>` : ''}</div><div class="grid grid-cols-2 gap-3"><button onclick='directBTPrint(${JSON.stringify(order)})' class="bg-blue-600 text-white py-4 rounded-2xl font-black text-sm shadow-lg"><i class="fa-solid fa-print ml-2"></i>طباعة</button><button onclick="saveReceiptImage()" class="bg-slate-800 text-white py-4 rounded-2xl font-black text-sm shadow-lg"><i class="fa-solid fa-image ml-2"></i>حفظ صورة</button></div>`;
             openModalLogic(content, showLogCategories);
         }
 
-        // --- وظائف الطباعة الحرارية المباشرة (ESC/POS) ---
-
         async function directBTPrint(order) {
             try {
-                // 1. فحص الاتصال بالطابعة أو طلب اقتران جديد
                 if (!bluetoothDevice || !bluetoothDevice.gatt.connected) {
-                    showToast("جاري البحث عن طابعة بلوتوث... 🔍", "#3b82f6");
-                    bluetoothDevice = await navigator.bluetooth.requestDevice({
-                        filters: [{ services: ['000018f0-0000-1000-8000-00805f9b34fb'] }, { namePrefix: 'P' }, { namePrefix: 'M' }],
-                        optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb']
-                    });
+                    showToast("جاري البحث عن طابعة... 🔍", "#3b82f6");
+                    bluetoothDevice = await navigator.bluetooth.requestDevice({ filters: [{ services: ['000018f0-0000-1000-8000-00805f9b34fb'] }, { namePrefix: 'P' }, { namePrefix: 'M' }], optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb'] });
                     const server = await bluetoothDevice.gatt.connect();
                     const service = await server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
                     const characteristics = await service.getCharacteristics();
                     printCharacteristic = characteristics.find(c => c.properties.write);
                 }
-
-                showToast("جاري معالجة البيانات... ⚙️");
-                
-                // 2. تحويل البيانات إلى أوامر ESC/POS
                 const encoder = new TextEncoder();
-                const init = [0x1B, 0x40]; // تهيئة
-                const center = [0x1B, 0x61, 0x01]; // توسيط
-                const boldOn = [0x1B, 0x45, 0x01]; // عريض
-                const boldOff = [0x1B, 0x45, 0x00]; // عادي
-                const sizeBig = [0x1D, 0x21, 0x11]; // حجم كبير
-                const sizeNormal = [0x1D, 0x21, 0x00]; // حجم عادي
-                const right = [0x1B, 0x61, 0x02]; // محاذاة يمين
-                const feed = [0x0A, 0x0A, 0x0A]; // تغذية ورق
-
-                let commands = new Uint8Array([
-                    ...init, ...center, ...boldOn, ...sizeBig, ...encoder.encode("FOVAL MARWA\n"),
-                    ...sizeNormal, ...encoder.encode(" فوال مروه \n"),
-                    ...boldOff, ...encoder.encode("--------------------------------\n"),
-                    ...center, ...encoder.encode(`ID: ${order.id}\n`),
-                    ...encoder.encode(`${new Date(order.timestamp).toLocaleString('ar-SA')}\n`),
-                    ...encoder.encode("--------------------------------\n"),
-                    ...right
-                ]);
-
-                // إضافة الأصناف
-                order.items.forEach(it => {
-                    const line = `${it.name} x${it.qty}  ${it.price * it.qty} SAR\n`;
-                    let lineBytes = encoder.encode(line);
-                    let merged = new Uint8Array(commands.length + lineBytes.length);
-                    merged.set(commands); merged.set(lineBytes, commands.length);
-                    commands = merged;
-                });
-
-                // الإجمالي والتذييل
-                const footer = new Uint8Array([
-                    ...encoder.encode("--------------------------------\n"),
-                    ...center, ...boldOn, ...sizeBig, ...encoder.encode(`TOTAL: ${order.total} SAR\n`),
-                    ...sizeNormal, ...boldOff, ...encoder.encode(`${order.type} - ${order.payment}\n`),
-                    ...feed
-                ]);
-
-                let finalBuffer = new Uint8Array(commands.length + footer.length);
-                finalBuffer.set(commands); finalBuffer.set(footer, commands.length);
-
-                // 3. الإرسال للطابعة
-                await printCharacteristic.writeValue(finalBuffer);
-                showToast("تمت الطباعة بنجاح ✅", "#10b981");
-
-            } catch (error) {
-                console.error(error);
-                showToast("خطأ في الطباعة! تأكد من تشغيل البلوتوث والطابعة ❌", "#ef4444");
-            }
+                const init = [0x1B, 0x40]; const center = [0x1B, 0x61, 0x01]; const boldOn = [0x1B, 0x45, 0x01]; const boldOff = [0x1B, 0x45, 0x00]; const sizeBig = [0x1D, 0x21, 0x11]; const sizeNormal = [0x1D, 0x21, 0x00]; const right = [0x1B, 0x61, 0x02]; const feed = [0x0A, 0x0A, 0x0A];
+                let commands = new Uint8Array([...init, ...center, ...boldOn, ...sizeBig, ...encoder.encode("FOVAL MARWA\n"), ...sizeNormal, ...encoder.encode(" فوال مروه \n"), ...boldOff, ...encoder.encode("--------------------------------\n"), ...center, ...encoder.encode(`ID: ${order.id}\n`), ...encoder.encode(`${new Date(order.timestamp).toLocaleString('ar-SA')}\n`), ...encoder.encode("--------------------------------\n"), ...right]);
+                order.items.forEach(it => { const line = `${it.name} x${it.qty}  ${it.price * it.qty} SAR\n`; let lineBytes = encoder.encode(line); let merged = new Uint8Array(commands.length + lineBytes.length); merged.set(commands); merged.set(lineBytes, commands.length); commands = merged; });
+                const footer = new Uint8Array([...encoder.encode("--------------------------------\n"), ...center, ...boldOn, ...sizeBig, ...encoder.encode(`TOTAL: ${order.total} SAR\n`), ...sizeNormal, ...boldOff, ...encoder.encode(`${order.type} - ${order.payment}\n`), ...feed]);
+                let finalBuffer = new Uint8Array(commands.length + footer.length); finalBuffer.set(commands); finalBuffer.set(footer, commands.length);
+                await printCharacteristic.writeValue(finalBuffer); showToast("تمت الطباعة ✅", "#10b981");
+            } catch (error) { showToast("خطأ في الطباعة! ❌", "#ef4444"); }
         }
 
-        async function saveReceiptImage() {
-            const canvas = await html2canvas(document.getElementById('receiptUI'), { scale: 3 });
-            const link = document.createElement('a'); link.download = 'order.png'; link.href = canvas.toDataURL(); link.click();
-        }
-
+        async function saveReceiptImage() { const canvas = await html2canvas(document.getElementById('receiptUI'), { scale: 3 }); const link = document.createElement('a'); link.download = 'order.png'; link.href = canvas.toDataURL(); link.click(); }
+        
         function processReverseOrder() {
-            const text = document.getElementById('waPaste').value;
-            if(!text) return;
+            const text = document.getElementById('waPaste').value; if(!text) return;
             try {
-                const idMatch = text.match(/ID:\s*(\d+)/);
-                const typeMatch = text.match(/النوع:\s*([^\n]+)/);
-                const payMatch = text.match(/الدفع:\s*([^\n]+)/);
-                const totalMatch = text.match(/الإجمالي:\s*(\d+)/);
-                const itemLines = text.match(/•\s*([^\n\[]+)\[(\d+)\]\s*=\s*(\d+)/g);
-                
+                const idMatch = text.match(/ID:\s*(\d+)/); const typeMatch = text.match(/النوع:\s*([^\n]+)/); const payMatch = text.match(/الدفع:\s*([^\n]+)/); const totalMatch = text.match(/الإجمالي:\s*(\d+)/); const itemLines = text.match(/•\s*([^\n\[]+)\[(\d+)\]\s*=\s*(\d+)/g);
                 if(!itemLines || !idMatch) { showToast("تنسيق غير صحيح ⚠️", "#ef4444"); return; }
-                
-                const importedItems = itemLines.map(line => {
-                    const p = line.match(/•\s*([^\n\[]+)\[(\d+)\]\s*=\s*(\d+)/);
-                    const qty = parseInt(p[2]);
-                    const totalPrice = parseInt(p[3]);
-                    return { name: p[1].trim(), qty: qty, price: totalPrice/qty, key: Math.random(), id: 999 };
-                });
-
-                const newOrder = { 
-                    id: idMatch[1], 
-                    timestamp: Date.now(), 
-                    items: importedItems, 
-                    total: totalMatch ? parseInt(totalMatch[1]) : 0, 
-                    type: typeMatch ? typeMatch[1].trim() : "مستورد", 
-                    payment: payMatch ? payMatch[1].trim() : "كاش 💵" 
-                };
-
-                if(!saveToLogs(newOrder)) { 
-                    openModalLogic(`
-                        <div class="text-center py-6">
-                            <div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">🚫</div>
-                            <h3 class="text-xl font-black text-red-600 mb-2">تنبيه: الطلب مكرر!</h3>
-                            <p class="text-xs font-bold text-slate-500 mb-6 px-4">يوجد طلب في السجل بنفس الـ ID: <span class="text-red-600">${newOrder.id}</span> بنفس التفاصيل.</p>
-                            <button onclick='saveWithNewID(${JSON.stringify(newOrder)})' class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg">توليد ID جديد وحفظ الطلب</button>
-                            <button onclick="showLogCategories()" class="w-full bg-slate-100 text-slate-500 py-3 rounded-2xl font-bold mt-3">إلغاء</button>
-                        </div>
-                    `);
-                    return;
-                }
-                showToast("تم الحفظ بنجاح ✅", "#10b981"); 
-                showLogCategories(); 
+                const importedItems = itemLines.map(line => { const p = line.match(/•\s*([^\n\[]+)\[(\d+)\]\s*=\s*(\d+)/); const qty = parseInt(p[2]); const totalPrice = parseInt(p[3]); return { name: p[1].trim(), qty: qty, price: totalPrice/qty, key: Math.random(), id: 999 }; });
+                const newOrder = { id: idMatch[1], timestamp: Date.now(), items: importedItems, total: totalMatch ? parseInt(totalMatch[1]) : 0, type: typeMatch ? typeMatch[1].trim() : "مستورد", payment: payMatch ? payMatch[1].trim() : "كاش 💵" };
+                if(!saveToLogs(newOrder)) { openModalLogic(`<div class="text-center py-6"><div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">🚫</div><h3 class="text-xl font-black text-red-600 mb-2">تنبيه: الطلب مكرر!</h3><button onclick='saveWithNewID(${JSON.stringify(newOrder)})' class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg">توليد ID جديد وحفظ الطلب</button><button onclick="showLogCategories()" class="w-full bg-slate-100 text-slate-500 py-3 rounded-2xl font-bold mt-3">إلغاء</button></div>`); return; }
+                showToast("تم الحفظ بنجاح ✅", "#10b981"); showLogCategories(); 
             } catch(e) { showToast("خطأ في القراءة ❌", "#ef4444"); }
         }
-
-        function saveWithNewID(order) {
-            order.id = generateUniqueID();
-            saveToLogs(order);
-            showToast("تم توليد ID جديد وحفظ الطلب ✅", "#10b981");
-            showLogCategories();
-        }
-
-        function saveFavorite(favName) {
-            if(!cart.length) return;
-            let favs = JSON.parse(localStorage.getItem('m_favs_v11') || '[]');
-            const idx = favs.findIndex(f => f.name === favName);
-            const newFav = { name: favName, items: JSON.parse(JSON.stringify(cart)), total: cart.reduce((s,i)=>s+(i.price*i.qty),0) };
-            if(idx > -1) favs[idx] = newFav;
-            else favs.push(newFav);
-            localStorage.setItem('m_favs_v11', JSON.stringify(favs));
-            showToast(`تم حفظ ${favName} ❤️`, "#f43f5e");
-            toggleFavNames();
-        }
-
-        function showFavoriteList() {
-            const favs = JSON.parse(localStorage.getItem('m_favs_v11') || '[]');
-            let content = `<h2 class="text-2xl font-black mb-6 text-red-600 text-center">وجباتي المفضلة</h2><div class="space-y-4">`;
-            content += favs.map((f, i) => `<div onclick="previewFav(${i})" class="p-6 bg-white rounded-[30px] border flex justify-between items-center shadow-sm"><span class="font-black text-lg">${f.name}</span><button onclick="event.stopPropagation(); deleteFav(${i})" class="text-red-200"><i class="fa-solid fa-trash-can"></i></button></div>`).join('');
-            openModalLogic(content + (favs.length ? '' : '<p class="text-center py-10 opacity-30 font-bold">لا توجد وجبات</p>') + '</div>');
-        }
-
-        function previewFav(index) {
-            const f = JSON.parse(localStorage.getItem('m_favs_v11'))[index];
-            openModalLogic(`<h2 class="text-2xl font-black mb-6 text-red-600 text-center">${f.name}</h2><div class="bg-slate-50 p-6 rounded-[35px] border mb-6">${f.items.map(it => `<div class="flex justify-between font-bold text-sm mb-2"><span>• ${it.name} [${it.qty}]</span><span>${it.price*it.qty}﷼</span></div>`).join('')}<div class="border-t-2 mt-4 pt-4 flex justify-between font-black text-xl text-red-600"><span>الإجمالي:</span><span>${f.total}﷼</span></div></div><button onclick="applyFav(${index})" class="w-full bg-red-600 text-white py-5 rounded-3xl font-black text-lg shadow-xl">تعبئة السلة 🛒</button>`, showFavoriteList);
-        }
-
-        function applyFav(index) {
-            const f = JSON.parse(localStorage.getItem('m_favs_v11'))[index];
-            cart = JSON.parse(JSON.stringify(f.items)); updateCartDisplay(); renderItems(); closeModal(); showToast("تم تحديث السلة ✅");
-        }
-        function deleteFav(i) {
-            let favs = JSON.parse(localStorage.getItem('m_favs_v11')); favs.splice(i, 1);
-            localStorage.setItem('m_favs_v11', JSON.stringify(favs)); showFavoriteList();
-        }
-
-        function openNbrModal() {
-            openModalLogic(`<div class="text-center"><div class="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto mb-4 text-3xl"><i class="fa-solid fa-key"></i></div><h2 class="text-2xl font-black mb-4 text-emerald-900">كود تفعيل الجيران</h2><input type="text" id="nbrInput" placeholder="أدخل الكود" class="w-full p-5 bg-slate-50 rounded-2xl border-2 text-center font-black mb-4 outline-none border-slate-100 focus:border-emerald-500 transition-all"><button onclick="verifyNbr()" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black shadow-lg">${isNeighbor ? 'إيقاف خدمة التوصيل' : 'تفعيل الخدمة'}</button></div>`);
-        }
-
-        function verifyNbr() {
-            if(document.getElementById('nbrInput').value.trim() === "حي بدر") {
-                isNeighbor = !isNeighbor;
-                localStorage.setItem('isNbr', isNeighbor);
-                setNeighborUI(); renderItems();
-                if(isNeighbor) {
-                    openModalLogic(`<div class="text-center py-6"><div class="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl">🏘️</div><h2 class="text-3xl font-black mb-4 text-emerald-900">أهلاً بجيراننا!</h2><p class="text-slate-600 font-bold mb-8 text-lg leading-relaxed">تم تفعيل نظام <span class=\"text-emerald-600\">التوصيل المجاني</span> لحي بدر بنجاح.</p><button onclick="closeModal()" class="w-full bg-emerald-600 text-white py-5 rounded-3xl font-black shadow-xl">ابدأ طلبك الآن</button></div>`);
-                } else {
-                    closeModal();
-                    showToast("تم العودة للوضع العادي 🏢");
-                    openModalLogic(`<div class="text-center py-6"><div class="w-24 h-24 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl">🏢</div><h2 class="text-2xl font-black mb-4 text-blue-900">وضع المطعم العادي</h2><p class="text-slate-600 font-bold leading-relaxed">أنت الآن في وضع الطلب من داخل المطعم (محلي أو سفري).<br>طلبك سيرسل للمطعم كطلب خارجي.</p><button onclick="closeModal()" class="w-full bg-blue-800 text-white py-4 rounded-2xl font-black mt-6">فهمت</button></div>`);
-                }
-            } else showToast("الكود خاطئ!", "#ef4444");
-        }
-
-        function setNeighborUI() {
-            const btn = document.getElementById('nbrBtn');
-            btn.className = isNeighbor ? "p-6 rounded-[35px] bg-emerald-600 text-white flex justify-between items-center shadow-lg transform active:scale-95 transition cursor-pointer" : "p-6 rounded-[35px] bg-blue-800 text-white flex justify-between items-center shadow-lg transform active:scale-95 transition cursor-pointer";
-            document.getElementById('nbrLabel').innerText = isNeighbor ? "التوصيل المجاني للجيران مفعل ✅" : "أدخل الكود للتوصيل المجاني";
-            document.getElementById('nbrIcon').className = isNeighbor ? "fa-solid fa-unlock-keyhole text-xl" : "fa-solid fa-lock text-xl opacity-40";
-        }
+        function saveWithNewID(order) { order.id = generateUniqueID(); saveToLogs(order); showToast("تم الحفظ بـ ID جديد ✅"); showLogCategories(); }
+        function saveFavorite(favName) { if(!cart.length) return; let favs = JSON.parse(localStorage.getItem('m_favs_v11') || '[]'); const idx = favs.findIndex(f => f.name === favName); const newFav = { name: favName, items: JSON.parse(JSON.stringify(cart)), total: cart.reduce((s,i)=>s+(i.price*i.qty),0) }; if(idx > -1) favs[idx] = newFav; else favs.push(newFav); localStorage.setItem('m_favs_v11', JSON.stringify(favs)); showToast(`تم حفظ ${favName} ❤️`, "#f43f5e"); toggleFavNames(); }
+        function showFavoriteList() { const favs = JSON.parse(localStorage.getItem('m_favs_v11') || '[]'); let content = `<h2 class="text-2xl font-black mb-6 text-red-600 text-center">وجباتي المفضلة</h2><div class="space-y-4">`; content += favs.map((f, i) => `<div onclick="previewFav(${i})" class="p-6 bg-white rounded-[30px] border flex justify-between items-center shadow-sm"><span class="font-black text-lg">${f.name}</span><button onclick="event.stopPropagation(); deleteFav(${i})" class="text-red-200"><i class="fa-solid fa-trash-can"></i></button></div>`).join(''); openModalLogic(content + (favs.length ? '' : '<p class="text-center py-10 opacity-30 font-bold">لا توجد وجبات</p>') + '</div>'); }
+        function previewFav(index) { const f = JSON.parse(localStorage.getItem('m_favs_v11'))[index]; openModalLogic(`<h2 class="text-2xl font-black mb-6 text-red-600 text-center">${f.name}</h2><div class="bg-slate-50 p-6 rounded-[35px] border mb-6">${f.items.map(it => `<div class="flex justify-between font-bold text-sm mb-2"><span>• ${it.name} [${it.qty}]</span><span>${it.price*it.qty}﷼</span></div>`).join('')}<div class="border-t-2 mt-4 pt-4 flex justify-between font-black text-xl text-red-600"><span>الإجمالي:</span><span>${f.total}﷼</span></div></div><button onclick="applyFav(${index})" class="w-full bg-red-600 text-white py-5 rounded-3xl font-black text-lg shadow-xl">تعبئة السلة 🛒</button>`, showFavoriteList); }
+        function applyFav(index) { const f = JSON.parse(localStorage.getItem('m_favs_v11'))[index]; cart = JSON.parse(JSON.stringify(f.items)); updateCartDisplay(); renderItems(); closeModal(); showToast("تم تحديث السلة ✅"); }
+        function deleteFav(i) { let favs = JSON.parse(localStorage.getItem('m_favs_v11')); favs.splice(i, 1); localStorage.setItem('m_favs_v11', JSON.stringify(favs)); showFavoriteList(); }
+        function openNbrModal() { openModalLogic(`<div class="text-center"><div class="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto mb-4 text-3xl"><i class="fa-solid fa-key"></i></div><h2 class="text-2xl font-black mb-4 text-emerald-900">كود تفعيل الجيران</h2><input type="text" id="nbrInput" placeholder="أدخل الكود" class="w-full p-5 bg-slate-50 rounded-2xl border-2 text-center font-black mb-4 outline-none focus:border-emerald-500 transition-all"><button onclick="verifyNbr()" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black shadow-lg">${isNeighbor ? 'إيقاف التوصيل' : 'تفعيل الخدمة'}</button></div>`); }
+        function verifyNbr() { if(document.getElementById('nbrInput').value.trim() === "حي بدر") { isNeighbor = !isNeighbor; localStorage.setItem('isNbr', isNeighbor); setNeighborUI(); renderItems(); closeModal(); showToast(isNeighbor ? "أهلاً بجيراننا ✅" : "تم العودة للوضع العادي"); } else showToast("الكود خاطئ!", "#ef4444"); }
+        function setNeighborUI() { const btn = document.getElementById('nbrBtn'); btn.className = isNeighbor ? "p-6 rounded-[35px] bg-emerald-600 text-white flex justify-between items-center shadow-lg cursor-pointer transition" : "p-6 rounded-[35px] bg-blue-800 text-white flex justify-between items-center shadow-lg cursor-pointer transition"; document.getElementById('nbrLabel').innerText = isNeighbor ? "التوصيل المجاني للجيران مفعل ✅" : "أدخل الكود للتوصيل المجاني"; document.getElementById('nbrIcon').className = isNeighbor ? "fa-solid fa-unlock-keyhole text-xl" : "fa-solid fa-lock text-xl opacity-40"; }
     </script>
 </body>
 </html>
