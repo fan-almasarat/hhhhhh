@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fawal-mrv-final-full-v11';
+const CACHE_NAME = 'fawal-mrv-final-full-v12';
 const assets = [
   './',
   './index.html',
