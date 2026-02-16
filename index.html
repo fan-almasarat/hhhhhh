@@ -458,11 +458,19 @@
         }
 
         function viewOrderDetails(order) {
-            let qrText = `فوال مروه\nID: ${order.id}\nالتاريخ: ${new Date(order.timestamp).toLocaleString('ar-SA')}\n`;
-            order.items.forEach(it => { qrText += `${it.name} x${it.qty}\n`; });
-            qrText += `الإجمالي: ${order.total} ر.س\nC.R: 2055134169`;
+            // صياغة نص الباركود حسب النموذج المطلوب
+            let qrText = `فوال مروه غزواني\n`;
+            qrText += `ID: ${order.id}               رقم الطلب\n`;
+            qrText += `الوقت: ${order.fullTime || new Date(order.timestamp).toLocaleTimeString('ar-SA')}\n`;
+            qrText += `التاريخ: ${new Date(order.timestamp).toLocaleDateString('ar-SA')}\n`;
+            qrText += `الإجمالي: ${order.total} ر.س\n`;
+            qrText += `C.R: 2055134169   السجل التجاري\n`;
+            qrText += `قائم الطعام                    Menu\n`;
+            qrText += `https://fawal.marwa.workers.dev/\n`;
+            qrText += `موقعنا\n`;
+            qrText += `https://maps.app.goo.gl/MeFNnET7bC3QSCce7`;
             
-            const qrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(qrText)}&size=150`;
+            const qrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(qrText)}&size=200`;
 
             const content = `
                 <div id="receiptUI" class="mb-6">
@@ -485,8 +493,8 @@
                         <span>الإجمالي:</span><span>${order.total}﷼</span>
                     </div>
                     <div class="mt-6 flex flex-col items-center border-t pt-4">
-                        <img src="${qrUrl}" class="w-32 h-32 border p-1 bg-white" alt="Barcode">
-                        <p class="text-[8px] font-bold text-slate-400 mt-2">فاتورة إلكترونية</p>
+                        <img src="${qrUrl}" class="w-36 h-36 border p-2 bg-white" alt="Barcode">
+                        <p class="text-[8px] font-bold text-slate-400 mt-2">فاتورة إلكترونية معتمدة</p>
                     </div>
                     ${order.loc ? `<div class="no-print mt-4 pt-4 border-t text-center text-[10px] font-bold text-slate-500">${order.customer}<br>${order.loc}</div>` : ''}
                 </div>
