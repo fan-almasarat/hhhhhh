@@ -34,6 +34,7 @@
         .input-error { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; }
         .input-error::placeholder { color: #ef4444; opacity: 0.7; }
 
+        /* تنسيقات خاصة للحفظ كصورة أو طباعة لإخفاء عناصر معينة */
         @media print {
             .no-print { display: none !important; }
         }
@@ -374,6 +375,7 @@
             });
             msg += `--------------------------%0A💰 *الإجمالي: ${total}﷼*`;
             
+            // إضافة ملاحظة الموقع في نهاية الرسالة
             if(isNeighbor && !localStorage.getItem('loc_sent_v11')) {
                 msg += `%0A%0A📍 *ملاحظة: بما أن هذا طلبي الأول، سأرسل لكم موقعي الحالي الآن*`;
                 localStorage.setItem('loc_sent_v11', 'true');
@@ -456,33 +458,42 @@
         }
 
         function viewOrderDetails(order) {
-            // تنسيق نص الباركود المطلوب (عربي يمين، إنجليزي يسار)
-            let qrText = "فوال مروه غزواني\n";
-            qrText += `${order.id} :ID               رقم الطلب\n`;
-            qrText += `${order.fullTime || new Date(order.timestamp).toLocaleTimeString('ar-SA')} :الوقت\n`;
-            qrText += `${new Date(order.timestamp).toLocaleDateString('ar-SA')} :التاريخ\n`;
-            qrText += `${order.total} :ر.س                    الإجمالي\n`;
-            qrText += `2055134169 :C.R   السجل التجاري\n`;
-            qrText += "Menu                    قائم الطعام\n";
-            qrText += "https://fawal.marwa.workers.dev/\n";
-            qrText += "موقعنا\n";
-            qrText += "https://maps.app.goo.gl/MeFNnET7bC3QSCce7";
+            // تجهيز بيانات الباركود بناءً على النموذج المطلوب بالضبط
+            const now = new Date(order.timestamp);
+            const dateStr = now.toLocaleDateString('ar-SA');
+            const timeStr = order.fullTime || now.toLocaleTimeString('ar-SA');
             
-            const qrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(qrText)}&size=150`;
+            let qrText = `فوال مروة غزواني | FAWAL MARWA\n`;
+            qrText += `━━━━━━━━━━━━━━━━━━━━\n`;
+            qrText += `ORDER INFO | تفاصيل الطلب\n`;
+            qrText += `🆔 رقم الطلب | ID: ${order.id}\n`;
+            qrText += `📅 التاريخ | Date: ${dateStr}\n`;
+            qrText += `🕒 الوقت | Time: ${timeStr}\n`;
+            qrText += `💰 الإجمالي | Total: ${order.total} ر.س\n`;
+            qrText += `━━━━━━━━━━━━━━━━━━━━\n`;
+            qrText += `📞 رقم التواصل | Tel: 0530195433\n`;
+            qrText += `📜 السجل التجاري | C.R: 2055134169\n`;
+            qrText += `━━━━━━━━━━━━━━━━━━━━\n`;
+            qrText += `🍽️ قائمة الطعام | Menu:\nhttps://fawal.marwa.workers.dev/\n`;
+            qrText += `📍 موقعنا | Our Location:\nhttps://maps.app.goo.gl/foNjZM7o7jds8BZL8\n`;
+            qrText += `━━━━━━━━━━━━━━━━━━━━\n`;
+            qrText += `شكراً لزيارتكم | Thank You`;
+            
+            const qrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(qrText)}&size=200`;
 
             const content = `
                 <div id="receiptUI" class="mb-6">
                     <div class="text-center mb-4 pb-4 border-b">
-                        <h3 class="font-black text-xl">فوال مروه</h3>
-                        <p class="text-[9px] font-bold text-slate-400 mb-2">C.R: 2055134169</p>
-                        <p class="text-[9px] font-bold text-slate-400 mb-2">${new Date(order.timestamp).toLocaleString('ar-SA')}</p>
-                        <div class="bg-slate-100 py-2 rounded-xl">
-                            <p class="text-sm font-black">ID: ${order.id}</p>
+                        <h3 class="font-black text-xl">فوال مروه غزواني</h3>
+                        <p class="text-[9px] font-bold text-slate-400 mb-2">FAWAL MARWA</p>
+                        <div class="bg-slate-100 py-3 rounded-2xl my-2">
+                            <p class="text-xs font-black">تفاصيل الفاتورة الإلكترونية</p>
                         </div>
                     </div>
-                    <div class="flex justify-between px-2 text-[10px] font-bold mb-4">
-                        <span>النوع: ${order.type}</span>
-                        <span>الدفع: ${order.payment}</span>
+                    <div class="space-y-1 text-right text-[10px] font-bold mb-4 bg-slate-50 p-3 rounded-xl border border-dashed">
+                        <p>🆔 رقم الطلب: ${order.id}</p>
+                        <p>📅 التاريخ: ${dateStr}</p>
+                        <p>🕒 الوقت: ${timeStr}</p>
                     </div>
                     <div class="space-y-2 mb-4">
                         ${order.items.map(it => `<div class="flex justify-between text-sm font-bold"><span>${it.name} x${it.qty}</span><span>${it.price*it.qty}﷼</span></div>`).join('')}
@@ -490,9 +501,13 @@
                     <div class="border-t-2 border-dashed pt-4 flex justify-between font-black text-xl">
                         <span>الإجمالي:</span><span>${order.total}﷼</span>
                     </div>
-                    <div class="mt-6 flex flex-col items-center border-t pt-4">
-                        <img src="${qrUrl}" class="w-32 h-32 border p-1 bg-white" alt="Barcode">
-                        <p class="text-[8px] font-bold text-slate-400 mt-2 text-center">فوال مروه غزواني - فاتورة إلكترونية</p>
+                    <div class="mt-6 flex flex-col items-center border-t pt-6 bg-white">
+                        <img src="${qrUrl}" class="w-40 h-40 border-4 border-slate-900 p-1 bg-white" alt="Barcode">
+                        <p class="text-[9px] font-black text-slate-800 mt-4 italic">امسح الباركود لعرض تفاصيل الفاتورة</p>
+                        <div class="w-full mt-4 text-[8px] font-bold text-slate-400 text-center space-y-1">
+                           <p>السجل التجاري: 2055134169</p>
+                           <p>شكراً لزيارتكم | Thank You</p>
+                        </div>
                     </div>
                     ${order.loc ? `<div class="no-print mt-4 pt-4 border-t text-center text-[10px] font-bold text-slate-500">${order.customer}<br>${order.loc}</div>` : ''}
                 </div>
@@ -549,6 +564,7 @@
         }
 
         async function saveReceiptImage() {
+            // إخفاء ملاحظة الموقع مؤقتاً قبل التقاط الصورة لضمان نظافة الفاتورة
             const noPrintElements = document.querySelectorAll('.no-print');
             noPrintElements.forEach(el => el.style.opacity = '0');
 
@@ -558,6 +574,7 @@
                 backgroundColor: "#ffffff"
             });
             
+            // إعادة العناصر بعد التقاط الصورة
             noPrintElements.forEach(el => el.style.opacity = '1');
 
             const link = document.createElement('a'); 
