@@ -30,9 +30,14 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.3); font-weight: bold; opacity: 0; transition: 0.3s;
         }
         #customToast.show { visibility: visible; opacity: 1; }
-        #receiptUI { background: #fff; padding: 25px; border-radius: 20px; border: 2px solid #f1f5f9; width: 320px; margin: 0 auto; color: #1e293b; }
+        #receiptUI { background: #fff; padding: 25px; border-radius: 20px; border: 2px solid #f1f5f9; width: 320px; margin: 0 auto; color: #1e293b; position: relative; }
         .input-error { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; }
         .input-error::placeholder { color: #ef4444; opacity: 0.7; }
+
+        /* تنسيقات خاصة للحفظ كصورة أو طباعة لإخفاء عناصر معينة */
+        @media print {
+            .no-print { display: none !important; }
+        }
     </style>
 </head>
 <body class="pb-40">
@@ -67,7 +72,7 @@
     </div>
 
     <nav class="fixed bottom-0 left-0 right-0 h-20 bg-white/95 backdrop-blur-lg flex justify-around items-center z-[1100] border-t border-slate-100 px-6">
-        <a href="https://maps.app.goo.gl/Twt1MasJaJFYTfCZA" target="_blank" class="flex flex-col items-center text-slate-400"><i class="fa-solid fa-map-location-dot text-xl"></i><span class="text-[9px] font-black">موقعنا</span></a>
+        <a href="https://maps.google.com" target="_blank" class="flex flex-col items-center text-slate-400"><i class="fa-solid fa-map-location-dot text-xl"></i><span class="text-[9px] font-black">موقعنا</span></a>
         <button id="installBtn" onclick="handleInstall()" class="w-16 h-16 bg-blue-700 text-white rounded-full -mt-10 border-[5px] border-white shadow-2xl flex items-center justify-center active:scale-90 transition-all"><i class="fa-solid fa-cloud-arrow-down text-xl"></i></button>
         <a href="tel:0530195433" class="flex flex-col items-center text-slate-400"><i class="fa-solid fa-headset text-xl"></i><span class="text-[9px] font-black">اتصال</span></a>
     </nav>
@@ -362,10 +367,6 @@
             let msg = `*طلب جديد - فوال مروه*%0AID: ${orderID}%0A⏰ *الوقت:* ${orderFullTime}%0A📅 *التاريخ:* ${now.toLocaleDateString('ar-SA')}%0A📢 *النوع:* ${orderType}%0A💰 *الدفع:* ${payMethod}%0A`;
             if(isNeighbor) {
                 msg += `🏠 *المنزل:* ${orderObj.loc}%0A`;
-                if(!localStorage.getItem('loc_sent_v11')) {
-                    msg += `%0A📍 *ملاحظة: بما أن هذا طلبي الأول، سأرسل لكم موقعي الحالي الآن*`;
-                    localStorage.setItem('loc_sent_v11', 'true');
-                }
             }
             msg += `--------------------------%0A`;
             cart.forEach(i => { 
@@ -373,6 +374,12 @@
                 if(i.note) msg += `   *توصية:* ${i.note}%0A`; 
             });
             msg += `--------------------------%0A💰 *الإجمالي: ${total}﷼*`;
+            
+            // إضافة ملاحظة الموقع في نهاية الرسالة
+            if(isNeighbor && !localStorage.getItem('loc_sent_v11')) {
+                msg += `%0A%0A📍 *ملاحظة: بما أن هذا طلبي الأول، سأرسل لكم موقعي الحالي الآن*`;
+                localStorage.setItem('loc_sent_v11', 'true');
+            }
             
             window.location.href = `https://wa.me/966530195433?text=${msg}`;
             cart = []; updateCartDisplay(); closeModal(); renderItems();
@@ -451,7 +458,6 @@
         }
 
         function viewOrderDetails(order) {
-            // توليد بيانات الباركود (نص الفاتورة)
             let qrText = `فوال مروه\nID: ${order.id}\nالتاريخ: ${new Date(order.timestamp).toLocaleString('ar-SA')}\n`;
             order.items.forEach(it => { qrText += `${it.name} x${it.qty}\n`; });
             qrText += `الإجمالي: ${order.total} ر.س\nC.R: 2055134169`;
@@ -480,9 +486,9 @@
                     </div>
                     <div class="mt-6 flex flex-col items-center border-t pt-4">
                         <img src="${qrUrl}" class="w-32 h-32 border p-1 bg-white" alt="Barcode">
-                        <p class="text-[8px] font-bold text-slate-400 mt-2">فاتورة إلكترونية معتمدة</p>
+                        <p class="text-[8px] font-bold text-slate-400 mt-2">فاتورة إلكترونية</p>
                     </div>
-                    ${order.loc ? `<div class="mt-4 pt-4 border-t text-center text-[10px] font-bold text-slate-500">${order.customer}<br>${order.loc}</div>` : ''}
+                    ${order.loc ? `<div class="no-print mt-4 pt-4 border-t text-center text-[10px] font-bold text-slate-500">${order.customer}<br>${order.loc}</div>` : ''}
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <button onclick='printToBluetooth(${JSON.stringify(order)})' class="bg-blue-600 text-white py-4 rounded-2xl font-black text-sm shadow-lg">
@@ -537,8 +543,23 @@
         }
 
         async function saveReceiptImage() {
-            const canvas = await html2canvas(document.getElementById('receiptUI'), { scale: 3 });
-            const link = document.createElement('a'); link.download = 'order.png'; link.href = canvas.toDataURL(); link.click();
+            // إخفاء ملاحظة الموقع مؤقتاً قبل التقاط الصورة لضمان نظافة الفاتورة
+            const noPrintElements = document.querySelectorAll('.no-print');
+            noPrintElements.forEach(el => el.style.opacity = '0');
+
+            const canvas = await html2canvas(document.getElementById('receiptUI'), { 
+                scale: 3,
+                useCORS: true,
+                backgroundColor: "#ffffff"
+            });
+            
+            // إعادة العناصر بعد التقاط الصورة
+            noPrintElements.forEach(el => el.style.opacity = '1');
+
+            const link = document.createElement('a'); 
+            link.download = `Fawal-Marwa-Order-${Date.now()}.png`; 
+            link.href = canvas.toDataURL("image/png"); 
+            link.click();
         }
 
         function processReverseOrder() {
