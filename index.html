@@ -34,7 +34,6 @@
         .input-error { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; }
         .input-error::placeholder { color: #ef4444; opacity: 0.7; }
 
-        /* تنسيقات خاصة للحفظ كصورة أو طباعة لإخفاء عناصر معينة */
         @media print {
             .no-print { display: none !important; }
         }
@@ -375,7 +374,6 @@
             });
             msg += `--------------------------%0A💰 *الإجمالي: ${total}﷼*`;
             
-            // إضافة ملاحظة الموقع في نهاية الرسالة
             if(isNeighbor && !localStorage.getItem('loc_sent_v11')) {
                 msg += `%0A%0A📍 *ملاحظة: بما أن هذا طلبي الأول، سأرسل لكم موقعي الحالي الآن*`;
                 localStorage.setItem('loc_sent_v11', 'true');
@@ -458,10 +456,10 @@
         }
 
         function viewOrderDetails(order) {
-            // صياغة نص الباركود بالنموذج المطلوب
             const orderDate = new Date(order.timestamp).toLocaleDateString('ar-SA');
             const orderTime = order.fullTime || new Date(order.timestamp).toLocaleTimeString('ar-SA');
-            
+
+            // محتوى الباركود المطلوب بالظبط
             let qrText = `فوال مروة غزواني | FAWAL MARWA\n`;
             qrText += `━━━━━━━━━━━━━━━━━━━━\n`;
             qrText += `ORDER INFO | تفاصيل الطلب\n`;
@@ -473,14 +471,12 @@
             qrText += `📞 رقم التواصل | Tel: 0530195433\n`;
             qrText += `📜 السجل التجاري | C.R: 2055134169\n`;
             qrText += `━━━━━━━━━━━━━━━━━━━━\n`;
-            qrText += `🍽️ قائمة الطعام | Menu:\n`;
-            qrText += `https://fawal.marwa.workers.dev/\n`;
-            qrText += `📍 موقعنا | Our Location:\n`;
-            qrText += `https://maps.app.goo.gl/foNjZM7o7jds8BZL8\n`;
+            qrText += `🍽️ قائمة الطعام | Menu:\nhttps://fawal.marwa.workers.dev/\n`;
+            qrText += `📍 موقعنا | Our Location:\nhttps://maps.app.goo.gl/foNjZM7o7jds8BZL8\n`;
             qrText += `━━━━━━━━━━━━━━━━━━━━\n`;
             qrText += `شكراً لزيارتكم | Thank You`;
             
-            const qrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(qrText)}&size=250`;
+            const qrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(qrText)}&size=200`;
 
             const content = `
                 <div id="receiptUI" class="mb-6">
@@ -561,7 +557,6 @@
         }
 
         async function saveReceiptImage() {
-            // إخفاء ملاحظة الموقع مؤقتاً قبل التقاط الصورة لضمان نظافة الفاتورة
             const noPrintElements = document.querySelectorAll('.no-print');
             noPrintElements.forEach(el => el.style.opacity = '0');
 
@@ -571,7 +566,6 @@
                 backgroundColor: "#ffffff"
             });
             
-            // إعادة العناصر بعد التقاط الصورة
             noPrintElements.forEach(el => el.style.opacity = '1');
 
             const link = document.createElement('a'); 
