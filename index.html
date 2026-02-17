@@ -349,13 +349,11 @@
             const payMethod = document.getElementById('payWay').value;
             const orderType = isNeighbor ? "حي بدر 🏠" : document.getElementById('oType').value;
             const orderFullTime = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            const orderFullDate = now.toLocaleDateString('ar-SA');
             
             const orderObj = { 
                 id: orderID, 
                 timestamp: now.getTime(), 
                 fullTime: orderFullTime,
-                fullDate: orderFullDate,
                 items: JSON.parse(JSON.stringify(cart)), 
                 total, 
                 type: orderType, 
@@ -366,7 +364,7 @@
             
             saveToLogs(orderObj);
 
-            let msg = `*طلب جديد - فوال مروه*%0AID: ${orderID}%0A⏰ *الوقت:* ${orderFullTime}%0A📅 *التاريخ:* ${orderFullDate}%0A📢 *النوع:* ${orderType}%0A💰 *الدفع:* ${payMethod}%0A`;
+            let msg = `*طلب جديد - فوال مروه*%0AID: ${orderID}%0A⏰ *الوقت:* ${orderFullTime}%0A📅 *التاريخ:* ${now.toLocaleDateString('ar-SA')}%0A📢 *النوع:* ${orderType}%0A💰 *الدفع:* ${payMethod}%0A`;
             if(isNeighbor) {
                 msg += `🏠 *المنزل:* ${orderObj.loc}%0A`;
             }
@@ -460,8 +458,27 @@
         }
 
         function viewOrderDetails(order) {
-            // تنسيق النص داخل الباركود كما هو مطلوب في النموذج
-            const qrText = `فوال مروة غزواني | FAWAL MARWA\n━━━━━━━━━━━━━━━━━━━━\nORDER INFO | تفاصيل الطلب\n🆔 رقم الطلب | ID: ${order.id}\n📅 التاريخ | Date: ${order.fullDate || new Date(order.timestamp).toLocaleDateString('ar-SA')}\n🕒 الوقت | Time: ${order.fullTime || new Date(order.timestamp).toLocaleTimeString('ar-SA')}\n💰 الإجمالي | Total: ر.س(Total: SAR (${order.total.toFixed(2)})\n━━━━━━━━━━━━━━━━━━━━\n📞 رقم التواصل | Tel: 0530195433\n📜 السجل التجاري | C.R: 2055134169\n━━━━━━━━━━━━━━━━━━━━\n🍽️ قائمة الطعام | Menu:\nhttps://fawal.marwa.workers.dev/\n📍 موقعنا | Our Location:\nhttps://maps.app.goo.gl/foNjZM7o7jds8BZL8\n━━━━━━━━━━━━━━━━━━━━\nشكراً لزيارتكم | Thank You`;
+            // التعديل الجديد على نص الباركود ليتطابق مع النموذج المطلوب تماماً
+            const formattedDate = new Date(order.timestamp).toLocaleDateString('ar-SA');
+            const formattedTime = order.fullTime || new Date(order.timestamp).toLocaleTimeString('ar-SA');
+            
+            let qrText = `فوال مروة غزواني | FAWAL MARWA\n`;
+            qrText += `━━━━━━━━━━━━━━━━━━━━\n`;
+            qrText += `ORDER INFO | تفاصيل الطلب\n`;
+            qrText += `🆔 رقم الطلب | ID: ${order.id}\n`;
+            qrText += `📅 التاريخ | Date: ${formattedDate}\n`;
+            qrText += `🕒 الوقت | Time: ${formattedTime}\n`;
+            qrText += `💰 الإجمالي | Total: SAR ${order.total.toFixed(2)}\n`;
+            qrText += `━━━━━━━━━━━━━━━━━━━━\n`;
+            qrText += `📞 رقم التواصل | Tel: 0530195433\n`;
+            qrText += `📜 السجل التجاري | C.R: 2055134169\n`;
+            qrText += `━━━━━━━━━━━━━━━━━━━━\n`;
+            qrText += `🍽️ قائمة الطعام | Menu:\n`;
+            qrText += `https://fawal.marwa.workers.dev/\n`;
+            qrText += `📍 موقعنا | Our Location:\n`;
+            qrText += `https://maps.app.goo.gl/foNjZM7o7jds8BZL8\n`;
+            qrText += `━━━━━━━━━━━━━━━━━━━━\n`;
+            qrText += `شكراً لزيارتكم | Thank You`;
             
             const qrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(qrText)}&size=300&margin=1`;
 
@@ -470,7 +487,7 @@
                     <div class="text-center mb-4 pb-4 border-b">
                         <h3 class="font-black text-xl">فوال مروه</h3>
                         <p class="text-[9px] font-bold text-slate-400 mb-2">C.R: 2055134169</p>
-                        <p class="text-[9px] font-bold text-slate-400 mb-2">${order.fullDate || new Date(order.timestamp).toLocaleDateString('ar-SA')} | ${order.fullTime || new Date(order.timestamp).toLocaleTimeString('ar-SA')}</p>
+                        <p class="text-[9px] font-bold text-slate-400 mb-2">${new Date(order.timestamp).toLocaleString('ar-SA')}</p>
                         <div class="bg-slate-100 py-2 rounded-xl">
                             <p class="text-sm font-black">ID: ${order.id}</p>
                         </div>
@@ -486,8 +503,8 @@
                         <span>الإجمالي:</span><span>${order.total}﷼</span>
                     </div>
                     <div class="mt-6 flex flex-col items-center border-t pt-4">
-                        <img src="${qrUrl}" class="w-32 h-32 border p-1 bg-white" alt="Barcode">
-                        <p class="text-[8px] font-bold text-slate-400 mt-2">فاتورة إلكترونية</p>
+                        <img src="${qrUrl}" class="w-40 h-40 border p-1 bg-white" alt="Barcode">
+                        <p class="text-[8px] font-bold text-slate-400 mt-2">فاتورة إلكترونية - QR محسّن</p>
                     </div>
                     ${order.loc ? `<div class="no-print mt-4 pt-4 border-t text-center text-[10px] font-bold text-slate-500">${order.customer}<br>${order.loc}</div>` : ''}
                 </div>
@@ -544,7 +561,6 @@
         }
 
         async function saveReceiptImage() {
-            // إخفاء ملاحظة الموقع مؤقتاً قبل التقاط الصورة لضمان نظافة الفاتورة
             const noPrintElements = document.querySelectorAll('.no-print');
             noPrintElements.forEach(el => el.style.opacity = '0');
 
@@ -554,7 +570,6 @@
                 backgroundColor: "#ffffff"
             });
             
-            // إعادة العناصر بعد التقاط الصورة
             noPrintElements.forEach(el => el.style.opacity = '1');
 
             const link = document.createElement('a'); 
