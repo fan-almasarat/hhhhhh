@@ -458,15 +458,17 @@
         }
 
         function viewOrderDetails(order) {
-            // صياغة نص الباركود تماماً كما في النموذج المطلوب
-            const now = new Date(order.timestamp);
+            // التعديل الجديد على نص الباركود ليتطابق مع النموذج المطلوب تماماً
+            const formattedDate = new Date(order.timestamp).toLocaleDateString('ar-SA');
+            const formattedTime = order.fullTime || new Date(order.timestamp).toLocaleTimeString('ar-SA');
+            
             let qrText = `فوال مروة غزواني | FAWAL MARWA\n`;
             qrText += `━━━━━━━━━━━━━━━━━━━━\n`;
             qrText += `ORDER INFO | تفاصيل الطلب\n`;
             qrText += `🆔 رقم الطلب | ID: ${order.id}\n`;
-            qrText += `📅 التاريخ | Date: ${now.toLocaleDateString('ar-SA')}\n`;
-            qrText += `🕒 الوقت | Time: ${order.fullTime || now.toLocaleTimeString('ar-SA')}\n`;
-            qrText += `💰 الإجمالي | Total: ${order.total}﷼\n`;
+            qrText += `📅 التاريخ | Date: ${formattedDate}\n`;
+            qrText += `🕒 الوقت | Time: ${formattedTime}\n`;
+            qrText += `💰 الإجمالي | Total: SAR ${order.total.toFixed(2)}\n`;
             qrText += `━━━━━━━━━━━━━━━━━━━━\n`;
             qrText += `📞 رقم التواصل | Tel: 0530195433\n`;
             qrText += `📜 السجل التجاري | C.R: 2055134169\n`;
@@ -502,7 +504,7 @@
                     </div>
                     <div class="mt-6 flex flex-col items-center border-t pt-4">
                         <img src="${qrUrl}" class="w-40 h-40 border p-1 bg-white" alt="Barcode">
-                        <p class="text-[8px] font-bold text-slate-400 mt-2">فاتورة إلكترونية - امسح الباركود للتفاصيل</p>
+                        <p class="text-[8px] font-bold text-slate-400 mt-2">فاتورة إلكترونية - QR محسّن</p>
                     </div>
                     ${order.loc ? `<div class="no-print mt-4 pt-4 border-t text-center text-[10px] font-bold text-slate-500">${order.customer}<br>${order.loc}</div>` : ''}
                 </div>
@@ -559,7 +561,6 @@
         }
 
         async function saveReceiptImage() {
-            // إخفاء ملاحظة الموقع مؤقتاً قبل التقاط الصورة لضمان نظافة الفاتورة
             const noPrintElements = document.querySelectorAll('.no-print');
             noPrintElements.forEach(el => el.style.opacity = '0');
 
@@ -569,7 +570,6 @@
                 backgroundColor: "#ffffff"
             });
             
-            // إعادة العناصر بعد التقاط الصورة
             noPrintElements.forEach(el => el.style.opacity = '1');
 
             const link = document.createElement('a'); 
