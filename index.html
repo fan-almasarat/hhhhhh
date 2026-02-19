@@ -8,81 +8,76 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
-        :root { --p: #0f172a; --a: #3b82f6; --bg: #f8fafc; }
-        body { font-family: 'Tajawal', sans-serif; background: var(--bg); color: var(--p); overflow-x: hidden; }
-        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.3); }
-        .item-card { background: white; border-radius: 30px; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid #f1f5f9; }
-        .item-card:active { transform: scale(0.96); }
-        .status-pill { padding: 4px 12px; border-radius: 50px; font-size: 10px; font-weight: 900; }
-        .step-active { color: var(--a); transform: scale(1.1); font-weight: 900; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
+        :root { --main: #059669; --glass: rgba(255, 255, 255, 0.85); }
+        body { font-family: 'Tajawal', sans-serif; background: #f0f2f5; color: #1e293b; }
+        .glass-nav { background: var(--glass); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.3); }
+        .product-card { background: white; border-radius: 30px; overflow: hidden; transition: 0.3s; border: 1px solid rgba(0,0,0,0.05); }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .category-pill { transition: 0.3s; white-space: nowrap; }
+        .category-pill.active { background: var(--main); color: white; transform: scale(1.1); box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.4); }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-left: 8px; }
+        .img-zoom { transition: transform 0.5s; }
+        .product-card:hover .img-zoom { transform: scale(1.1); }
     </style>
 </head>
 <body class="pb-32">
 
-    <div id="toast" class="fixed top-8 left-6 right-6 z-[10000] glass p-4 rounded-3xl shadow-2xl transition-all translate-y-[-150%] opacity-0 flex items-center gap-4">
-        <div id="toastIcon" class="w-10 h-10 rounded-2xl flex items-center justify-center text-white"></div>
-        <p id="toastMsg" class="font-bold text-sm"></p>
+    <div id="tracker" class="fixed top-0 left-0 w-full z-[2000] p-4 transform -translate-y-full transition-all duration-500">
+        <div class="glass-nav p-6 rounded-[30px] shadow-2xl border-2 border-emerald-500/20">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-black text-emerald-900">حالة طلبك الحالي</h3>
+                <span id="orderID" class="text-[10px] font-bold opacity-50">#----</span>
+            </div>
+            <div class="flex justify-between relative">
+                <div class="absolute top-1/2 left-0 w-full h-1 bg-gray-100 -translate-y-1/2 -z-10"></div>
+                <div id="s1" class="bg-white p-2 rounded-full border-2 border-gray-100 text-xs transition-all"><i class="fas fa-paper-plane"></i></div>
+                <div id="s2" class="bg-white p-2 rounded-full border-2 border-gray-100 text-xs transition-all"><i class="fas fa-fire"></i></div>
+                <div id="s3" class="bg-white p-2 rounded-full border-2 border-gray-100 text-xs transition-all"><i class="fas fa-check-double"></i></div>
+            </div>
+            <p id="statusMsg" class="text-center mt-4 text-xs font-bold text-emerald-700">جاري إرسال الطلب...</p>
+        </div>
     </div>
 
-    <header class="p-6 sticky top-0 z-[1000] glass rounded-b-[40px] shadow-sm">
+    <header class="glass-nav sticky top-0 z-[1000] p-6 pb-4 rounded-b-[40px]">
         <div class="flex justify-between items-center mb-6">
             <div>
-                <h1 class="text-3xl font-black italic tracking-tighter">فوال مروه</h1>
-                <p class="text-[10px] font-black opacity-40 uppercase">Premium Dining Experience</p>
+                <h1 class="text-3xl font-black text-emerald-950 italic">فوال مروه</h1>
+                <p class="text-[10px] font-bold opacity-40 uppercase tracking-widest">المذاق الأصيل برؤية 2030</p>
             </div>
-            <button onclick="showTracker()" class="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center shadow-lg">
-                <i class="fa-solid fa-clock-rotate-left"></i>
-            </button>
+            <div class="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-600 shadow-inner">
+                <i class="fas fa-map-marker-alt"></i>
+            </div>
         </div>
-        <div id="tabs" class="flex gap-3 overflow-x-auto no-scrollbar"></div>
+        <div id="catList" class="flex gap-4 overflow-x-auto no-scrollbar py-2"></div>
     </header>
 
-    <main class="p-6 max-w-lg mx-auto space-y-6">
-        <div id="activeOrderDisplay" class="hidden glass p-6 rounded-[35px] border-2 border-blue-100 shadow-xl">
-            <div class="flex justify-between items-center mb-4">
-                <span class="font-black text-blue-900">تتبع طلبك الآن</span>
-                <span id="orderIdTag" class="text-[10px] bg-blue-600 text-white px-3 py-1 rounded-full font-bold">#0000</span>
-            </div>
-            <div class="flex justify-between items-center text-[10px] text-slate-400 font-black relative">
-                <div class="absolute h-[2px] bg-slate-100 w-full top-3 -z-10"></div>
-                <div id="step-sent" class="flex flex-col items-center gap-1 bg-white p-1 rounded-lg">
-                    <i class="fa-solid fa-paper-plane text-base"></i><span>تم الإرسال</span>
-                </div>
-                <div id="step-preparing" class="flex flex-col items-center gap-1 bg-white p-1 rounded-lg">
-                    <i class="fa-solid fa-fire-burner text-base"></i><span>يتم التحضير</span>
-                </div>
-                <div id="step-ready" class="flex flex-col items-center gap-1 bg-white p-1 rounded-lg">
-                    <i class="fa-solid fa-bag-shopping text-base"></i><span>جاهز للاستلام</span>
-                </div>
-            </div>
-        </div>
-
-        <div id="grid" class="space-y-4"></div>
+    <main class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+        <div id="menuGrid" class="contents"></div>
     </main>
 
-    <div id="cartBar" onclick="openCart()" class="fixed bottom-10 left-6 right-6 h-20 bg-slate-900 text-white rounded-[30px] shadow-2xl flex items-center justify-between px-6 translate-y-32 opacity-0 transition-all duration-500 z-[2000]">
+    <div id="cartPill" onclick="showOrderReview()" class="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-md h-20 bg-slate-900 rounded-[30px] shadow-2xl flex items-center justify-between px-8 text-white transform translate-y-32 opacity-0 transition-all duration-500 z-[1500]">
         <div class="flex items-center gap-4">
-            <div class="relative">
-                <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-xl"><i class="fa-solid fa-cart-shopping"></i></div>
-                <span id="cartCount" class="absolute -top-2 -right-2 bg-red-500 w-6 h-6 rounded-full border-2 border-slate-900 flex items-center justify-center text-[10px] font-black">0</span>
+            <div class="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-xl shadow-lg animate__animated animate__pulse animate__infinite">
+                <i class="fas fa-shopping-bag"></i>
             </div>
-            <div class="text-xl font-black text-blue-400" id="cartTotal">0﷼</div>
+            <div>
+                <span id="cartCount" class="block text-[10px] font-bold opacity-50 uppercase">0 صنف</span>
+                <span id="cartTotal" class="text-xl font-black">0 ﷼</span>
+            </div>
         </div>
-        <button class="bg-white/10 px-6 py-2 rounded-xl font-black text-sm">مراجعة الطلب</button>
+        <i class="fas fa-arrow-left"></i>
     </div>
 
-    <div id="modal" class="fixed inset-0 z-[5000] hidden glass items-end justify-center">
-        <div id="modalBox" class="bg-white w-full max-w-lg rounded-t-[50px] p-8 translate-y-full transition-all duration-500 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div id="modalContent"></div>
+    <div id="modal" class="fixed inset-0 z-[3000] hidden bg-black/20 backdrop-blur-md items-end justify-center">
+        <div id="modalBox" class="bg-white w-full max-w-xl rounded-t-[50px] p-8 translate-y-full transition-all duration-500 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <div id="modalBody"></div>
         </div>
     </div>
 
     <script>
-        // تكوين Firebase (استخدم نفس بياناتك)
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCcQkEMeeoIHbj_7bbU1TnidZJJOdjAx8s",
             authDomain: "fawal-c9530.firebaseapp.com",
@@ -94,174 +89,118 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // البيانات الكاملة لجميع الأصناف
-        const MENU = {
-            "فطور مروه": [
-                {id:1, n:"فول سادة", s:{s:3, m:4, l:5, loc:6}},
-                {id:2, n:"فول مشكل", s:{s:4, m:5, l:6, loc:7}},
-                {id:13, n:"تونة فاخرة", s:{s:10, m:11, l:12, loc:10}},
-                {id:14, n:"شكشوكة عدني", s:{s:6, m:7, l:8, loc:7}},
-                {id:22, n:"كمونية", s:{s:10, m:12, l:15, loc:11}}
-            ],
-            "المطبق": [
-                {id:23, n:"مطبق خضار", p:5},
-                {id:24, n:"مطبق مالح", p:5},
-                {id:33, n:"مطبق نوتيلا", p:7}
+        // بيانات الأصناف بالصور
+        const MENU_DATA = {
+            "فول وعدس": [
+                {id:1, n:"فول مروه سادة", p:6, img:"https://images.unsplash.com/photo-1541518763669-27fef04b14ea?auto=format&fit=crop&w=400&q=80"},
+                {id:2, n:"قلابة طاوه حارة", p:7, img:"https://images.unsplash.com/photo-1593584785033-9c7604d0863f?auto=format&fit=crop&w=400&q=80"},
+                {id:3, n:"عدس حجازي", p:6, img:"https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=400&q=80"}
             ],
             "المعصوب والعريكة": [
-                {id:34, n:"عريكة قشطة عسل", p:12},
-                {id:36, n:"ملكي فاخر", p:16},
-                {id:38, n:"عريكة مروه", p:18}
+                {id:10, n:"عريكة ملكي فاخر", p:16, img:"https://images.unsplash.com/photo-1589113103503-49ef83d89e7c?auto=format&fit=crop&w=400&q=80"},
+                {id:11, n:"معصوب قشطة عسل", p:12, img:"https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80"}
             ],
-            "السندوتشات": [
-                {id:48, n:"كبدة طازجة", s:{samoli:4, fatira:5}},
-                {id:52, n:"بيض مقلي", s:{samoli:3, fatira:4}}
-            ],
-            "التميس": [
-                {id:56, n:"تميس عادي", p:1},
-                {id:59, n:"تميس جبن", p:5},
-                {id:66, n:"تميس بسكوت", p:3}
+            "المطبق": [
+                {id:20, n:"مطبق خضار", p:5, img:"https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=400&q=80"},
+                {id:21, n:"مطبق نوتيلا", p:8, img:"https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=400&q=80"}
             ]
         };
 
         let cart = [];
-        let currentCat = "فطور مروه";
-        const restaurantLoc = { lat: 24.5714, lng: 46.7323 }; // إحداثيات حي بدر التقريبية
+        let currentCat = "فول وعدس";
 
-        window.onload = () => { renderTabs(); renderGrid(); checkActiveOrder(); };
+        window.onload = () => { renderCats(); renderItems(); checkActiveOrder(); };
 
-        function renderTabs() {
-            const h = document.getElementById('tabs');
-            h.innerHTML = Object.keys(MENU).map(c => `
-                <button onclick="setCat('${c}')" class="px-6 py-2 rounded-2xl whitespace-nowrap font-black transition-all ${currentCat===c?'bg-slate-900 text-white shadow-xl':'text-slate-400'}">${c}</button>
+        function renderCats() {
+            const h = document.getElementById('catList');
+            h.innerHTML = Object.keys(MENU_DATA).map(c => `
+                <button onclick="setCat('${c}')" class="category-pill px-8 py-3 rounded-2xl font-black bg-white shadow-sm ${currentCat===c?'active':''}">${c}</button>
             `).join('');
         }
 
-        function setCat(c) { currentCat = c; renderTabs(); renderGrid(); }
+        function setCat(c) { currentCat = c; renderCats(); renderItems(); }
 
-        function renderGrid() {
-            const g = document.getElementById('grid');
-            g.innerHTML = MENU[currentCat].map(i => `
-                <div class="item-card p-6 flex flex-col gap-4 shadow-sm">
-                    <div class="flex justify-between items-center">
-                        <h3 class="font-black text-xl text-slate-800">${i.n}</h3>
-                        ${i.p ? `<button onclick="add('${i.n}', ${i.p})" class="bg-blue-600 text-white px-5 py-2 rounded-xl font-black">+ ${i.p}﷼</button>` : '<i class="fa-solid fa-chevron-down opacity-20"></i>'}
+        function renderItems() {
+            const g = document.getElementById('menuGrid');
+            g.innerHTML = MENU_DATA[currentCat].map(i => `
+                <div class="product-card animate__animated animate__fadeIn">
+                    <div class="h-48 overflow-hidden relative">
+                        <img src="${i.img}" class="w-full h-full object-cover img-zoom" alt="${i.n}">
+                        <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-4 py-1 rounded-full font-black text-emerald-700 shadow-sm">${i.p} ﷼</div>
                     </div>
-                    ${i.s ? `<div class="grid grid-cols-2 gap-2">${Object.entries(i.s).map(([sz, p]) => `
-                        <button onclick="add('${i.n} (${sz})', ${p})" class="bg-slate-50 p-3 rounded-xl flex justify-between items-center border border-slate-100">
-                            <span class="text-[10px] font-black opacity-50 uppercase">${sz}</span>
-                            <span class="font-black text-blue-700 text-sm">${p}﷼</span>
-                        </button>`).join('')}</div>` : ''}
+                    <div class="p-6 flex justify-between items-center">
+                        <h3 class="font-black text-lg">${i.n}</h3>
+                        <button onclick="addToCart('${i.n}', ${i.p})" class="w-12 h-12 bg-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-200 active:scale-90 transition">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
                 </div>
             `).join('');
         }
 
-        function add(n, p) {
+        function addToCart(n, p) {
             cart.push({n, p, id: Date.now()});
             updateCartUI();
-            notify(`تمت إضافة ${n} للسلة 🛒`, "bg-blue-600");
         }
 
         function updateCartUI() {
-            const total = cart.reduce((s,i)=>s+i.p,0);
-            const bar = document.getElementById('cartBar');
+            const pill = document.getElementById('cartPill');
             if(cart.length > 0) {
-                bar.classList.remove('translate-y-32', 'opacity-0');
-                document.getElementById('cartCount').innerText = cart.length;
-                document.getElementById('cartTotal').innerText = total + "﷼";
-            } else { bar.classList.add('translate-y-32', 'opacity-0'); }
+                pill.classList.remove('translate-y-32', 'opacity-0');
+                document.getElementById('cartCount').innerText = cart.length + " صنف";
+                document.getElementById('cartTotal').innerText = cart.reduce((s,i)=>s+i.p,0) + " ﷼";
+            } else { pill.classList.add('translate-y-32', 'opacity-0'); }
         }
 
-        function openCart() {
-            const total = cart.reduce((s,i)=>s+i.p,0);
-            let h = `
-                <div class="flex justify-between items-center mb-8">
-                    <h2 class="text-2xl font-black text-slate-900">سلة الطلبات</h2>
-                    <button onclick="closeModal()" class="text-slate-300"><i class="fa-solid fa-xmark text-xl"></i></button>
-                </div>
-                <div class="space-y-4 mb-10 max-h-[300px] overflow-y-auto no-scrollbar">
-                    ${cart.map((i, idx) => `
-                        <div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                            <span class="font-black text-slate-700">${i.n}</span>
-                            <div class="flex items-center gap-4">
-                                <span class="font-black text-blue-600">${i.p}﷼</span>
-                                <button onclick="remove(${idx})" class="text-red-400">✕</button>
-                            </div>
-                        </div>`).join('')}
-                </div>
-                <div class="bg-slate-900 p-8 rounded-[35px] text-white">
-                    <div class="flex justify-between items-center mb-6">
-                        <span class="opacity-60 font-bold">المجموع الكلي</span>
-                        <span class="text-3xl font-black">${total}﷼</span>
+        function showOrderReview() {
+            let h = `<h2 class="text-3xl font-black mb-8 text-center text-emerald-950">تفاصيل الطلب</h2>
+                     <div class="space-y-4 mb-10">`;
+            h += cart.map((i, idx) => `
+                <div class="flex justify-between items-center bg-gray-50 p-4 rounded-3xl">
+                    <span class="font-black">${i.n}</span>
+                    <div class="flex items-center gap-4">
+                        <span class="font-black text-emerald-600">${i.p} ﷼</span>
+                        <button onclick="removeFromCart(${idx})" class="text-red-400"><i class="fas fa-trash"></i></button>
                     </div>
-                    <button onclick="getLocationAndSend()" class="w-full bg-blue-600 py-5 rounded-2xl font-black text-xl shadow-xl active:scale-95 transition">إرسال الطلب للمطعم</button>
-                </div>`;
-            showModal(h);
+                </div>`).join('');
+            h += `</div>
+                  <button onclick="sendOrder()" class="w-full bg-emerald-600 text-white py-6 rounded-3xl font-black text-xl shadow-xl active:scale-95 transition">إرسال الطلب للمطعم 🚀</button>`;
+            openModal(h);
         }
 
-        async function getLocationAndSend() {
-            notify("⏳ جاري تحديد المسافة للمطعم...", "bg-slate-700");
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(async (pos) => {
-                    const dist = calculateDistance(pos.coords.latitude, pos.coords.longitude, restaurantLoc.lat, restaurantLoc.lng);
-                    const orderData = {
-                        items: cart,
-                        total: cart.reduce((s,i)=>s+i.p,0),
-                        status: 'sent',
-                        distance: dist.toFixed(2) + " كم",
-                        time: new Date().toLocaleTimeString('ar-SA'),
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    };
-                    const doc = await db.collection("orders").add(orderData);
-                    localStorage.setItem('activeOrderId', doc.id);
-                    notify("✅ تم إرسال طلبك بنجاح!", "bg-green-600");
-                    cart = []; updateCartUI(); closeModal(); checkActiveOrder();
-                }, () => {
-                    // في حال رفض الموقع، نرسل الطلب كـ "محلي"
-                    notify("⚠️ لم نتمكن من تحديد الموقع، سيتم الإرسال كطلب محلي", "bg-amber-600");
-                    // تكرار عملية الحفظ بدون مسافة...
-                });
-            }
+        async function sendOrder() {
+            const order = {
+                items: cart,
+                total: cart.reduce((s,i)=>s+i.p,0),
+                status: 'sent',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            const doc = await db.collection("orders").add(order);
+            localStorage.setItem('lastOrder', doc.id);
+            cart = []; updateCartUI(); closeModal(); checkActiveOrder();
         }
 
         function checkActiveOrder() {
-            const id = localStorage.getItem('activeOrderId');
+            const id = localStorage.getItem('lastOrder');
             if(!id) return;
             db.collection("orders").doc(id).onSnapshot(doc => {
                 if(!doc.exists) return;
                 const o = doc.data();
-                const disp = document.getElementById('activeOrderDisplay');
-                disp.classList.remove('hidden');
-                document.getElementById('orderIdTag').innerText = "#" + id.slice(-4);
+                document.getElementById('tracker').classList.remove('-translate-y-full');
+                document.getElementById('orderID').innerText = "#" + id.slice(-5);
                 
-                // تحديث الخطوات
-                document.getElementById('step-sent').className = o.status === 'sent' ? 'step-active flex flex-col items-center gap-1' : 'flex flex-col items-center gap-1 opacity-20';
-                document.getElementById('step-preparing').className = o.status === 'preparing' ? 'step-active flex flex-col items-center gap-1' : 'flex flex-col items-center gap-1 opacity-20';
-                document.getElementById('step-ready').className = o.status === 'ready' ? 'step-active flex flex-col items-center gap-1' : 'flex flex-col items-center gap-1 opacity-20';
-                
-                if(o.status === 'ready') notify("🎊 طلبك جاهز للاستلام!", "bg-green-600");
+                const s1 = document.getElementById('s1'), s2 = document.getElementById('s2'), s3 = document.getElementById('s3');
+                const msg = document.getElementById('statusMsg');
+
+                if(o.status === 'sent') { s1.style.background = '#059669'; s1.style.color = 'white'; msg.innerText = "وصلنا طلبك.. الكاشير يراجعه الآن"; }
+                if(o.status === 'preparing') { s2.style.background = '#059669'; s2.style.color = 'white'; msg.innerText = "طلبك فوق النار.. جاري التحضير 🔥"; }
+                if(o.status === 'ready') { s3.style.background = '#059669'; s3.style.color = 'white'; msg.innerText = "طلبك جاهز! بالعافية عليك 😍"; }
             });
         }
 
-        // حساب المسافة (قانون Haversine)
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371;
-            const dLat = (lat2-lat1) * Math.PI / 180;
-            const dLon = (lon2-lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        }
-
-        function remove(idx) { cart.splice(idx,1); updateCartUI(); if(cart.length>0) openCart(); else closeModal(); }
-        function showModal(c) { document.getElementById('modalContent').innerHTML = c; document.getElementById('modal').style.display = 'flex'; setTimeout(()=>document.getElementById('modalBox').classList.remove('translate-y-full'),10); }
+        function removeFromCart(idx) { cart.splice(idx,1); updateCartUI(); if(cart.length>0) showOrderReview(); else closeModal(); }
+        function openModal(c) { document.getElementById('modalBody').innerHTML = c; document.getElementById('modal').style.display = 'flex'; setTimeout(()=>document.getElementById('modalBox').classList.remove('translate-y-full'),10); }
         function closeModal() { document.getElementById('modalBox').classList.add('translate-y-full'); setTimeout(()=>document.getElementById('modal').style.display='none',400); }
-        function notify(m, c) {
-            const t = document.getElementById('toast');
-            document.getElementById('toastMsg').innerText = m;
-            document.getElementById('toastIcon').className = `w-10 h-10 rounded-2xl flex items-center justify-center text-white ${c}`;
-            t.classList.remove('translate-y-[-150%]', 'opacity-0');
-            setTimeout(() => t.classList.add('translate-y-[-150%]', 'opacity-0'), 3000);
-        }
     </script>
 </body>
 </html>
