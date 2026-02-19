@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>فوال مروه - النسخة الاحترافية</title>
+    <title>فوال مروه - النسخة المتكاملة</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
@@ -13,69 +13,49 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        body { font-family: 'Tajawal', sans-serif; background-color: #f1f5f9; user-select: none; }
+        body { font-family: 'Tajawal', sans-serif; background-color: #f8fafc; user-select: none; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .modal-blur { backdrop-filter: blur(15px); background: rgba(15, 23, 42, 0.7); }
+        .modal-blur { backdrop-filter: blur(15px); background: rgba(15, 23, 42, 0.8); }
         .slide-up { animation: slideUp 0.4s ease-out; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .item-card { transition: all 0.3s ease; border: 1px solid #e2e8f0; }
-        .item-card:active { transform: scale(0.98); }
-        .category-btn.active { background: #1e40af; color: white; box-shadow: 0 10px 15px -3px rgba(30, 64, 175, 0.3); }
-        #toast { visibility: hidden; min-width: 250px; background: #1e293b; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 10000; left: 50%; bottom: 100px; transform: translateX(-50%); opacity: 0; transition: 0.5s; }
-        #toast.show { visibility: visible; opacity: 1; }
+        .item-card { transition: all 0.3s ease; }
+        .item-card:active { transform: scale(0.97); }
+        #customToast { visibility: hidden; min-width: 280px; background-color: #1e293b; color: #fff; text-align: center; border-radius: 20px; padding: 16px; position: fixed; z-index: 10000; left: 50%; bottom: 120px; transform: translateX(-50%); opacity: 0; transition: 0.3s; }
+        #customToast.show { visibility: visible; opacity: 1; }
     </style>
 </head>
-<body class="pb-32">
+<body class="pb-40">
 
-    <div id="toast">تم الإضافة للسلة ✅</div>
+    <div id="customToast"></div>
 
-    <div id="startGate" class="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center p-6 text-center">
-        <div class="w-32 h-32 bg-blue-50 rounded-full flex items-center justify-center mb-6 border-4 border-blue-100">
-            <i class="fa-solid fa-store text-5xl text-blue-800"></i>
-        </div>
-        <h1 class="text-3xl font-black text-blue-900 mb-2">فوال مروه</h1>
-        <p class="text-slate-500 mb-10 font-bold italic underline decoration-blue-200">فرع حي بدر - جازان</p>
-        <button onclick="enterApp('client')" class="w-full max-w-xs bg-blue-800 text-white py-6 rounded-[30px] font-black text-xl mb-4 shadow-xl active:scale-95 transition">طلب طعام (زبون) 🛒</button>
-        <button onclick="enterApp('cashier')" class="w-full max-w-xs bg-slate-100 text-slate-800 py-6 rounded-[30px] font-black text-xl border-2 border-slate-200 active:scale-95 transition text-sm">لوحة الكاشير (إدارة) ⚙️</button>
-    </div>
-
-    <div id="clientView" class="hidden">
-        <header class="bg-blue-800 text-white p-6 rounded-b-[50px] sticky top-0 z-50 shadow-2xl">
-            <div class="flex justify-between items-center mb-6">
-                <h1 class="text-2xl font-black italic">القائمة الذكية</h1>
-                <button onclick="location.reload()" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center"><i class="fa-solid fa-house"></i></button>
+    <header class="bg-blue-800 text-white p-6 rounded-b-[45px] shadow-2xl sticky top-0 z-[100]">
+        <div class="flex justify-between items-center mb-6">
+            <div><h1 class="text-2xl font-black italic">فوال مروه</h1><p class="text-[10px] opacity-70 font-bold">نظام الطلبات السحابي</p></div>
+            <div class="flex gap-2">
+                <button onclick="openCashierPanel()" class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20"><i class="fa-solid fa-bell text-lg"></i></button>
             </div>
-            <div id="tabs" class="flex gap-3 overflow-x-auto no-scrollbar pb-2"></div>
-        </header>
-
-        <main id="itemsGrid" class="p-4 grid grid-cols-1 gap-4"></main>
-
-        <div id="cartBar" onclick="showCart()" class="fixed bottom-8 left-6 right-6 bg-slate-900 text-white p-5 rounded-[35px] shadow-2xl z-[1000] hidden justify-between items-center slide-up border border-white/10">
-            <div class="flex items-center gap-4">
-                <div id="cartQty" class="bg-blue-600 w-12 h-12 rounded-full flex items-center justify-center font-black text-xl shadow-lg">0</div>
-                <div><p class="text-[10px] opacity-60 font-bold">إجمالي الطلب</p><p class="font-black text-lg">عرض السلة</p></div>
-            </div>
-            <span id="cartTotal" class="text-2xl font-black text-blue-400">0﷼</span>
         </div>
+        <div id="categoryTabs" class="flex gap-3 overflow-x-auto no-scrollbar pb-2"></div>
+    </header>
+
+    <main class="max-w-md mx-auto p-4">
+        <div id="itemsGrid" class="space-y-4 pb-12"></div>
+    </main>
+
+    <div id="floatingCart" onclick="openCartModal()" class="fixed bottom-24 left-6 right-6 bg-slate-900 text-white p-5 rounded-[30px] shadow-2xl z-[1000] hidden justify-between items-center slide-up border border-white/10">
+        <div class="flex items-center gap-4"><div id="cartCount" class="bg-blue-600 w-10 h-10 rounded-full flex items-center justify-center font-black">0</div><span class="font-black text-lg">مراجعة الطلب</span></div>
+        <span id="floatingTotal" class="text-2xl font-black text-blue-400">0﷼</span>
     </div>
 
-    <div id="cashierView" class="hidden min-h-screen bg-slate-100">
-        <header class="bg-slate-900 text-white p-6 sticky top-0 z-50 flex justify-between items-center">
-            <h2 class="font-black text-xl">لوحة الطلبات الحية 📡</h2>
-            <button onclick="location.reload()" class="bg-red-500 text-white px-4 py-2 rounded-xl font-bold">خروج</button>
-        </header>
-        <div id="liveOrders" class="p-4 space-y-4"></div>
-    </div>
-
-    <div id="modal" class="fixed inset-0 z-[2000] hidden modal-blur items-center justify-center p-4">
-        <div class="bg-white w-full max-w-lg rounded-[45px] p-8 slide-up overflow-y-auto max-h-[92vh] relative">
-            <button onclick="closeModal()" class="absolute top-6 left-6 w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 font-bold">✕</button>
+    <div id="mainModal" class="fixed inset-0 z-[2000] hidden modal-blur items-end justify-center">
+        <div class="bg-white w-full max-w-lg rounded-t-[50px] p-8 slide-up overflow-y-auto max-h-[92vh] relative shadow-2xl">
+            <button onclick="closeModal()" class="absolute top-6 left-6 w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 font-bold">✕</button>
             <div id="modalContent"></div>
         </div>
     </div>
 
     <script>
-        // --- تهيئة Firebase ببيانات مشروعك ---
+        // --- تهيئة Firebase ---
         const firebaseConfig = {
             apiKey: "AIzaSyCcQkEMeeoIHbj_7bbU1TnidZJJOdjAx8s",
             authDomain: "fawal-c9530.firebaseapp.com",
@@ -87,11 +67,12 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // --- البيانات مع الصور التعبيرية ---
+        // --- البيانات كاملة مع الصور التعبيرية ---
         const DB = {
             "الوجبات": [
                 {id:1, name:"فول سادة", img:"🥣", sizes:{s:3, m:4, l:5, local:6}},
                 {id:2, name:"فول مشكل", img:"🍲", sizes:{s:4, m:5, l:6, local:7}},
+                {id:3, name:"فول قلابة طاوه", img:"🔥", sizes:{s:4, m:5, l:6, local:7}},
                 {id:5, name:"عدس سادة", img:"🥣", sizes:{s:3, m:4, l:5, local:6}},
                 {id:13, name:"تونة", img:"🐟", sizes:{s:10, m:11, l:12, local:10}},
                 {id:14, name:"شكشوكة", img:"🍳", sizes:{s:6, m:7, l:8, local:7}},
@@ -102,10 +83,10 @@
                 {id:24, name:"مطبق مالح", img:"🧀", price:5},
                 {id:33, name:"مطبق نوتيلا", img:"🍫", price:7}
             ],
-            "العريكة والفتة": [
-                {id:34, name:"قشطة عسل", img:"🍯", price:12},
-                {id:36, name:"ملكي", img:"👑", price:16},
-                {id:38, name:"عريكة مروة", img:"✨", price:18}
+            "المعصوب والعريكة": [
+                {id:34, name:"عريكة قشطة عسل", img:"🍯", price:12},
+                {id:36, name:"عريكة ملكي", img:"👑", price:16},
+                {id:41, name:"معصوب قشطة عسل", img:"🍌", price:12}
             ],
             "التميس": [
                 {id:56, name:"تميس عادي", img:"🫓", price:1},
@@ -121,25 +102,11 @@
         let cart = [];
         let currentCat = "الوجبات";
 
-        function enterApp(role) {
-            document.getElementById('startGate').style.display = 'none';
-            if(role === 'client') {
-                document.getElementById('clientView').classList.remove('hidden');
-                renderTabs(); renderItems();
-            } else {
-                const p = prompt("الرمز السري للكاشير:");
-                if(p === "1234") {
-                    document.getElementById('cashierView').classList.remove('hidden');
-                    startListener();
-                } else { location.reload(); }
-            }
-        }
+        window.onload = () => { renderTabs(); renderItems(); };
 
         function renderTabs() {
-            const h = document.getElementById('tabs');
-            h.innerHTML = Object.keys(DB).map(c => `
-                <button onclick="setCat('${c}')" class="category-btn px-8 py-3 rounded-2xl whitespace-nowrap font-black transition-all ${currentCat===c ? 'active' : 'text-white/60'}">${c}</button>
-            `).join('');
+            const h = document.getElementById('categoryTabs');
+            h.innerHTML = Object.keys(DB).map(c => `<button onclick="setCat('${c}')" class="px-6 py-2 rounded-2xl whitespace-nowrap font-black transition-all ${currentCat===c ? 'bg-white text-blue-900 shadow-lg' : 'text-white/70'}">${c}</button>`).join('');
         }
 
         function setCat(c) { currentCat = c; renderTabs(); renderItems(); }
@@ -147,115 +114,119 @@
         function renderItems() {
             const h = document.getElementById('itemsGrid');
             h.innerHTML = DB[currentCat].map(i => `
-                <div class="item-card bg-white rounded-[35px] p-5 flex flex-col shadow-sm">
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-center gap-4">
-                            <div class="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-3xl shadow-inner">${i.img}</div>
-                            <span class="font-black text-blue-900 text-lg">${i.name}</span>
+                <div class="bg-white rounded-[35px] p-6 shadow-sm border border-slate-50 item-card">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="text-3xl">${i.img}</span>
+                            <span class="text-lg font-black text-blue-900">${i.name}</span>
                         </div>
-                        ${i.price ? `<button onclick="addToCart('${i.name}', ${i.price})" class="bg-blue-800 text-white px-6 py-3 rounded-2xl font-black shadow-lg active:scale-90 transition">+ ${i.price}﷼</button>` : ''}
+                        ${i.price ? `<button onclick="addToCart('${i.name}', ${i.price})" class="bg-blue-800 text-white px-6 py-2 rounded-xl font-black shadow-md">+ ${i.price}﷼</button>` : ''}
                     </div>
-                    ${i.sizes ? `<div class="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-dashed">${Object.entries(i.sizes).map(([s,p]) => `
+                    ${i.sizes ? `<div class="grid grid-cols-2 gap-2">${Object.entries(i.sizes).map(([s,p]) => `
                         <button onclick="addToCart('${i.name} (${getSizeName(s)})', ${p})" class="bg-slate-50 p-3 rounded-2xl flex justify-between items-center text-xs font-bold active:bg-blue-50">
                             <span class="text-slate-500">${getSizeName(s)}</span><span class="text-blue-800">${p}﷼</span>
                         </button>`).join('')}</div>` : ''}
-                </div>
-            `).join('');
+                </div>`).join('');
         }
 
         function getSizeName(s) { return {s:'صغير', m:'وسط', l:'كبير', local:'محلي'}[s] || s; }
 
         function addToCart(name, price) {
-            cart.push({name, price, id:Date.now()});
-            updateCart();
-            const t = document.getElementById("toast");
-            t.className = "show"; setTimeout(()=>t.className="", 2000);
+            cart.push({ name, price, id: Date.now() });
+            updateCartUI();
+            showToast("تمت الإضافة للسلة ✅");
         }
 
-        function updateCart() {
-            const count = cart.length;
-            const total = cart.reduce((s,i)=>s+i.price, 0);
-            const bar = document.getElementById('cartBar');
-            bar.style.display = count > 0 ? 'flex' : 'none';
-            document.getElementById('cartQty').innerText = count;
-            document.getElementById('cartTotal').innerText = total + "﷼";
+        function updateCartUI() {
+            const total = cart.reduce((s,i) => s + i.price, 0);
+            document.getElementById('floatingCart').style.display = cart.length > 0 ? 'flex' : 'none';
+            document.getElementById('cartCount').innerText = cart.length;
+            document.getElementById('floatingTotal').innerText = total + "﷼";
         }
 
-        function showCart() {
-            const total = cart.reduce((s,i)=>s+i.price, 0);
-            let h = `<h2 class="text-2xl font-black mb-6 text-center text-blue-900">سلة المشتريات 🛒</h2>
-                     <div class="space-y-3 mb-8 max-h-60 overflow-y-auto">`;
-            h += cart.map(i => `<div class="flex justify-between font-bold bg-slate-50 p-4 rounded-2xl"><span>${i.name}</span><span>${i.price}﷼</span></div>`).join('');
+        function openCartModal() {
+            const total = cart.reduce((s,i) => s + i.price, 0);
+            let h = `<h2 class="text-2xl font-black mb-6 text-center text-blue-900">مراجعة الطلب 🛒</h2>
+                     <div class="space-y-3 mb-8">`;
+            h += cart.map((i, index) => `<div class="flex justify-between font-bold bg-slate-50 p-4 rounded-2xl"><span>${i.name}</span><button onclick="removeFromCart(${index})" class="text-red-500">✕</button></div>`).join('');
             h += `</div><div class="space-y-4">
-                <input id="userName" placeholder="اسمك الكريم" class="w-full p-5 bg-slate-100 rounded-2xl border-none outline-none font-bold">
-                <input id="userLoc" placeholder="رقم الطاولة أو العنوان" class="w-full p-5 bg-slate-100 rounded-2xl border-none outline-none font-bold">
-                <select id="userPay" onchange="togglePay(this.value)" class="w-full p-5 bg-slate-100 rounded-2xl border-none outline-none font-bold">
-                    <option value="cash">💵 كاش عند الاستلام</option>
-                    <option value="online">💳 دفع إلكتروني (مدى)</option>
-                </select>
-                <div id="onlineField" class="hidden p-4 bg-blue-50 rounded-2xl space-y-2 slide-up">
-                    <input type="text" placeholder="رقم البطاقة" class="w-full p-3 rounded-xl border-none shadow-sm">
-                    <div class="flex gap-2"><input type="text" placeholder="MM/YY" class="w-1/2 p-3 rounded-xl border-none shadow-sm"><input type="text" placeholder="CVV" class="w-1/2 p-3 rounded-xl border-none shadow-sm"></div>
-                </div>
-                <div class="flex justify-between py-5 border-t-2 border-dashed mt-6"><span class="font-black text-slate-400">الإجمالي:</span><span class="text-3xl font-black text-blue-900">${total}﷼</span></div>
-                <button onclick="checkout()" class="w-full bg-blue-800 text-white py-6 rounded-[30px] font-black text-xl shadow-2xl active:scale-95 transition">إرسال الطلب الآن 🚀</button>
-            </div>`;
+                    <input id="uName" placeholder="اسمك الكريم" class="w-full p-5 bg-slate-100 rounded-2xl border-none outline-none font-bold">
+                    <input id="uLoc" placeholder="رقم الطاولة أو حي بدر (للتوصيل)" class="w-full p-5 bg-slate-100 rounded-2xl border-none outline-none font-bold">
+                    <div class="flex justify-between items-center py-4 border-t-2 border-dashed">
+                        <span class="font-black text-slate-500">الإجمالي:</span><span class="text-3xl font-black text-blue-900">${total}﷼</span>
+                    </div>
+                    <button onclick="sendOrder()" class="w-full bg-green-600 text-white py-6 rounded-[30px] font-black text-xl shadow-xl">تأكيد وإرسال الطلب 🚀</button>
+                  </div>`;
             openModal(h);
         }
 
-        function togglePay(v) { document.getElementById('onlineField').classList.toggle('hidden', v !== 'online'); }
-
-        async function checkout() {
-            const n = document.getElementById('userName').value;
-            const l = document.getElementById('userLoc').value;
-            if(!n || !l) return alert("يرجى إكمال الاسم والموقع");
+        async function sendOrder() {
+            const n = document.getElementById('uName').value;
+            const l = document.getElementById('uLoc').value;
+            if(!n || !l) return showToast("يرجى إكمال البيانات ⚠️", "#ef4444");
 
             const order = {
-                cust: n, loc: l, items: cart,
-                total: cart.reduce((s,i)=>s+i.price, 0),
-                pay: document.getElementById('userPay').value,
-                status: 'pending',
-                time: new Date().toLocaleTimeString('ar-SA'),
+                customer: n,
+                location: l,
+                items: cart,
+                total: cart.reduce((s,i) => s + i.price, 0),
+                status: 'new',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
-            await db.collection("orders").add(order);
-            alert("تم إرسال طلبك! سيصلك اتصال أو رسالة للتأكيد ✅");
-            cart = []; location.reload();
+            try {
+                // 1. إرسال لـ Firebase
+                await db.collection("orders").add(order);
+                
+                // 2. إظهار رسالة النجاح للعميل (هذا ما كان ينقصك)
+                openModal(`
+                    <div class="text-center py-10">
+                        <div class="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl">✅</div>
+                        <h2 class="text-3xl font-black text-blue-900 mb-4">تم استلام طلبك!</h2>
+                        <p class="text-slate-500 font-bold mb-8">طلبك الآن لدى الكاشير، سيتم تجهيزه فوراً.</p>
+                        <button onclick="location.reload()" class="w-full bg-blue-800 text-white py-5 rounded-3xl font-black shadow-lg">رجوع للقائمة</button>
+                    </div>
+                `);
+                
+                cart = []; updateCartUI();
+            } catch (e) { alert("حدث خطأ: " + e.message); }
         }
 
-        // --- نظام الكاشير (استقبال لحظي) ---
-        function startListener() {
-            db.collection("orders").orderBy("createdAt", "desc").limit(20).onSnapshot(snap => {
+        // --- واجهة الكاشير (للمحل فقط) ---
+        function openCashierPanel() {
+            const p = prompt("الرمز السري للإدارة:");
+            if(p !== "1234") return;
+            
+            openModal(`<div id="liveOrders" class="space-y-4 min-h-[50vh]"><p class="text-center py-10">جاري تحميل الطلبات...</p></div>`);
+            
+            db.collection("orders").orderBy("createdAt", "desc").limit(10).onSnapshot(snap => {
                 const h = document.getElementById('liveOrders');
-                h.innerHTML = "";
-                if(snap.empty) h.innerHTML = `<div class="text-center py-20 opacity-20 font-black">لا توجد طلبات جديدة</div>`;
-                
+                if(!h) return;
+                h.innerHTML = `<h2 class="text-xl font-black mb-4">الطلبات الحالية 📡</h2>`;
                 snap.forEach(doc => {
                     const o = doc.data();
-                    if(o.status === 'pending') playSound();
                     h.innerHTML += `
-                        <div class="bg-white p-6 rounded-[40px] shadow-sm border-r-8 ${o.status==='pending'?'border-blue-600':'border-green-500'} mb-4">
-                            <div class="flex justify-between items-start mb-2">
-                                <div><h4 class="font-black text-lg">${o.cust}</h4><p class="text-[10px] font-bold text-slate-400">${o.loc}</p></div>
-                                <span class="text-[10px] bg-slate-100 px-3 py-1 rounded-full font-bold">${o.time}</span>
+                        <div class="bg-slate-50 p-5 rounded-3xl border-r-8 ${o.status==='new'?'border-blue-600':'border-slate-300'} mb-3">
+                            <div class="flex justify-between font-black mb-2"><span>${o.customer}</span><span class="text-blue-600">${o.total}﷼</span></div>
+                            <div class="text-xs text-slate-500 mb-2">${o.location}</div>
+                            <div class="border-t pt-2 text-[10px] font-bold">
+                                ${o.items.map(it => `• ${it.name}`).join('<br>')}
                             </div>
-                            <div class="py-4 border-y border-dashed my-3 space-y-1 text-xs font-bold">
-                                ${o.items.map(i => `<div class="flex justify-between"><span>${i.name}</span><span>${i.price}﷼</span></div>`).join('')}
-                            </div>
-                            <div class="flex justify-between items-center pt-2">
-                                <span class="text-2xl font-black text-blue-900">${o.total}﷼</span>
-                                ${o.status === 'pending' ? `<button onclick="approve('${doc.id}')" class="bg-emerald-600 text-white px-8 py-2 rounded-2xl font-black">قبول الطلب</button>` : `<span class="text-emerald-600 font-black">مقبول ✅</span>`}
-                            </div>
+                            ${o.status === 'new' ? `<button onclick="approveOrder('${doc.id}')" class="w-full bg-blue-600 text-white py-2 rounded-xl mt-3 font-bold text-xs">قبول</button>` : ''}
                         </div>`;
                 });
             });
         }
 
-        async function approve(id) { await db.collection("orders").doc(id).update({status:'ok'}); }
-        function playSound() { new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play(); }
-        function openModal(c) { document.getElementById('modalContent').innerHTML = c; document.getElementById('modal').style.display = 'flex'; }
-        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+        async function approveOrder(id) {
+            await db.collection("orders").doc(id).update({ status: 'done' });
+            new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play();
+        }
+
+        function removeFromCart(i) { cart.splice(i, 1); openCartModal(); updateCartUI(); }
+        function openModal(c) { document.getElementById('modalContent').innerHTML = c; document.getElementById('mainModal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('mainModal').style.display = 'none'; }
+        function showToast(m, c="#1e293b") { const t = document.getElementById("customToast"); t.innerText = m; t.style.backgroundColor = c; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 2000); }
     </script>
 </body>
 </html>
