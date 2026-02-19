@@ -3,156 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>منظومة مروه الرقمية المتكاملة | 2030</title>
+    <title>منظومة فوال مروه الشاملة 2030</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        :root { --primary: #059669; --secondary: #1e40af; --accent: #f59e0b; --dark: #0f172a; }
-        body { font-family: 'Tajawal', sans-serif; background: #f8fafc; overflow-x: hidden; }
+        :root { --primary: #059669; --secondary: #1e40af; --dark: #0f172a; --gold: #d4af37; }
+        body { font-family: 'Tajawal', sans-serif; background: #f8fafc; color: var(--dark); margin: 0; padding: 0; }
         
-        /* تأثيرات الواجهة */
-        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.3); }
-        .view-section { display: none; min-height: 100vh; animation: slideUp 0.4s ease-out; }
-        .view-section.active { display: block; }
-        @keyframes slideUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+        /* نظام التبديل بين الواجهات */
+        .app-view { display: none; min-height: 100vh; padding-bottom: 100px; animation: fadeIn 0.4s ease; }
+        .app-view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* شريط التنقل السفلي الذكي */
-        .bottom-nav { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 75px; background: var(--dark); border-radius: 25px; display: flex; justify-content: space-around; align-items: center; z-index: 9999; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
-        .nav-btn { color: #64748b; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: 0.3s; }
-        .nav-btn.active { color: #fff; transform: translateY(-8px); }
-        .nav-btn.active i { background: var(--primary); padding: 12px; border-radius: 15px; box-shadow: 0 10px 20px rgba(5,150,105,0.3); }
+        /* شريط التنقل السفلي */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 85px; background: white; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #e2e8f0; z-index: 1000; box-shadow: 0 -5px 20px rgba(0,0,0,0.05); }
+        .nav-link { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #94a3b8; cursor: pointer; transition: 0.3s; width: 25%; }
+        .nav-link.active { color: var(--primary); }
+        .nav-link i { font-size: 1.4rem; }
+        .nav-link span { font-size: 0.7rem; font-weight: 900; }
 
-        /* بطاقات المنيو */
-        .item-card { background: white; border-radius: 30px; overflow: hidden; transition: 0.3s; border: 1px solid #f1f5f9; }
-        .item-card:active { transform: scale(0.96); }
+        /* البطاقات */
+        .card-shadow { box-shadow: 0 10px 30px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; }
+        .btn-primary { background: var(--primary); color: white; border-radius: 18px; font-weight: 800; transition: 0.3s; }
+        .btn-primary:active { transform: scale(0.95); }
+
+        /* شاشة الدفع */
+        #payment-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: none; z-index: 2000; align-items: end; }
+        .payment-box { background: white; width: 100%; max-width: 500px; border-radius: 40px 40px 0 0; padding: 30px; animation: slideUp 0.4s ease; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         
-        /* مؤشرات الحالة */
-        .status-badge { padding: 4px 12px; border-radius: 10px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
-        .status-new { background: #fee2e2; color: #ef4444; }
-        .status-preparing { background: #fef3c7; color: #d97706; }
-        .status-ready { background: #dcfce7; color: #059669; }
-        .status-delivery { background: #e0e7ff; color: #4338ca; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="pb-32">
+<body>
 
-    <section id="view-customer" class="view-section active">
-        <header class="p-8 bg-white border-b">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-3xl font-black text-emerald-900">فوال مروه ✨</h1>
-                    <p class="text-xs font-bold text-slate-400">فطورك الشعبي ساخن وعالطلب</p>
-                </div>
-                <div class="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center text-xl"><i class="fas fa-search text-slate-400"></i></div>
+    <div id="view-client" class="app-view active">
+        <header class="p-6 bg-white sticky top-0 z-50 flex justify-between items-center border-b">
+            <div>
+                <h1 class="text-2xl font-black text-emerald-800 italic">فوال مروه ✨</h1>
+                <p class="text-[10px] font-bold text-slate-400">فطور أهل الرياض الطيبين</p>
             </div>
-            
-            <div class="flex gap-4 overflow-x-auto no-scrollbar mt-8 py-2">
-                <button class="px-6 py-3 bg-emerald-600 text-white rounded-2xl font-black whitespace-nowrap shadow-lg shadow-emerald-100">الكل</button>
-                <button class="px-6 py-3 bg-white text-slate-500 rounded-2xl font-bold border whitespace-nowrap">فول ومعصوب</button>
-                <button class="px-6 py-3 bg-white text-slate-500 rounded-2xl font-bold border whitespace-nowrap">عريكة ملكي</button>
-                <button class="px-6 py-3 bg-white text-slate-500 rounded-2xl font-bold border whitespace-nowrap">مطبق</button>
+            <div class="flex gap-3">
+                <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500"><i class="fas fa-bell"></i></div>
+                <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center font-black">M</div>
             </div>
         </header>
 
-        <main class="p-6">
-            <div id="customer-menu" class="grid grid-cols-2 gap-6">
+        <div class="p-6 space-y-8">
+            <div class="h-44 rounded-[35px] bg-gradient-to-r from-emerald-900 to-emerald-700 p-8 text-white relative overflow-hidden shadow-xl">
+                <div class="relative z-10">
+                    <h2 class="text-3xl font-black italic mb-2">عرض الجمعة!</h2>
+                    <p class="text-emerald-100 text-sm opacity-80">خصم 20% على جميع أنواع العريكة</p>
                 </div>
-        </main>
-    </section>
-
-    <section id="view-cashier" class="view-section p-6">
-        <div class="flex justify-between items-end mb-8">
-            <h2 class="text-4xl font-black italic">لوحة الكاشير 🖥️</h2>
-            <div id="stats-summary" class="bg-emerald-100 text-emerald-700 px-6 py-3 rounded-2xl font-black text-sm">
-                مبيعات اليوم: 0 ﷼
+                <i class="fas fa-bowl-food absolute -bottom-4 -left-4 text-9xl text-white/10 rotate-12"></i>
             </div>
-        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="cashier-orders">
-            </div>
-    </section>
-
-    <section id="view-driver" class="view-section p-6">
-        <div class="bg-slate-900 rounded-[35px] p-8 text-white mb-8 relative overflow-hidden">
-            <div class="relative z-10">
-                <h3 class="text-2xl font-black mb-2">مرحباً يا بطل 🏎️</h3>
-                <p class="text-white/50 text-xs font-bold">لديك <span id="pending-deliveries-count">0</span> طلبات جاهزة للتوصيل</p>
-            </div>
-            <i class="fas fa-motorcycle absolute -bottom-4 -left-4 text-9xl text-white/5 rotate-12"></i>
-        </div>
-
-        <div id="driver-orders" class="space-y-6">
-            </div>
-    </section>
-
-    <section id="view-track" class="view-section p-6">
-        <div id="no-active-order" class="flex flex-col items-center justify-center py-40 opacity-20">
-            <i class="fas fa-map-location-dot text-8xl mb-6"></i>
-            <p class="text-xl font-black">لا يوجد طلب نشط لمتابعته</p>
-        </div>
-
-        <div id="tracking-card" class="hidden">
-            <div class="bg-white rounded-[40px] p-8 shadow-2xl border-b-8 border-emerald-500">
-                <div class="flex justify-between items-center mb-10">
-                    <h3 class="text-2xl font-black">تتبع رحلة الطلب</h3>
-                    <span id="track-order-id" class="text-xs bg-slate-100 px-4 py-2 rounded-xl font-bold text-slate-500">#---</span>
+            <div id="menu-container" class="grid grid-cols-2 gap-4">
                 </div>
-
-                <div class="space-y-12">
-                    <div class="flex gap-6 relative">
-                        <div class="w-1 bg-slate-100 absolute h-full right-5 top-10 -z-10"></div>
-                        <div id="step1" class="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg"><i class="fas fa-check"></i></div>
-                        <div><p class="font-black text-lg">تم استلام الطلب</p><p class="text-xs text-slate-400 font-bold">بواسطة المطبخ</p></div>
-                    </div>
-                    <div class="flex gap-6 relative">
-                        <div id="step2" class="w-10 h-10 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center"><i class="fas fa-fire-burner"></i></div>
-                        <div><p class="font-black text-lg">يتم التحضير الآن</p><p class="text-xs text-slate-400 font-bold">على نار هادئة</p></div>
-                    </div>
-                    <div class="flex gap-6">
-                        <div id="step3" class="w-10 h-10 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center"><i class="fas fa-motorcycle"></i></div>
-                        <div><p class="font-black text-lg">خرج للتوصيل</p><p id="driver-status-text" class="text-xs text-slate-400 font-bold">بانتظار المندوب</p></div>
-                    </div>
-                </div>
-            </div>
         </div>
-    </section>
-
-    <nav class="bottom-nav">
-        <button onclick="changeView('customer')" class="nav-btn active" id="btn-customer">
-            <i class="fas fa-home text-xl"></i>
-            <span class="text-[10px] font-extrabold">المتجر</span>
-        </button>
-        <button onclick="changeView('track')" class="nav-btn" id="btn-track">
-            <i class="fas fa-route text-xl"></i>
-            <span class="text-[10px] font-extrabold">التتبع</span>
-        </button>
-        <button onclick="changeView('cashier')" class="nav-btn" id="btn-cashier">
-            <i class="fas fa-desktop text-xl"></i>
-            <span class="text-[10px] font-extrabold">الكاشير</span>
-        </button>
-        <button onclick="changeView('driver')" class="nav-btn" id="btn-driver">
-            <i class="fas fa-biking text-xl"></i>
-            <span class="text-[10px] font-extrabold">المندوب</span>
-        </button>
-    </nav>
-
-    <div id="cart-float" class="fixed bottom-28 left-6 right-6 h-18 bg-emerald-600 rounded-3xl shadow-2xl z-50 flex items-center justify-between px-8 text-white hidden transform animate-bounce">
-        <div class="flex items-center gap-4">
-            <span id="cart-count" class="bg-white text-emerald-600 w-8 h-8 rounded-full flex items-center justify-center font-black">0</span>
-            <span id="cart-total" class="font-black text-lg">0 ﷼</span>
-        </div>
-        <button onclick="submitOrder()" class="font-black">تأكيد الطلب <i class="fas fa-chevron-left mr-2"></i></button>
     </div>
 
+    <div id="view-track" class="app-view p-6 bg-slate-50">
+        <h2 class="text-3xl font-black mb-8 italic">تتبع طلبك 🛰️</h2>
+        
+        <div id="no-order-ui" class="text-center py-20 opacity-20">
+            <i class="fas fa-box-open text-7xl mb-6"></i>
+            <p class="font-black text-xl">لا يوجد طلبات نشطة</p>
+        </div>
+
+        <div id="tracking-ui" class="hidden space-y-6">
+            <div class="bg-white p-8 rounded-[40px] shadow-sm border-2 border-emerald-500/10">
+                <div class="flex justify-between items-center mb-10">
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">رقم الطلب</p>
+                        <p id="track-id" class="text-xl font-black italic text-emerald-800">#----</p>
+                    </div>
+                    <div class="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-2xl text-[10px] font-black animate-pulse">تحديث مباشر</div>
+                </div>
+
+                <div class="relative space-y-12">
+                    <div class="absolute right-[19px] top-4 bottom-4 w-1 bg-slate-100 -z-10"></div>
+                    
+                    <div class="flex items-center gap-6">
+                        <div id="step-new" class="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg"><i class="fas fa-check"></i></div>
+                        <div><p class="font-black">تم تأكيد الطلب</p><p class="text-[10px] text-slate-400">استلمنا طلبك وبدأنا العمل</p></div>
+                    </div>
+                    
+                    <div class="flex items-center gap-6">
+                        <div id="step-preparing" class="w-10 h-10 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center transition-all duration-500"><i class="fas fa-fire"></i></div>
+                        <div><p class="font-black">جاري التحضير</p><p class="text-[10px] text-slate-400">طلبك تحت أيدي شيف مروه</p></div>
+                    </div>
+
+                    <div class="flex items-center gap-6">
+                        <div id="step-ready" class="w-10 h-10 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center transition-all duration-500"><i class="fas fa-motorcycle"></i></div>
+                        <div><p class="font-black">مع المندوب</p><p id="driver-info" class="text-[10px] text-slate-400">بانتظار خروجه من المطبخ</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-cashier" class="app-view p-6 bg-slate-900 text-white">
+        <div class="flex justify-between items-center mb-10">
+            <h2 class="text-3xl font-black italic">إدارة المطبخ 🖥️</h2>
+            <div class="bg-emerald-500/20 text-emerald-400 px-6 py-2 rounded-2xl font-black text-xs border border-emerald-500/30">
+                اليوم: <span id="cashier-total">0</span> ﷼
+            </div>
+        </div>
+
+        <div id="cashier-list" class="space-y-6">
+            </div>
+    </div>
+
+    <div id="view-driver" class="app-view p-6 bg-blue-50">
+        <div class="bg-blue-600 rounded-[35px] p-8 text-white mb-10 shadow-xl relative overflow-hidden">
+            <h2 class="text-2xl font-black mb-2">طلبات التوصيل 🏎️</h2>
+            <p class="text-blue-100 text-xs font-bold">يرجى التأكد من تسليم الطلب ساخناً</p>
+            <i class="fas fa-map-marker-alt absolute -bottom-4 -left-4 text-9xl text-white/10 rotate-12"></i>
+        </div>
+
+        <div id="driver-list" class="space-y-6">
+            </div>
+    </div>
+
+    <div id="payment-modal">
+        <div class="payment-box">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-2xl font-black italic">الدفع الآمن 💳</h3>
+                <button onclick="closePayment()" class="text-slate-300"><i class="fas fa-times-circle text-2xl"></i></button>
+            </div>
+            
+            <div class="space-y-6">
+                <div class="flex gap-4 mb-8">
+                    <div class="flex-1 h-16 border-2 border-emerald-500 bg-emerald-50 rounded-2xl flex items-center justify-center"><img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" class="h-8"></div>
+                    <div class="flex-1 h-16 border-2 border-slate-100 rounded-2xl flex items-center justify-center opacity-40"><img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/Mada_Logo.svg" class="h-4"></div>
+                </div>
+
+                <input type="text" id="card-number" placeholder="رقم البطاقة (16 رقم)" class="w-full p-5 bg-slate-50 rounded-2xl border-none font-bold text-center focus:ring-2 ring-emerald-500">
+                
+                <div class="flex gap-4">
+                    <input type="text" placeholder="MM/YY" class="w-1/2 p-5 bg-slate-50 rounded-2xl border-none font-bold text-center">
+                    <input type="text" placeholder="CVV" class="w-1/2 p-5 bg-slate-50 rounded-2xl border-none font-bold text-center">
+                </div>
+
+                <div class="py-4 border-t border-dashed flex justify-between items-center">
+                    <span class="font-bold text-slate-400">إجمالي الفاتورة</span>
+                    <span id="payment-amount" class="text-3xl font-black text-emerald-700">0 ﷼</span>
+                </div>
+
+                <button onclick="processPayment()" id="pay-btn" class="w-full py-6 btn-primary text-xl shadow-xl shadow-emerald-100">ادفع الآن 🚀</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="cart-dock" class="fixed bottom-24 left-6 right-6 h-20 bg-emerald-600 rounded-[28px] shadow-2xl z-[500] flex items-center justify-between px-8 text-white hidden animate-bounce">
+        <div class="flex items-center gap-4">
+            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center font-black" id="cart-count">0</div>
+            <span id="cart-total-price" class="text-xl font-black italic">0 ﷼</span>
+        </div>
+        <button onclick="openPayment()" class="font-black flex items-center gap-2 italic">إتمام الطلب <i class="fas fa-chevron-left"></i></button>
+    </div>
+
+    <nav class="bottom-nav">
+        <div class="nav-link active" onclick="switchView('client', this)"><i class="fas fa-utensils"></i><span>المتجر</span></div>
+        <div class="nav-link" onclick="switchView('track', this)"><i class="fas fa-route"></i><span>تتبع</span></div>
+        <div class="nav-link" onclick="switchView('cashier', this)"><i class="fas fa-terminal"></i><span>الكاشير</span></div>
+        <div class="nav-link" onclick="switchView('driver', this)"><i class="fas fa-biking"></i><span>المندوب</span></div>
+    </nav>
+
     <script>
-        // --- محرك النظام (The Core Engine) ---
-        const config = {
+        // --- الأساس التقني (Firebase & Data) ---
+        const firebaseConfig = {
             apiKey: "AIzaSyCcQkEMeeoIHbj_7bbU1TnidZJJOdjAx8s",
             authDomain: "fawal-c9530.firebaseapp.com",
             projectId: "fawal-c9530",
@@ -160,43 +186,34 @@
             messagingSenderId: "5341806694",
             appId: "1:5341806694:web:746e207ad783dbaac26da7"
         };
-        firebase.initializeApp(config);
+        firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // قاعدة بيانات الأصناف (عينة من 200 صنف مفترض)
-        const MENU_DATA = [
-            {id:1, n:"فول جرة سادة", p:6, img:"https://images.unsplash.com/photo-1541518763669-27fef04b14ea?w=400"},
-            {id:2, n:"فول قلابة طاوه", p:8, img:"https://images.unsplash.com/photo-1593584785033-9c7604d0863f?w=400"},
-            {id:3, n:"عريكة ملكي فاخر", p:18, img:"https://images.unsplash.com/photo-1589113103503-49ef83d89e7c?w=400"},
-            {id:4, n:"معصوب قشطة عسل", p:15, img:"https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400"},
-            {id:5, n:"مطبق خضار", p:7, img:"https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400"},
-            {id:6, n:"تميس بسمن بري", p:3, img:"https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400"},
-            {id:7, n:"عدس حجازي", p:7, img:"https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400"},
-            {id:8, n:"شكشوكة عدني", p:9, img:"https://images.unsplash.com/photo-1593584785033-9c7604d0863f?w=400"}
+        // قاعدة بيانات المنتجات الضخمة
+        const PRODUCTS = [
+            {id:101, n:"فول جرة بالسمن", p:8, img:"https://images.unsplash.com/photo-1541518763669-27fef04b14ea?w=400"},
+            {id:102, n:"قلابة كشنة حجازية", p:9, img:"https://images.unsplash.com/photo-1593584785033-9c7604d0863f?w=400"},
+            {id:103, n:"عريكة ملكي دبل قشطة", p:22, img:"https://images.unsplash.com/photo-1589113103503-49ef83d89e7c?w=400"},
+            {id:104, n:"معصوب ملكي بالعسل", p:18, img:"https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400"},
+            {id:105, n:"مطبق مالح خضار", p:7, img:"https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400"},
+            {id:106, n:"مطبق نوتيلا بالموز", p:14, img:"https://images.unsplash.com/photo-1551024601-bec78aea704b?w=400"},
+            {id:107, n:"تميس بر من الفرن", p:2, img:"https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400"},
+            {id:108, n:"شكشوكة عدني سبايسي", p:12, img:"https://images.unsplash.com/photo-1593584785033-9c7604d0863f?w=400"}
         ];
 
         let cart = [];
-        let activeOrderID = localStorage.getItem('marwa_order_id');
+        let activeOrderID = localStorage.getItem('lastOrder');
 
-        window.onload = () => {
-            renderCustomerMenu();
-            syncOrders();
-            if(activeOrderID) trackOrder(activeOrderID);
-        };
-
-        // 1. وظائف العميل
-        function renderCustomerMenu() {
-            const grid = document.getElementById('customer-menu');
-            grid.innerHTML = MENU_DATA.map(item => `
-                <div class="item-card shadow-sm" onclick="addItem(${item.id})">
-                    <div class="h-32 bg-slate-100 relative">
-                        <img src="${item.img}" class="w-full h-full object-cover">
-                        <div class="absolute bottom-2 left-2 bg-white/90 backdrop-blur px-3 py-1 rounded-xl text-[10px] font-black">${item.p} ﷼</div>
-                    </div>
+        // --- 1. وظائف العميل ---
+        function renderMenu() {
+            const container = document.getElementById('menu-container');
+            container.innerHTML = PRODUCTS.map(item => `
+                <div class="bg-white rounded-[30px] overflow-hidden card-shadow relative" onclick="addToCart(${item.id})">
+                    <img src="${item.img}" class="h-32 w-full object-cover">
                     <div class="p-4">
-                        <h4 class="font-bold text-slate-800 text-xs">${item.n}</h4>
+                        <h3 class="font-black text-xs text-slate-700">${item.n}</h3>
                         <div class="flex justify-between items-center mt-3">
-                            <span class="text-[8px] text-slate-400 font-bold uppercase">Freshly Made</span>
+                            <span class="text-emerald-600 font-black">${item.p} ﷼</span>
                             <div class="w-8 h-8 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-xs"><i class="fas fa-plus"></i></div>
                         </div>
                     </div>
@@ -204,117 +221,154 @@
             `).join('');
         }
 
-        function addItem(id) {
-            const item = MENU_DATA.find(x => x.id === id);
+        function addToCart(id) {
+            const item = PRODUCTS.find(p => p.id === id);
             cart.push(item);
-            updateCartUI();
+            const dock = document.getElementById('cart-dock');
+            dock.classList.remove('hidden');
+            document.getElementById('cart-count').innerText = cart.length;
+            document.getElementById('cart-total-price').innerText = cart.reduce((s,i)=>s+i.p,0) + " ﷼";
+            // اهتزاز بسيط للموبايل
+            if(navigator.vibrate) navigator.vibrate(50);
         }
 
-        function updateCartUI() {
-            const float = document.getElementById('cart-float');
-            if(cart.length > 0) {
-                float.classList.remove('hidden');
-                document.getElementById('cart-count').innerText = cart.length;
-                document.getElementById('cart-total').innerText = cart.reduce((s,i)=>s+i.p,0) + " ﷼";
-            }
+        function openPayment() {
+            const total = cart.reduce((s,i)=>s+i.p,0);
+            document.getElementById('payment-amount').innerText = total + " ﷼";
+            document.getElementById('payment-modal').style.display = 'flex';
         }
 
-        async function submitOrder() {
+        function closePayment() {
+            document.getElementById('payment-modal').style.display = 'none';
+        }
+
+        async function processPayment() {
+            const card = document.getElementById('card-number').value;
+            if(card.length < 16) return alert("يرجى إدخال رقم بطاقة صحيح");
+            
+            const btn = document.getElementById('pay-btn');
+            btn.innerText = "جاري التحقق... ⏳";
+            btn.disabled = true;
+
             const order = {
                 items: cart,
                 total: cart.reduce((s,i)=>s+i.p,0),
                 status: 'new',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
-            const doc = await db.collection("orders").add(order);
-            activeOrderID = doc.id;
-            localStorage.setItem('marwa_order_id', doc.id);
-            cart = [];
-            document.getElementById('cart-float').classList.add('hidden');
-            changeView('track');
-            trackOrder(activeOrderID);
+
+            try {
+                const doc = await db.collection("orders").add(order);
+                activeOrderID = doc.id;
+                localStorage.setItem('lastOrder', doc.id);
+                cart = [];
+                document.getElementById('cart-dock').classList.add('hidden');
+                closePayment();
+                switchView('track', document.querySelector('[onclick*="track"]'));
+                startTracking(doc.id);
+            } catch(e) { alert("فشل الدفع، حاول مرة أخرى"); }
         }
 
-        // 2. وظائف التتبع
-        function trackOrder(id) {
+        // --- 2. وظائف التتبع ---
+        function startTracking(id) {
+            if(!id) return;
+            document.getElementById('no-order-ui').classList.add('hidden');
+            document.getElementById('tracking-ui').classList.remove('hidden');
+            
             db.collection("orders").doc(id).onSnapshot(doc => {
                 if(!doc.exists) return;
                 const o = doc.data();
-                document.getElementById('no-active-order').classList.add('hidden');
-                document.getElementById('tracking-card').classList.remove('hidden');
-                document.getElementById('track-order-id').innerText = "#" + id.slice(-5);
+                document.getElementById('track-id').innerText = "#" + id.slice(-5);
                 
-                // تحديث الستيبس
-                const s2 = document.getElementById('step2'), s3 = document.getElementById('step3');
-                if(o.status === 'preparing') { s2.classList.replace('bg-slate-200','bg-amber-500'); s2.classList.replace('text-slate-400','text-white'); }
-                if(o.status === 'ready') { s2.className = "w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg"; s3.classList.replace('bg-slate-200','bg-blue-600'); s3.classList.replace('text-slate-400','text-white'); }
-                if(o.status === 'delivered') { s3.className = "w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg"; document.getElementById('driver-status-text').innerText = "تم التوصيل بنجاح ✅"; }
+                // تحديث الرموز
+                const stepPrep = document.getElementById('step-preparing');
+                const stepReady = document.getElementById('step-ready');
+                
+                if(o.status === 'preparing' || o.status === 'ready' || o.status === 'delivered') {
+                    stepPrep.classList.replace('bg-slate-200','bg-amber-500');
+                    stepPrep.classList.replace('text-slate-400','text-white');
+                }
+                if(o.status === 'ready' || o.status === 'delivered') {
+                    stepReady.classList.replace('bg-slate-200','bg-blue-600');
+                    stepReady.classList.replace('text-slate-400','text-white');
+                    document.getElementById('driver-info').innerText = "المندوب في الطريق إليك 🏎️";
+                }
+                if(o.status === 'delivered') {
+                    stepReady.className = "w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg";
+                    document.getElementById('driver-info').innerText = "تم تسليم الطلب، بالعافية! ❤️";
+                }
             });
         }
 
-        // 3. وظائف الكاشير والمندوب (المزامنة)
-        function syncOrders() {
+        // --- 3. وظائف الكاشير والمندوب ---
+        function syncManagement() {
             db.collection("orders").orderBy("createdAt", "desc").onSnapshot(snap => {
-                const cashierGrid = document.getElementById('cashier-orders');
-                const driverGrid = document.getElementById('driver-orders');
-                let dailyTotal = 0;
-                let readyForDeliveryCount = 0;
+                const cashierList = document.getElementById('cashier-list');
+                const driverList = document.getElementById('driver-list');
+                let totalToday = 0;
 
-                cashierGrid.innerHTML = "";
-                driverGrid.innerHTML = "";
+                cashierList.innerHTML = "";
+                driverList.innerHTML = "";
 
                 snap.forEach(doc => {
                     const o = doc.data();
-                    dailyTotal += o.total;
+                    totalToday += o.total;
 
                     // واجهة الكاشير
-                    cashierGrid.innerHTML += `
-                        <div class="bg-white p-8 rounded-[35px] shadow-sm border-2 ${o.status==='new'?'border-emerald-500 animate-pulse':'border-transparent'}">
-                            <div class="flex justify-between mb-4">
+                    cashierList.innerHTML += `
+                        <div class="bg-slate-800 p-6 rounded-[30px] border-l-4 ${o.status==='new'?'border-emerald-500 animate-pulse':'border-slate-600'}">
+                            <div class="flex justify-between items-center mb-4">
                                 <span class="font-black">#${doc.id.slice(-5)}</span>
-                                <span class="status-badge ${o.status==='new'?'status-new':o.status==='preparing'?'status-preparing':'status-ready'}">${o.status}</span>
+                                <span class="text-[10px] bg-slate-700 px-3 py-1 rounded-full text-emerald-400">${o.status}</span>
                             </div>
-                            <div class="text-sm font-bold text-slate-500 mb-6">${o.items.map(i=>i.n).join(' + ')}</div>
+                            <div class="text-xs text-slate-400 mb-6 font-bold leading-relaxed">${o.items.map(i=>i.n).join(' + ')}</div>
                             <div class="flex gap-2">
-                                <button onclick="updateStatus('${doc.id}', 'preparing')" class="flex-1 bg-amber-500 text-white py-3 rounded-xl font-black text-xs">بدء التحضير</button>
-                                <button onclick="updateStatus('${doc.id}', 'ready')" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-black text-xs">تم التجهيز</button>
+                                <button onclick="updateOrderStatus('${doc.id}', 'preparing')" class="flex-1 bg-amber-500 py-3 rounded-xl font-black text-[10px]">بدء التحضير</button>
+                                <button onclick="updateOrderStatus('${doc.id}', 'ready')" class="flex-1 bg-emerald-600 py-3 rounded-xl font-black text-[10px]">جاهز للتوصيل</button>
                             </div>
                         </div>
                     `;
 
-                    // واجهة المندوب
-                    if(o.status === 'ready' || o.status === 'delivery') {
-                        readyForDeliveryCount++;
-                        driverGrid.innerHTML += `
-                            <div class="bg-white p-8 rounded-[40px] shadow-lg border-l-8 border-blue-600">
+                    // واجهة المندوب (الطلبات الجاهزة فقط)
+                    if(o.status === 'ready') {
+                        driverList.innerHTML += `
+                            <div class="bg-white p-8 rounded-[40px] shadow-sm border-2 border-blue-100">
                                 <div class="flex justify-between items-center mb-6">
                                     <div class="flex items-center gap-4">
-                                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center"><i class="fas fa-box"></i></div>
-                                        <div><p class="font-black text-lg">طلب جاهز</p><p class="text-[10px] font-bold text-slate-400">حي بدر - الرياض</p></div>
+                                        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center"><i class="fas fa-box"></i></div>
+                                        <div><p class="font-black text-lg">طلب #...${doc.id.slice(-3)}</p><p class="text-[10px] font-bold text-slate-400">حي بدر - الرياض</p></div>
                                     </div>
-                                    <span class="text-xl font-black">${o.total} ﷼</span>
+                                    <span class="text-2xl font-black">${o.total} ﷼</span>
                                 </div>
-                                <button onclick="updateStatus('${doc.id}', 'delivered')" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black shadow-xl shadow-blue-100">تأكيد التوصيل والتحصيل ✅</button>
+                                <button onclick="updateOrderStatus('${doc.id}', 'delivered')" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-black shadow-lg">تأكيد التوصيل والتحصيل ✅</button>
                             </div>
                         `;
                     }
                 });
-                document.getElementById('stats-summary').innerText = `مبيعات اليوم: ${dailyTotal} ﷼`;
-                document.getElementById('pending-deliveries-count').innerText = readyForDeliveryCount;
+                document.getElementById('cashier-total').innerText = totalToday;
             });
         }
 
-        async function updateStatus(id, s) { await db.collection("orders").doc(id).update({status: s}); }
+        async function updateOrderStatus(id, status) {
+            await db.collection("orders").doc(id).update({status: status});
+        }
 
-        // التبديل بين الشاشات
-        function changeView(view) {
-            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        // --- نظام الملاحة ---
+        function switchView(viewId, el) {
+            document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             
-            document.getElementById('view-' + view).classList.add('active');
-            document.getElementById('btn-' + view).classList.add('active');
+            document.getElementById('view-' + viewId).classList.add('active');
+            el.classList.add('active');
             window.scrollTo(0,0);
         }
+
+        // تشغيل النظام
+        window.onload = () => {
+            renderMenu();
+            syncManagement();
+            if(activeOrderID) startTracking(activeOrderID);
+        };
     </script>
 </body>
 </html>
