@@ -4,235 +4,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>فوال مروه - التطبيق الرسمي</title>
-    
+    <title>فوال مروه - تطبيق العميل</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
-
     <style>
-        body { font-family: 'Tajawal', sans-serif; background-color: #f8fafc; overflow-x: hidden; }
+        body { font-family: 'Tajawal', sans-serif; background-color: #f8f9fa; -webkit-tap-highlight-color: transparent; }
         .h-red { color: #ff3252; }
         .h-bg-red { background-color: #ff3252; }
-        .h-card { background: white; border-radius: 20px; transition: 0.3s; cursor: pointer; border: 1px solid #f1f5f9; }
-        .h-card:active { transform: scale(0.96); }
-        .category-pill { transition: 0.3s; white-space: nowrap; }
-        .category-pill.active { background: #ff3252; color: white; border-color: #ff3252; box-shadow: 0 4px 12px rgba(255, 50, 82, 0.3); }
+        .category-pill.active { background-color: #ff3252; color: white; }
+        .product-card { background: white; border-radius: 20px; transition: 0.3s; cursor: pointer; border: 1px solid #eee; }
+        .product-card:active { transform: scale(0.95); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="pb-32">
 
-    <div id="trackingBanner" class="hidden bg-emerald-600 text-white p-4 sticky top-0 z-[2000] shadow-lg animate-bounce-short">
-        <div class="flex justify-between items-center max-w-lg mx-auto">
-            <div class="flex items-center gap-3">
-                <i class="fa-solid fa-truck-fast animate-pulse"></i>
-                <div>
-                    <p class="text-[10px] font-bold opacity-80 uppercase">حالة طلبك</p>
-                    <p id="orderStatusText" class="text-sm font-black italic">جاري التجهيز في المطعم...</p>
-                </div>
+    <header class="bg-white p-5 sticky top-0 z-[100] shadow-sm">
+        <div class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 h-bg-red rounded-full flex items-center justify-center text-white shadow-lg"><i class="fa-solid fa-location-dot"></i></div>
+                <div><h1 class="text-[10px] text-gray-400 font-bold">التوصيل إلى</h1><p class="text-sm font-black text-gray-800">حي بدر، الدمام</p></div>
             </div>
-            <span class="text-xs font-black bg-white/20 px-3 py-1 rounded-full">15-20 دقيقة</span>
+            <div class="bg-red-50 px-3 py-1 rounded-full text-[10px] font-black h-red italic">⏱ 15 - 20 دقيقة</div>
         </div>
-    </div>
-
-    <header class="bg-white p-5 shadow-sm sticky top-0 z-[1000] border-b border-gray-100">
-        <div class="flex justify-between items-center mb-5">
-            <div class="flex items-center gap-3">
-                <div class="w-11 h-11 h-bg-red rounded-2xl flex items-center justify-center text-white shadow-lg"><i class="fa-solid fa-location-dot"></i></div>
-                <div>
-                    <h1 class="text-[10px] text-gray-400 font-black uppercase">التوصيل إلى</h1>
-                    <p class="text-sm font-black text-slate-800">حي بدر، الدمام <i class="fa-solid fa-chevron-down text-[10px] h-red"></i></p>
-                </div>
-            </div>
-            <div class="bg-gray-50 w-11 h-11 rounded-full flex items-center justify-center text-gray-400"><i class="fa-solid fa-heart"></i></div>
-        </div>
-
         <div id="categoryTabs" class="flex gap-2 overflow-x-auto no-scrollbar py-2"></div>
     </header>
 
-    <main class="p-4">
-        <div id="nbrBtn" onclick="toggleNeighborMode()" class="mb-8 p-6 rounded-[30px] bg-slate-900 text-white flex justify-between items-center relative overflow-hidden group transition-all">
-            <div class="relative z-10">
-                <h3 class="font-black text-xl italic mb-1">توصيل مجاني؟ 🎁</h3>
-                <p id="nbrLabel" class="text-xs font-bold text-slate-400 uppercase tracking-widest">فقط لسكان حي بدر</p>
-            </div>
-            <i class="fa-solid fa-bolt text-4xl opacity-10 absolute left-4 group-hover:scale-125 transition-transform h-red"></i>
-        </div>
+    <main class="p-4" id="mainGrid"></main>
 
-        <div id="itemsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
-    </main>
-
-    <div id="floatingCart" onclick="openCartModal()" class="fixed bottom-6 left-4 right-4 h-bg-red text-white p-5 rounded-[28px] shadow-2xl z-[3000] hidden justify-between items-center transform transition-all active:scale-95">
-        <div class="flex items-center gap-4">
-            <div class="bg-white h-red w-10 h-10 rounded-2xl flex items-center justify-center font-black shadow-inner" id="cartCount">0</div>
-            <span class="font-black text-lg">مراجعة سلة الطلبات</span>
+    <div id="floatingCart" onclick="showCartModal()" class="fixed bottom-6 left-4 right-4 h-bg-red text-white p-4 rounded-2xl shadow-2xl z-[1000] hidden justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="bg-white h-red w-8 h-8 rounded-lg flex items-center justify-center font-black" id="cartQty">0</div>
+            <span class="font-black">مراجعة الطلب</span>
         </div>
-        <span id="floatingTotal" class="text-2xl font-black">0﷼</span>
+        <span id="cartTotal" class="text-xl font-black">0﷼</span>
     </div>
 
-    <div id="mainModal" class="fixed inset-0 z-[4000] hidden bg-slate-900/60 backdrop-blur-md items-end justify-center">
-        <div class="bg-white w-full max-w-lg rounded-t-[45px] p-8 max-h-[90vh] overflow-y-auto shadow-2xl transition-all translate-y-0">
-            <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-8"></div>
-            <div id="modalContent"></div>
-            <button onclick="closeModal()" class="w-full mt-6 text-slate-400 font-bold text-sm tracking-widest">إغلاق النافذة</button>
+    <div id="mainModal" class="fixed inset-0 z-[2000] hidden bg-black/60 backdrop-blur-sm items-end justify-center">
+        <div class="bg-white w-full max-w-lg rounded-t-[35px] p-8 max-h-[85vh] overflow-y-auto shadow-2xl transition-transform">
+            <div id="modalBody"></div>
+            <button onclick="closeModal()" class="w-full mt-4 text-gray-400 font-bold">إغلاق</button>
         </div>
     </div>
 
     <script>
-        // دمج كامل الأصناف من ملف index.html الأصلي
-        const DB = {
+        // كافة الأصناف من ملفك الأصلي
+        const menuData = {
             "الوجبات": [
-                {id:1, name:"فول سادة", kw:"beans", sizes:{s:3, m:4, l:5, local:6}},
-                {id:2, name:"فول طاوه", kw:"hot-beans", sizes:{s:4, m:5, l:6, local:7}},
-                {id:5, name:"عدس سادة", kw:"lentils", sizes:{s:3, m:4, l:5, local:6}},
-                {id:13, name:"تونة طاوه", kw:"tuna", sizes:{s:10, m:11, l:12, local:10}},
-                {id:14, name:"شكشوكة عادية", kw:"eggs", sizes:{s:6, m:7, l:8, local:7}}
+                {id:1, name:"فول سادة", price:5, sizes:{s:3, m:4, l:5, local:6}},
+                {id:2, name:"فول طاوه", price:6, sizes:{s:4, m:5, l:6, local:7}},
+                {id:5, name:"عدس سادة", price:5, sizes:{s:3, m:4, l:5, local:6}},
+                {id:14, name:"شكشوكة", price:7, sizes:{s:6, m:7, l:8, local:7}},
+                {id:13, name:"تونة طاوه", price:10, sizes:{s:10, m:11, l:12, local:10}}
             ],
             "المطبق": [
-                {id:23, name:"مطبق خضار", kw:"pastry", price:5},
-                {id:32, name:"مطبق جبن حلو", kw:"cheese-pastry", price:6},
-                {id:33, name:"مطبق نوتيلا", kw:"nutella", price:7}
+                {id:23, name:"مطبق خضار", price:5},
+                {id:28, name:"مطبق مالح جبن", price:6},
+                {id:33, name:"مطبق نوتيلا", price:7}
             ],
-            "العريكة والفتة": [
-                {id:34, name:"قشطة عسل", kw:"honey-dessert", price:12},
-                {id:36, name:"عريكة ملكي", kw:"royal", price:16},
-                {id:38, name:"عريكة مروه", kw:"special", price:18}
+            "العريكة": [
+                {id:36, name:"عريكة ملكي", price:16},
+                {id:38, name:"عريكة مروه", price:18}
             ],
             "سندوتشات": [
-                {id:48, name:"كبدة", kw:"liver-sandwich", sizes:{samoli:4, fatira:5}},
-                {id:52, name:"تقاطيع", kw:"meat-sandwich", sizes:{samoli:4, fatira:5}}
+                {id:48, name:"كبدة", price:4, sizes:{samoli:4, fatira:5}}
+            ],
+            "التميس": [
+                {id:77, name:"تميس سادة", price:1},
+                {id:78, name:"تميس بر", price:1},
+                {id:79, name:"تميس بسكويت", price:2}
             ],
             "المشروبات": [
-                {id:74, name:"شاي بالحليب", kw:"karak", price:2},
-                {id:71, name:"ماء", kw:"water", price:1}
+                {id:74, name:"شاي بالحليب", price:2},
+                {id:71, name:"ماء", price:1}
             ]
         };
 
-        // إعدادات فيربيس (استبدلها بمفاتيحك)
-        const firebaseConfig = { apiKey: "...", databaseURL: "...", projectId: "..." };
-        // firebase.initializeApp(firebaseConfig);
-        // const database = firebase.database();
-
         let cart = [];
-        let currentCategory = "الوجبات";
-        let isNeighbor = false;
+        let currentCat = "الوجبات";
 
         function renderTabs() {
             const tabs = document.getElementById('categoryTabs');
-            tabs.innerHTML = Object.keys(DB).map(cat => `
-                <button onclick="setCategory('${cat}')" class="category-pill px-6 py-2.5 rounded-full border border-gray-200 font-black text-sm ${cat === currentCategory ? 'active' : 'bg-white text-slate-500'}">
+            tabs.innerHTML = Object.keys(menuData).map(cat => `
+                <button onclick="changeCat('${cat}')" class="category-pill px-6 py-2 rounded-full font-bold text-sm whitespace-nowrap border ${currentCat === cat ? 'active h-bg-red text-white' : 'bg-white text-gray-500'}">
                     ${cat}
                 </button>
             `).join('');
         }
 
         function renderItems() {
-            const grid = document.getElementById('itemsGrid');
-            grid.innerHTML = DB[currentCategory].map(item => `
-                <div class="h-card overflow-hidden" onclick="openOptions(${item.id})">
-                    <img src="https://images.unsplash.com/photo-1541518763531-4650629d5bca?w=400&q=80" class="w-full h-44 object-cover">
-                    <div class="p-5 flex justify-between items-center">
-                        <div>
-                            <h3 class="font-black text-slate-800 text-lg">${item.name}</h3>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">أفضل خيار للفطور</p>
-                        </div>
-                        <span class="h-red font-black text-lg">${item.price ? item.price + '﷼' : 'تخصيص'}</span>
+            const grid = document.getElementById('mainGrid');
+            grid.innerHTML = menuData[currentCat].map(item => `
+                <div class="product-card p-4 flex gap-4 items-center mb-4" onclick="openOptions(${item.id})">
+                    <div class="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center text-2xl">🥣</div>
+                    <div class="flex-1">
+                        <h3 class="font-black text-gray-800">${item.name}</h3>
+                        <p class="h-red font-black">${item.price ? item.price + ' ﷼' : 'حسب الحجم'}</p>
                     </div>
+                    <div class="w-8 h-8 h-bg-red text-white rounded-full flex items-center justify-center"><i class="fa fa-plus text-xs"></i></div>
                 </div>
             `).join('');
         }
 
         function openOptions(id) {
-            const item = DB[currentCategory].find(i => i.id === id);
-            let content = `<h2 class="text-2xl font-black text-center mb-8">${item.name}</h2>`;
-            
-            if (item.sizes) {
-                content += Object.entries(item.sizes).map(([s, p]) => `
-                    <div class="flex justify-between items-center p-5 border border-slate-100 rounded-[25px] mb-3 bg-slate-50/50">
-                        <span class="font-black text-slate-700">${getSizeName(s)} (${p}﷼)</span>
-                        <div class="flex items-center gap-4 bg-white p-2 rounded-2xl shadow-sm">
-                            <button onclick="updateQty(${item.id}, -1, '${item.name}', ${p}, '${s}')" class="w-9 h-9 rounded-xl bg-gray-100 text-slate-400 font-black">-</button>
-                            <span class="font-black w-4 text-center">${getQty(item.id, s)}</span>
-                            <button onclick="updateQty(${item.id}, 1, '${item.name}', ${p}, '${s}')" class="w-9 h-9 rounded-xl h-bg-red text-white shadow-lg">+</button>
-                        </div>
-                    </div>
-                `).join('');
+            const item = menuData[currentCat].find(i => i.id === id);
+            let html = `<h2 class="text-2xl font-black mb-6 text-center">${item.name}</h2>`;
+            if(item.sizes) {
+                html += Object.entries(item.sizes).map(([s, p]) => `
+                    <div class="flex justify-between items-center p-4 border rounded-2xl mb-2 hover:bg-red-50" onclick="addToCart('${item.name} (${s})', ${p})">
+                        <span class="font-bold">${s}</span>
+                        <span class="h-red font-black">${p} ﷼</span>
+                    </div>`).join('');
             } else {
-                content += `
-                    <div class="flex justify-between items-center p-5 border border-slate-100 rounded-[25px] bg-slate-50/50">
-                        <span class="font-black text-slate-700">السعر: ${item.price}﷼</span>
-                        <div class="flex items-center gap-4 bg-white p-2 rounded-2xl shadow-sm">
-                            <button onclick="updateQty(${item.id}, -1, '${item.name}', ${item.price})" class="w-9 h-9 rounded-xl bg-gray-100">-</button>
-                            <span class="font-black w-4 text-center">${getQty(item.id, 'default')}</span>
-                            <button onclick="updateQty(${item.id}, 1, '${item.name}', ${item.price})" class="w-9 h-9 rounded-xl h-bg-red text-white">+</button>
-                        </div>
-                    </div>
-                `;
+                html += `<button onclick="addToCart('${item.name}', ${item.price})" class="w-full h-bg-red text-white py-5 rounded-2xl font-black text-xl">إضافة للسلة</button>`;
             }
-            content += `<button onclick="closeModal()" class="w-full h-bg-red text-white py-5 rounded-[25px] font-black mt-10 shadow-xl shadow-red-200">تم الإختيار</button>`;
-            document.getElementById('modalContent').innerHTML = content;
+            document.getElementById('modalBody').innerHTML = html;
             document.getElementById('mainModal').style.display = 'flex';
         }
 
-        function updateQty(id, delta, name, price, size = 'default') {
-            const key = `${id}-${size}`;
-            const idx = cart.findIndex(i => i.key === key);
-            if (idx > -1) {
-                cart[idx].qty += delta;
-                if (cart[idx].qty <= 0) cart.splice(idx, 1);
-            } else if (delta > 0) {
-                cart.push({ id, key, name: size !== 'default' ? `${name} (${getSizeName(size)})` : name, price, qty: 1 });
-            }
-            updateCartDisplay();
-            openOptions(id);
+        function addToCart(name, price) {
+            cart.push({ name, price });
+            updateCartUI();
+            closeModal();
         }
 
-        function updateCartDisplay() {
-            const count = cart.reduce((s, i) => s + i.qty, 0);
-            const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
-            document.getElementById('floatingCart').style.display = count > 0 ? 'flex' : 'none';
-            document.getElementById('cartCount').innerText = count;
-            document.getElementById('floatingTotal').innerText = total + "﷼";
+        function updateCartUI() {
+            const total = cart.reduce((s, i) => s + i.price, 0);
+            document.getElementById('floatingCart').style.display = cart.length > 0 ? 'flex' : 'none';
+            document.getElementById('cartQty').innerText = cart.length;
+            document.getElementById('cartTotal').innerText = total + "﷼";
         }
 
-        function openCartModal() {
-            const total = cart.reduce((s, i) => s + (i.price * i.qty), 0);
-            let content = `<h2 class="text-2xl font-black mb-8">سلة الطلبات</h2><div class="space-y-4 mb-10">`;
-            cart.forEach(i => {
-                content += `<div class="flex justify-between items-center pb-4 border-b border-slate-50 font-bold">
-                    <span>${i.name} × ${i.qty}</span>
-                    <span class="h-red font-black">${i.price * i.qty} ﷼</span>
-                </div>`;
-            });
-            content += `</div><button onclick="sendOrderToServer()" class="w-full bg-green-500 text-white py-6 rounded-[30px] font-black text-xl shadow-xl shadow-green-100 flex items-center justify-center gap-3">تأكيد الطلب وإرساله <i class="fa-solid fa-paper-plane"></i></button>`;
-            document.getElementById('modalContent').innerHTML = content;
+        function showCartModal() {
+            const total = cart.reduce((s, i) => s + i.price, 0);
+            let html = `<h2 class="text-xl font-black mb-4">ملخص الطلب</h2>`;
+            cart.forEach(i => html += `<div class="flex justify-between py-2 border-b text-sm"><span>${i.name}</span><b>${i.price}﷼</b></div>`);
+            html += `<button onclick="confirmOrder()" class="w-full h-bg-red text-white py-5 rounded-2xl font-black mt-6 shadow-xl">تأكيد وإرسال الطلب</button>`;
+            document.getElementById('modalBody').innerHTML = html;
         }
 
-        function sendOrderToServer() {
-            const orderData = {
-                id: Date.now(),
-                items: cart,
-                total: cart.reduce((s, i) => s + (i.price * i.qty), 0),
-                status: 'pending',
-                time: new Date().toLocaleTimeString('ar-SA')
-            };
-
-            // محاكاة إرسال للمطعم (يمكنك ربط Firebase هنا)
-            localStorage.setItem('last_fawal_order', JSON.stringify(orderData));
-            
-            alert("تم إرسال طلبك بنجاح! جاري التوصيل في غضون 20 دقيقة.");
-            cart = []; updateCartDisplay(); closeModal();
-            
-            // إظهار شريط التتبع
-            document.getElementById('trackingBanner').classList.remove('hidden');
+        function confirmOrder() {
+            const order = { id: Date.now(), items: cart, total: cart.reduce((s,i)=>s+i.price,0), time: new Date().toLocaleTimeString() };
+            // إرسال للكاشير عبر LocalStorage (سيعمل إذا كان الكاشير فاتح نفس الرابط)
+            localStorage.setItem('newOrder', JSON.stringify(order));
+            alert("تم إرسال طلبك للكاشير بنجاح!");
+            cart = []; updateCartUI(); closeModal();
         }
 
-        function getSizeName(s) { return {s:'صغير', m:'وسط', l:'كبير', local:'محلي', samoli:'صامولي', fatira:'فطيرة'}[s] || s; }
-        function getQty(id, size) { const it = cart.find(i => i.key === `${id}-${size}`); return it ? it.qty : 0; }
-        function setCategory(cat) { currentCategory = cat; renderTabs(); renderItems(); }
+        function changeCat(c) { currentCat = c; renderTabs(); renderItems(); }
         function closeModal() { document.getElementById('mainModal').style.display = 'none'; }
         window.onload = () => { renderTabs(); renderItems(); };
     </script>
